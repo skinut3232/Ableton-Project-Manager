@@ -120,7 +120,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
 
           {/* In Rotation toggle */}
           <button
-            onClick={() => onUpdate('in_rotation', !project.in_rotation)}
+            onClick={() => onUpdate('inRotation', !project.in_rotation)}
             className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               project.in_rotation
                 ? 'bg-green-600/20 text-green-400 border border-green-500/30'
@@ -170,7 +170,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
             <input
               type="text"
               value={project.genre_label}
-              onChange={(e) => onUpdate('genre_label', e.target.value)}
+              onChange={(e) => onUpdate('genreLabel', e.target.value)}
               className="w-32 rounded border border-neutral-600 bg-neutral-800 px-2 py-0.5 text-sm text-white focus:border-blue-500 focus:outline-none"
               placeholder="&#8212;"
             />
