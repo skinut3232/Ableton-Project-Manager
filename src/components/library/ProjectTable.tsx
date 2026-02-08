@@ -4,6 +4,7 @@ import { useLibraryStore } from '../../stores/libraryStore';
 import { TABLE_COLUMNS, type TableColumnKey } from '../../lib/constants';
 import { StatusBadge } from '../ui/StatusBadge';
 import { RatingStars } from '../ui/RatingStars';
+import { PlayButton } from '../audio/PlayButton';
 import type { Project, ProjectStatus } from '../../types';
 
 interface ProjectTableProps {
@@ -52,6 +53,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
       <table className="w-full text-sm text-left">
         <thead className="bg-neutral-800 border-b border-neutral-700 sticky top-0 z-10">
           <tr>
+            <th className="w-10 px-1 py-2.5" />
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -84,6 +86,9 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                   : 'bg-neutral-900 hover:bg-neutral-800'
               }`}
             >
+              <td className="px-1 py-2 text-center">
+                <PlayButton projectId={project.id} project={project} />
+              </td>
               {columns.map((col) => (
                 <td key={col.key} className="px-3 py-2 whitespace-nowrap">
                   <CellRenderer column={col.key} project={project} />
