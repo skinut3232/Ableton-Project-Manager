@@ -1,5 +1,6 @@
 # Rust / Tauri
 target/
+src-tauri/gen/
 
 # Node
 node_modules/
@@ -18,3 +19,7 @@ Desktop.ini
 
 # Word temp files
 ~$*.docx
+
+# Build output
+*.exe
+*.msi

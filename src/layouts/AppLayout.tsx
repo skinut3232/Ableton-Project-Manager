@@ -1,0 +1,103 @@
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { AudioPlayer } from '../components/audio/AudioPlayer';
+import { useAudioStore } from '../stores/audioStore';
+import { useEffect, useCallback } from 'react';
+import { useLibraryStore } from '../stores/libraryStore';
+
+export function AppLayout() {
+  const currentBounce = useAudioStore((s) => s.currentBounce);
+  const navigate = useNavigate();
+  const setSearchQuery = useLibraryStore((s) => s.setSearchQuery);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+
+    if ((e.ctrlKey && e.key === 'f') || (e.key === '/' && !isInput)) {
+      e.preventDefault();
+      const searchInput = document.getElementById('search-input');
+      searchInput?.focus();
+    }
+
+    if (e.key === ' ' && !isInput) {
+      e.preventDefault();
+      const audio = useAudioStore.getState().audioElement;
+      if (audio.src) {
+        if (audio.paused) audio.play();
+        else audio.pause();
+      }
+    }
+
+    if (e.key === 'Escape') {
+      if (isInput) {
+        (target as HTMLInputElement).blur();
+        if (target.id === 'search-input') {
+          setSearchQuery('');
+        }
+      } else {
+        navigate('/');
+      }
+    }
+
+    if (e.ctrlKey && e.key === 'r') {
+      e.preventDefault();
+      // Trigger refresh via custom event
+      window.dispatchEvent(new CustomEvent('refresh-library'));
+    }
+  }, [navigate, setSearchQuery]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  return (
+    <div className="flex h-screen bg-neutral-900 text-white">
+      {/* Sidebar */}
+      <nav className="w-48 shrink-0 border-r border-neutral-700 bg-neutral-900 flex flex-col">
+        <div className="p-4 border-b border-neutral-700">
+          <h1 className="text-sm font-bold tracking-wide text-neutral-100">APL</h1>
+          <p className="text-[10px] text-neutral-500 mt-0.5">Ableton Project Library</p>
+        </div>
+        <div className="flex flex-col gap-1 p-2 flex-1">
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              `flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
+                isActive
+                  ? 'bg-neutral-800 text-white'
+                  : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+              }`
+            }
+          >
+            <span>&#9835;</span> Library
+          </NavLink>
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              `flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
+                isActive
+                  ? 'bg-neutral-800 text-white'
+                  : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+              }`
+            }
+          >
+            <span>&#9881;</span> Settings
+          </NavLink>
+        </div>
+        <div className="p-3 border-t border-neutral-700">
+          <p className="text-[10px] text-neutral-600">v0.1.0</p>
+        </div>
+      </nav>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+        {currentBounce && <AudioPlayer />}
+      </div>
+    </div>
+  );
+}
