@@ -136,6 +136,18 @@ export const useLibraryStore = create<LibraryState>()(
         visibleColumns: state.visibleColumns,
         tableSortDir: state.tableSortDir,
       }),
+      merge: (persisted, current) => {
+        const merged = { ...current, ...(persisted as object) };
+        // Ensure newly added default columns appear in stored visibleColumns
+        const stored = (persisted as any)?.visibleColumns as TableColumnKey[] | undefined;
+        if (stored) {
+          const missing = DEFAULT_VISIBLE_COLUMNS.filter((c) => !stored.includes(c));
+          if (missing.length > 0) {
+            merged.visibleColumns = [...stored, ...missing];
+          }
+        }
+        return merged;
+      },
     }
   )
 );
