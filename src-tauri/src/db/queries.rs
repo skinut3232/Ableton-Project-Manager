@@ -235,7 +235,14 @@ pub fn get_project_detail(conn: &Connection, id: i64) -> Result<ProjectDetail, S
     })
 }
 
-pub fn update_project(conn: &Connection, id: i64, status: Option<String>, rating: Option<i64>, bpm: Option<f64>, in_rotation: Option<bool>, notes: Option<String>, genre_label: Option<String>, musical_key: Option<String>, archived: Option<bool>) -> Result<Project, String> {
+pub fn update_project(conn: &Connection, id: i64, name: Option<String>, status: Option<String>, rating: Option<i64>, bpm: Option<f64>, in_rotation: Option<bool>, notes: Option<String>, genre_label: Option<String>, musical_key: Option<String>, archived: Option<bool>) -> Result<Project, String> {
+    if let Some(ref n) = name {
+        let trimmed = n.trim();
+        if !trimmed.is_empty() {
+            conn.execute("UPDATE projects SET name = ?1, updated_at = datetime('now') WHERE id = ?2", params![trimmed, id])
+                .map_err(|e| e.to_string())?;
+        }
+    }
     if let Some(ref s) = status {
         conn.execute("UPDATE projects SET status = ?1, updated_at = datetime('now') WHERE id = ?2", params![s, id])
             .map_err(|e| e.to_string())?;
@@ -267,6 +274,11 @@ pub fn update_project(conn: &Connection, id: i64, status: Option<String>, rating
     if let Some(a) = archived {
         conn.execute("UPDATE projects SET archived = ?1, updated_at = datetime('now') WHERE id = ?2", params![a as i64, id])
             .map_err(|e| e.to_string())?;
+    }
+
+    // Rebuild FTS index if any FTS-indexed field changed
+    if name.is_some() || notes.is_some() || genre_label.is_some() {
+        rebuild_fts_tags(conn, id)?;
     }
 
     get_project_by_id(conn, id)

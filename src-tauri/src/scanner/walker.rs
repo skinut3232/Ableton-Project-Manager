@@ -153,19 +153,11 @@ pub(crate) fn process_project(
         ).optional().map_err(|e| e.to_string())?;
 
         if let Some(_id) = existing {
-            // Update only technical fields - don't overwrite user fields
-            // Only update current_set_path if user hasn't manually set one
+            // Update only technical fields - don't overwrite user-editable fields (name, genre_label, etc.)
             conn.execute(
-                "UPDATE projects SET name = ?1, missing = 0, last_worked_on = COALESCE(?2, last_worked_on), \
-                 updated_at = datetime('now') WHERE project_path = ?3 AND (current_set_path IS NULL OR current_set_path = '')",
-                params![project_name, last_worked_on, project_path],
-            ).map_err(|e| e.to_string())?;
-
-            // Always update name and missing status
-            conn.execute(
-                "UPDATE projects SET name = ?1, missing = 0, last_worked_on = COALESCE(?2, last_worked_on), \
-                 updated_at = datetime('now') WHERE project_path = ?3",
-                params![project_name, last_worked_on, project_path],
+                "UPDATE projects SET missing = 0, last_worked_on = COALESCE(?1, last_worked_on), \
+                 updated_at = datetime('now') WHERE project_path = ?2",
+                params![last_worked_on, project_path],
             ).map_err(|e| e.to_string())?;
 
             // Update current_set_path only if not manually overridden

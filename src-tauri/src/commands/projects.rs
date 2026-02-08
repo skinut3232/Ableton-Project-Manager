@@ -19,6 +19,7 @@ pub fn get_project_detail(state: State<DbState>, id: i64) -> Result<ProjectDetai
 pub fn update_project(
     state: State<DbState>,
     id: i64,
+    name: Option<String>,
     status: Option<String>,
     rating: Option<i64>,
     bpm: Option<f64>,
@@ -29,5 +30,5 @@ pub fn update_project(
     archived: Option<bool>,
 ) -> Result<Project, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    queries::update_project(&conn, id, status, rating, bpm, in_rotation, notes, genre_label, musical_key, archived)
+    queries::update_project(&conn, id, name, status, rating, bpm, in_rotation, notes, genre_label, musical_key, archived)
 }

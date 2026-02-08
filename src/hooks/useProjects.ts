@@ -55,6 +55,7 @@ export function useUpdateProject() {
   return useMutation({
     mutationFn: (args: {
       id: number;
+      name?: string;
       status?: string;
       rating?: number;
       bpm?: number;

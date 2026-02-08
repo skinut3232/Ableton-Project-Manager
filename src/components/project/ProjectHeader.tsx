@@ -6,7 +6,7 @@ import { PROJECT_STATUSES, MUSICAL_KEYS } from '../../lib/constants';
 import { tauriInvoke } from '../../hooks/useTauriInvoke';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Project } from '../../types';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface ProjectHeaderProps {
   project: Project;
@@ -16,6 +16,30 @@ interface ProjectHeaderProps {
 export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState(project.name);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setNameValue(project.name);
+  }, [project.name]);
+
+  useEffect(() => {
+    if (editingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [editingName]);
+
+  const commitName = () => {
+    setEditingName(false);
+    const trimmed = nameValue.trim();
+    if (trimmed && trimmed !== project.name) {
+      onUpdate('name', trimmed);
+    } else {
+      setNameValue(project.name);
+    }
+  };
 
   const handleArtworkUpload = async () => {
     const selected = await open({
@@ -100,7 +124,27 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-4 mb-3">
-          <h1 className="text-2xl font-bold text-white truncate">{project.name}</h1>
+          {editingName ? (
+            <input
+              ref={nameInputRef}
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+              onBlur={commitName}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commitName();
+                if (e.key === 'Escape') { setNameValue(project.name); setEditingName(false); }
+              }}
+              className="text-2xl font-bold text-white bg-neutral-800 border border-neutral-600 rounded px-2 py-0.5 focus:border-blue-500 focus:outline-none w-full"
+            />
+          ) : (
+            <h1
+              className="text-2xl font-bold text-white truncate cursor-pointer hover:text-neutral-300 transition-colors"
+              onClick={() => setEditingName(true)}
+              title="Click to rename"
+            >
+              {project.name}
+            </h1>
+          )}
           <Button variant="primary" size="sm" onClick={handleOpenAbleton} disabled={!project.current_set_path}>
             Open in Ableton
           </Button>
