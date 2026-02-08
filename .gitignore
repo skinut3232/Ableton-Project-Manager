@@ -11,9 +11,10 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
-# IDE
+# IDE / Tools
 .vscode/
 .idea/
+.claude/
 
 # Word temp files
 ~$*.docx
