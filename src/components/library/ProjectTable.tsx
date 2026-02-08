@@ -206,6 +206,22 @@ function CellRenderer({ column, project }: { column: TableColumnKey; project: Pr
     case 'updated_at':
       return <span className="text-neutral-400">{formatDate(project.updated_at)}</span>;
 
+    case 'progress':
+      if (project.progress == null) {
+        return <span className="text-neutral-600">—</span>;
+      }
+      return (
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-1.5 rounded-full bg-neutral-700 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all bg-gradient-to-r from-blue-500 to-emerald-400"
+              style={{ width: `${project.progress}%` }}
+            />
+          </div>
+          <span className="text-xs text-neutral-400 w-8 text-right">{project.progress}%</span>
+        </div>
+      );
+
     case 'archived':
       return (
         <span className={project.archived ? 'text-yellow-400' : 'text-neutral-600'}>

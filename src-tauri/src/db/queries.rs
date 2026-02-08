@@ -37,7 +37,7 @@ pub fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<(), Stri
 pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<Project>, String> {
     let mut sql = String::from(
         "SELECT p.id, p.name, p.project_path, p.genre_label, p.musical_key, p.status, p.rating, p.bpm, \
-         p.in_rotation, p.notes, p.artwork_path, p.current_set_path, p.archived, p.missing, \
+         p.in_rotation, p.notes, p.artwork_path, p.current_set_path, p.archived, p.missing, p.progress, \
          p.last_worked_on, p.created_at, p.updated_at FROM projects p"
     );
     let mut conditions: Vec<String> = Vec::new();
@@ -144,6 +144,7 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
         Some("created_at") => format!("p.created_at {} NULLS LAST", dir),
         Some("updated_at") => format!("p.updated_at {} NULLS LAST", dir),
         Some("in_rotation") => format!("p.in_rotation {}, p.name ASC", dir),
+        Some("progress") => format!("p.progress {} NULLS LAST, p.name ASC", dir),
         _ => format!("p.last_worked_on {} NULLS LAST", dir),
     };
     sql.push_str(&format!(" ORDER BY {}", sort_clause));
@@ -168,9 +169,10 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
                 current_set_path: row.get(11)?,
                 archived: row.get::<_, i64>(12)? != 0,
                 missing: row.get::<_, i64>(13)? != 0,
-                last_worked_on: row.get(14)?,
-                created_at: row.get(15)?,
-                updated_at: row.get(16)?,
+                progress: row.get(14)?,
+                last_worked_on: row.get(15)?,
+                created_at: row.get(16)?,
+                updated_at: row.get(17)?,
                 tags: Vec::new(),
             })
         })
@@ -190,7 +192,7 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
 pub fn get_project_by_id(conn: &Connection, id: i64) -> Result<Project, String> {
     let mut project = conn.query_row(
         "SELECT id, name, project_path, genre_label, musical_key, status, rating, bpm, \
-         in_rotation, notes, artwork_path, current_set_path, archived, missing, \
+         in_rotation, notes, artwork_path, current_set_path, archived, missing, progress, \
          last_worked_on, created_at, updated_at FROM projects WHERE id = ?1",
         params![id],
         |row| {
@@ -209,9 +211,10 @@ pub fn get_project_by_id(conn: &Connection, id: i64) -> Result<Project, String> 
                 current_set_path: row.get(11)?,
                 archived: row.get::<_, i64>(12)? != 0,
                 missing: row.get::<_, i64>(13)? != 0,
-                last_worked_on: row.get(14)?,
-                created_at: row.get(15)?,
-                updated_at: row.get(16)?,
+                progress: row.get(14)?,
+                last_worked_on: row.get(15)?,
+                created_at: row.get(16)?,
+                updated_at: row.get(17)?,
                 tags: Vec::new(),
             })
         },
@@ -235,7 +238,7 @@ pub fn get_project_detail(conn: &Connection, id: i64) -> Result<ProjectDetail, S
     })
 }
 
-pub fn update_project(conn: &Connection, id: i64, name: Option<String>, status: Option<String>, rating: Option<i64>, bpm: Option<f64>, in_rotation: Option<bool>, notes: Option<String>, genre_label: Option<String>, musical_key: Option<String>, archived: Option<bool>) -> Result<Project, String> {
+pub fn update_project(conn: &Connection, id: i64, name: Option<String>, status: Option<String>, rating: Option<i64>, bpm: Option<f64>, in_rotation: Option<bool>, notes: Option<String>, genre_label: Option<String>, musical_key: Option<String>, archived: Option<bool>, progress: Option<i64>) -> Result<Project, String> {
     if let Some(ref n) = name {
         let trimmed = n.trim();
         if !trimmed.is_empty() {
@@ -273,6 +276,10 @@ pub fn update_project(conn: &Connection, id: i64, name: Option<String>, status: 
     }
     if let Some(a) = archived {
         conn.execute("UPDATE projects SET archived = ?1, updated_at = datetime('now') WHERE id = ?2", params![a as i64, id])
+            .map_err(|e| e.to_string())?;
+    }
+    if let Some(p) = progress {
+        conn.execute("UPDATE projects SET progress = ?1, updated_at = datetime('now') WHERE id = ?2", params![p, id])
             .map_err(|e| e.to_string())?;
     }
 

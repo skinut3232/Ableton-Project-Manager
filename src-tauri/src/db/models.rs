@@ -16,6 +16,7 @@ pub struct Project {
     pub current_set_path: Option<String>,
     pub archived: bool,
     pub missing: bool,
+    pub progress: Option<i64>,
     pub last_worked_on: Option<String>,
     pub created_at: String,
     pub updated_at: String,

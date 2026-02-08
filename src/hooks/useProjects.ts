@@ -64,6 +64,7 @@ export function useUpdateProject() {
       genreLabel?: string;
       musicalKey?: string;
       archived?: boolean;
+      progress?: number;
     }) => tauriInvoke<Project>('update_project', args),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });

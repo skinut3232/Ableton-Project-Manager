@@ -31,6 +31,15 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
             ).map_err(|e| format!("Migration v2 failed: {}", e))?;
             log::info!("Migrated database to schema version 2");
         }
+
+        // Migration v2 → v3: add progress column
+        if version < 3 {
+            conn.execute_batch(
+                "ALTER TABLE projects ADD COLUMN progress INTEGER DEFAULT NULL;
+                 INSERT INTO schema_version (version) VALUES (3);"
+            ).map_err(|e| format!("Migration v3 failed: {}", e))?;
+            log::info!("Migrated database to schema version 3");
+        }
     }
 
     Ok(())

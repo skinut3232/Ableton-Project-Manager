@@ -28,7 +28,8 @@ pub fn update_project(
     genre_label: Option<String>,
     musical_key: Option<String>,
     archived: Option<bool>,
+    progress: Option<i64>,
 ) -> Result<Project, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    queries::update_project(&conn, id, name, status, rating, bpm, in_rotation, notes, genre_label, musical_key, archived)
+    queries::update_project(&conn, id, name, status, rating, bpm, in_rotation, notes, genre_label, musical_key, archived, progress)
 }

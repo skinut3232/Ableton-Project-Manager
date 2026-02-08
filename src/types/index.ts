@@ -15,6 +15,7 @@ export interface Project {
   current_set_path: string | null;
   archived: boolean;
   missing: boolean;
+  progress: number | null;
   last_worked_on: string | null;
   created_at: string;
   updated_at: string;

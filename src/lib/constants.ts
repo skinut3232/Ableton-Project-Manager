@@ -49,6 +49,7 @@ export const SORT_OPTIONS = [
   { value: 'created_at', label: 'Created' },
   { value: 'updated_at', label: 'Updated' },
   { value: 'in_rotation', label: 'In Rotation' },
+  { value: 'progress', label: '% Done' },
 ] as const;
 
 export type TableColumnKey =
@@ -64,6 +65,7 @@ export type TableColumnKey =
   | 'notes'
   | 'created_at'
   | 'updated_at'
+  | 'progress'
   | 'archived'
   | 'project_path';
 
@@ -84,6 +86,7 @@ export const TABLE_COLUMNS: TableColumnDef[] = [
   { key: 'genre_label', label: 'Genre', defaultVisible: true, sortable: true, width: '120px' },
   { key: 'tags', label: 'Tags', defaultVisible: true, sortable: false, width: 'minmax(100px, 1fr)' },
   { key: 'last_worked_on', label: 'Last Worked', defaultVisible: true, sortable: true, width: '120px' },
+  { key: 'progress', label: '% Done', defaultVisible: true, sortable: true, width: '120px' },
   { key: 'in_rotation', label: 'In Rotation', defaultVisible: false, sortable: true, width: '90px' },
   { key: 'notes', label: 'Notes', defaultVisible: false, sortable: false, width: 'minmax(100px, 1fr)' },
   { key: 'created_at', label: 'Created', defaultVisible: false, sortable: true, width: '120px' },

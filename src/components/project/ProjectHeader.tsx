@@ -197,6 +197,36 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
           />
         </div>
 
+        {/* Progress slider */}
+        <div className="flex items-center gap-3 mb-3">
+          <label className="text-xs text-neutral-500 shrink-0">Done:</label>
+          <div className="flex items-center gap-3 flex-1 max-w-xs">
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={project.progress ?? 0}
+              onChange={(e) => onUpdate('progress', parseInt(e.target.value))}
+              className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer
+                bg-neutral-700
+                [&::-webkit-slider-thumb]:appearance-none
+                [&::-webkit-slider-thumb]:h-4
+                [&::-webkit-slider-thumb]:w-4
+                [&::-webkit-slider-thumb]:rounded-full
+                [&::-webkit-slider-thumb]:bg-blue-500
+                [&::-webkit-slider-thumb]:hover:bg-blue-400
+                [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(59,130,246,0.5)]
+                [&::-webkit-slider-thumb]:transition-colors"
+            />
+            <span className={`text-sm font-medium w-10 text-right ${
+              project.progress == null ? 'text-neutral-600' : 'text-white'
+            }`}>
+              {project.progress != null ? `${project.progress}%` : '—'}
+            </span>
+          </div>
+        </div>
+
         {/* BPM, Key & Genre */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">

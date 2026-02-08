@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT INTO schema_version (version) VALUES (2);
+INSERT INTO schema_version (version) VALUES (3);
 
 -- Settings (key-value pairs)
 CREATE TABLE IF NOT EXISTS settings (
@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS projects (
     current_set_path TEXT,
     archived INTEGER NOT NULL DEFAULT 0,
     missing INTEGER NOT NULL DEFAULT 0,
+    progress INTEGER DEFAULT NULL,
     last_worked_on TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
