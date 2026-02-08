@@ -77,6 +77,13 @@ pub struct ScanSummary {
     pub errors: Vec<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DiscoveredProject {
+    pub path: String,
+    pub name: String,
+    pub genre_label: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProjectFilters {
     pub statuses: Option<Vec<String>>,

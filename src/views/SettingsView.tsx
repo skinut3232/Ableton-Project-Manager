@@ -4,18 +4,25 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Toggle } from '../components/ui/Toggle';
 import { useSettings, useUpdateSettings, getSettingValue } from '../hooks/useSettings';
-import { useScanLibrary } from '../hooks/useProjects';
+import { useRefreshLibrary, useDiscoverProjects, useImportProjects } from '../hooks/useProjects';
+import type { DiscoveredProject } from '../types';
 
 export function SettingsView() {
   const { data: settings, isLoading } = useSettings();
   const updateSettings = useUpdateSettings();
-  const scanLibrary = useScanLibrary();
+  const refreshLibrary = useRefreshLibrary();
+  const discoverProjects = useDiscoverProjects();
+  const importProjects = useImportProjects();
 
   const [rootFolder, setRootFolder] = useState('');
   const [abletonPath, setAbletonPath] = useState('');
   const [bounceFolderName, setBounceFolderName] = useState('Bounces');
   const [scanOnLaunch, setScanOnLaunch] = useState(true);
   const [saved, setSaved] = useState(false);
+
+  // Import checklist state
+  const [discoveredList, setDiscoveredList] = useState<DiscoveredProject[]>([]);
+  const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (settings) {
@@ -51,11 +58,39 @@ export function SettingsView() {
     setTimeout(() => setSaved(false), 2000);
   };
 
+  const handleDiscover = async () => {
+    const results = await discoverProjects.mutateAsync();
+    setDiscoveredList(results);
+    setSelectedPaths(new Set(results.map((p) => p.path)));
+  };
+
+  const handleImport = () => {
+    const selected = discoveredList.filter((p) => selectedPaths.has(p.path));
+    if (selected.length === 0) return;
+    importProjects.mutate(selected, {
+      onSuccess: () => {
+        // Remove imported items from checklist
+        setDiscoveredList((prev) => prev.filter((p) => !selectedPaths.has(p.path)));
+        setSelectedPaths(new Set());
+      },
+    });
+  };
+
+  const togglePath = (path: string) => {
+    setSelectedPaths((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  };
+
   if (isLoading) {
     return <div className="text-neutral-400">Loading settings...</div>;
   }
 
   const noRootFolder = !getSettingValue(settings, 'root_folder');
+  const selectedCount = selectedPaths.size;
 
   return (
     <div className="max-w-2xl">
@@ -109,12 +144,12 @@ export function SettingsView() {
           placeholder="Bounces"
         />
 
-        {/* Scan on Launch */}
+        {/* Refresh on Launch */}
         <Toggle
-          label="Scan on Launch"
+          label="Refresh on Launch"
           checked={scanOnLaunch}
           onChange={setScanOnLaunch}
-          description="Automatically scan for project changes when the app starts."
+          description="Automatically refresh metadata for existing projects when the app starts."
         />
 
         {/* Save Button */}
@@ -125,26 +160,120 @@ export function SettingsView() {
           {saved && <span className="text-sm text-green-400">Settings saved!</span>}
         </div>
 
-        {/* Manual Scan */}
+        {/* Refresh Library */}
         <div className="border-t border-neutral-700 pt-6">
-          <h3 className="text-sm font-medium text-neutral-300 mb-2">Library Scan</h3>
+          <h3 className="text-sm font-medium text-neutral-300 mb-2">Refresh Library</h3>
+          <p className="text-xs text-neutral-500 mb-3">
+            Update metadata (sets, bounces, timestamps) for all existing projects. Does not add new projects.
+          </p>
           <div className="flex items-center gap-3">
             <Button
               variant="secondary"
-              onClick={() => scanLibrary.mutate()}
-              disabled={scanLibrary.isPending || !rootFolder}
+              onClick={() => refreshLibrary.mutate()}
+              disabled={refreshLibrary.isPending}
             >
-              {scanLibrary.isPending ? 'Scanning...' : 'Scan Now'}
+              {refreshLibrary.isPending ? 'Refreshing...' : 'Refresh Now'}
             </Button>
-            {scanLibrary.data && (
+            {refreshLibrary.data && (
               <span className="text-sm text-neutral-400">
-                Found {scanLibrary.data.found} projects ({scanLibrary.data.new} new, {scanLibrary.data.updated} updated)
-                {scanLibrary.data.errors.length > 0 && `, ${scanLibrary.data.errors.length} errors`}
+                Checked {refreshLibrary.data.found} projects ({refreshLibrary.data.updated} updated
+                {refreshLibrary.data.missing > 0 && `, ${refreshLibrary.data.missing} missing`}
+                {refreshLibrary.data.errors.length > 0 && `, ${refreshLibrary.data.errors.length} errors`})
               </span>
             )}
           </div>
-          {scanLibrary.isError && (
-            <p className="mt-2 text-sm text-red-400">{String(scanLibrary.error)}</p>
+          {refreshLibrary.isError && (
+            <p className="mt-2 text-sm text-red-400">{String(refreshLibrary.error)}</p>
+          )}
+        </div>
+
+        {/* Import Projects */}
+        <div className="border-t border-neutral-700 pt-6">
+          <h3 className="text-sm font-medium text-neutral-300 mb-2">Import Projects</h3>
+          <p className="text-xs text-neutral-500 mb-3">
+            Discover Ableton project folders in your root folder that aren't in the library yet.
+          </p>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="secondary"
+              onClick={handleDiscover}
+              disabled={discoverProjects.isPending || !rootFolder}
+            >
+              {discoverProjects.isPending ? 'Discovering...' : 'Discover Untracked'}
+            </Button>
+            {discoverProjects.isError && (
+              <span className="text-sm text-red-400">{String(discoverProjects.error)}</span>
+            )}
+          </div>
+
+          {/* Discovered projects checklist */}
+          {discoveredList.length > 0 && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-neutral-300">
+                  {discoveredList.length} untracked project{discoveredList.length !== 1 ? 's' : ''} found
+                </span>
+                <div className="flex gap-3 text-xs">
+                  <button
+                    className="text-blue-400 hover:text-blue-300"
+                    onClick={() => setSelectedPaths(new Set(discoveredList.map((p) => p.path)))}
+                  >
+                    Select All
+                  </button>
+                  <button
+                    className="text-blue-400 hover:text-blue-300"
+                    onClick={() => setSelectedPaths(new Set())}
+                  >
+                    Select None
+                  </button>
+                </div>
+              </div>
+              <div className="max-h-64 overflow-y-auto rounded-md border border-neutral-700 bg-neutral-800/50">
+                {discoveredList.map((project) => (
+                  <label
+                    key={project.path}
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-neutral-700/50 cursor-pointer border-b border-neutral-700/50 last:border-b-0"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedPaths.has(project.path)}
+                      onChange={() => togglePath(project.path)}
+                      className="rounded border-neutral-600 bg-neutral-700 text-blue-500 focus:ring-blue-500"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm text-white truncate block">{project.name}</span>
+                      {project.genre_label && (
+                        <span className="text-xs text-neutral-500">{project.genre_label}</span>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <div className="mt-3 flex items-center gap-3">
+                <Button
+                  onClick={handleImport}
+                  disabled={selectedCount === 0 || importProjects.isPending}
+                >
+                  {importProjects.isPending
+                    ? 'Importing...'
+                    : `Import ${selectedCount} Selected`}
+                </Button>
+                {importProjects.data && (
+                  <span className="text-sm text-green-400">
+                    Imported {importProjects.data.new} new project{importProjects.data.new !== 1 ? 's' : ''}
+                    {importProjects.data.errors.length > 0 &&
+                      ` (${importProjects.data.errors.length} errors)`}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Show message when discover returned empty */}
+          {discoverProjects.isSuccess && discoveredList.length === 0 && (
+            <p className="mt-3 text-sm text-neutral-500">
+              No untracked projects found. All projects in your root folder are already in the library.
+            </p>
           )}
         </div>
       </div>

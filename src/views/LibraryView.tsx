@@ -1,9 +1,10 @@
 import { useEffect, useCallback } from 'react';
+import { open } from '@tauri-apps/plugin-dialog';
 import { TopBar } from '../components/library/TopBar';
 import { FilterBar } from '../components/library/FilterBar';
 import { ProjectGrid } from '../components/library/ProjectGrid';
 import { ProjectTable } from '../components/library/ProjectTable';
-import { useProjects, useScanLibrary } from '../hooks/useProjects';
+import { useProjects, useRefreshLibrary, useAddProject } from '../hooks/useProjects';
 import { useSettings, getSettingValue } from '../hooks/useSettings';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -14,7 +15,8 @@ import { useLibraryStore } from '../stores/libraryStore';
 export function LibraryView() {
   const { data: projects, isLoading, refetch } = useProjects();
   const { data: settings } = useSettings();
-  const scanLibrary = useScanLibrary();
+  const refreshLibrary = useRefreshLibrary();
+  const addProject = useAddProject();
   const navigate = useNavigate();
   const searchQuery = useLibraryStore((s) => s.searchQuery);
   const viewMode = useLibraryStore((s) => s.viewMode);
@@ -22,24 +24,32 @@ export function LibraryView() {
   const rootFolder = getSettingValue(settings, 'root_folder');
   const scanOnLaunch = getSettingValue(settings, 'scan_on_launch') !== 'false';
 
-  // Scan on launch
+  // Refresh existing projects on launch
   useEffect(() => {
     if (rootFolder && scanOnLaunch) {
-      scanLibrary.mutate(undefined, { onSuccess: () => refetch() });
+      refreshLibrary.mutate(undefined, { onSuccess: () => refetch() });
     }
   }, []); // Only on mount
 
   // Listen for refresh event (Ctrl+R)
   const handleRefresh = useCallback(() => {
     if (rootFolder) {
-      scanLibrary.mutate(undefined, { onSuccess: () => refetch() });
+      refreshLibrary.mutate(undefined, { onSuccess: () => refetch() });
     }
-  }, [rootFolder, scanLibrary, refetch]);
+  }, [rootFolder, refreshLibrary, refetch]);
 
   useEffect(() => {
     window.addEventListener('refresh-library', handleRefresh);
     return () => window.removeEventListener('refresh-library', handleRefresh);
   }, [handleRefresh]);
+
+  // Add project via folder picker
+  const handleAddProject = async () => {
+    const selected = await open({ directory: true, multiple: false, title: 'Select Project Folder' });
+    if (selected) {
+      addProject.mutate(selected as string);
+    }
+  };
 
   // No root folder configured
   if (!rootFolder) {
@@ -55,14 +65,14 @@ export function LibraryView() {
   return (
     <div className="space-y-4">
       <TopBar
-        isScanning={scanLibrary.isPending}
-        onRefresh={handleRefresh}
+        isAdding={addProject.isPending}
+        onAddProject={handleAddProject}
       />
       <FilterBar />
 
-      {scanLibrary.isPending && !projects?.length ? (
+      {refreshLibrary.isPending && !projects?.length ? (
         <div>
-          <p className="text-sm text-neutral-400 mb-4">Scanning library...</p>
+          <p className="text-sm text-neutral-400 mb-4">Refreshing library...</p>
           <LoadingSkeleton />
         </div>
       ) : isLoading ? (
@@ -73,7 +83,7 @@ export function LibraryView() {
           description={
             searchQuery
               ? 'Try a different search term or adjust your filters.'
-              : 'Make sure your root folder contains Ableton project directories with .als files.'
+              : "Click '+ Add Project' to add your first project, or import from Settings."
           }
         />
       ) : viewMode === 'table' ? (
@@ -82,18 +92,18 @@ export function LibraryView() {
         <ProjectGrid projects={projects} />
       )}
 
-      {/* Scan error banner */}
-      {scanLibrary.data?.errors && scanLibrary.data.errors.length > 0 && (
+      {/* Refresh error banner */}
+      {refreshLibrary.data?.errors && refreshLibrary.data.errors.length > 0 && (
         <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
           <p className="text-sm font-medium text-yellow-300 mb-1">
-            {scanLibrary.data.errors.length} scan warning(s)
+            {refreshLibrary.data.errors.length} refresh warning(s)
           </p>
           <ul className="text-xs text-yellow-200/70 space-y-0.5">
-            {scanLibrary.data.errors.slice(0, 5).map((err, i) => (
+            {refreshLibrary.data.errors.slice(0, 5).map((err, i) => (
               <li key={i}>{err}</li>
             ))}
-            {scanLibrary.data.errors.length > 5 && (
-              <li>...and {scanLibrary.data.errors.length - 5} more</li>
+            {refreshLibrary.data.errors.length > 5 && (
+              <li>...and {refreshLibrary.data.errors.length - 5} more</li>
             )}
           </ul>
         </div>

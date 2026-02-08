@@ -69,6 +69,12 @@ export interface ScanSummary {
   errors: string[];
 }
 
+export interface DiscoveredProject {
+  path: string;
+  name: string;
+  genre_label: string;
+}
+
 export interface ProjectFilters {
   statuses?: string[];
   tag_ids?: number[];

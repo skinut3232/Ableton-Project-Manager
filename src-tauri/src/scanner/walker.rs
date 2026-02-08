@@ -98,7 +98,7 @@ pub fn scan_library(conn: &Connection, root_folder: &str, bounce_folder_name: &s
     Ok(summary)
 }
 
-fn has_als_files(dir: &Path) -> bool {
+pub(crate) fn has_als_files(dir: &Path) -> bool {
     if let Ok(entries) = fs::read_dir(dir) {
         for entry in entries.flatten() {
             let path = entry.path();
@@ -114,7 +114,7 @@ fn has_als_files(dir: &Path) -> bool {
     false
 }
 
-fn process_project(
+pub(crate) fn process_project(
     conn: &Connection,
     project_path: &str,
     project_name: &str,
@@ -322,3 +322,206 @@ fn get_modified_time(path: &Path) -> String {
 }
 
 use rusqlite::OptionalExtension;
+use crate::db::models::DiscoveredProject;
+
+/// Refresh metadata for all non-archived projects already in the DB.
+/// Does NOT discover new projects.
+pub fn refresh_library(conn: &Connection, bounce_folder_name: &str) -> Result<ScanSummary, String> {
+    let mut summary = ScanSummary {
+        found: 0,
+        new: 0,
+        updated: 0,
+        missing: 0,
+        errors: Vec::new(),
+    };
+
+    // Get all non-archived projects from DB
+    let mut stmt = conn.prepare(
+        "SELECT id, project_path, name, genre_label FROM projects WHERE archived = 0"
+    ).map_err(|e| e.to_string())?;
+
+    let rows: Vec<(i64, String, String, String)> = stmt.query_map([], |row| {
+        Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+    }).map_err(|e| e.to_string())?
+      .filter_map(|r| r.ok())
+      .collect();
+
+    for (_id, project_path, project_name, genre_label) in &rows {
+        summary.found += 1;
+        let path = Path::new(project_path);
+
+        if !path.exists() || !path.is_dir() {
+            // Mark as missing
+            conn.execute(
+                "UPDATE projects SET missing = 1, updated_at = datetime('now') WHERE project_path = ?1",
+                params![project_path],
+            ).ok();
+            summary.missing += 1;
+            continue;
+        }
+
+        // Unflag missing if it was previously missing
+        conn.execute(
+            "UPDATE projects SET missing = 0 WHERE project_path = ?1 AND missing = 1",
+            params![project_path],
+        ).ok();
+
+        match process_project(conn, project_path, project_name, &genre_label, bounce_folder_name) {
+            Ok(_) => {
+                summary.updated += 1;
+            }
+            Err(e) => {
+                summary.errors.push(format!("{}: {}", project_name, e));
+            }
+        }
+    }
+
+    log::info!(
+        "Refresh complete: {} checked, {} updated, {} missing, {} errors",
+        summary.found, summary.updated, summary.missing, summary.errors.len()
+    );
+
+    Ok(summary)
+}
+
+/// Walk root folder 1-2 levels deep and return projects NOT already in DB.
+pub fn discover_untracked_projects(conn: &Connection, root_folder: &str) -> Result<Vec<DiscoveredProject>, String> {
+    let root = Path::new(root_folder);
+    if !root.exists() || !root.is_dir() {
+        return Err(format!("Root folder does not exist: {}", root_folder));
+    }
+
+    let mut discovered: Vec<DiscoveredProject> = Vec::new();
+
+    match fs::read_dir(root) {
+        Ok(entries) => {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if !path.is_dir() {
+                    continue;
+                }
+
+                let dir_name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
+                if dir_name.starts_with('.') {
+                    continue;
+                }
+
+                if has_als_files(&path) {
+                    let path_str = path.to_string_lossy().to_string();
+                    if !project_exists_in_db(conn, &path_str)? {
+                        discovered.push(DiscoveredProject {
+                            path: path_str,
+                            name: dir_name,
+                            genre_label: String::new(),
+                        });
+                    }
+                } else {
+                    // Check one level deeper (genre subfolder)
+                    if let Ok(sub_entries) = fs::read_dir(&path) {
+                        for sub_entry in sub_entries.flatten() {
+                            let sub_path = sub_entry.path();
+                            if sub_path.is_dir() && has_als_files(&sub_path) {
+                                let sub_path_str = sub_path.to_string_lossy().to_string();
+                                if !project_exists_in_db(conn, &sub_path_str)? {
+                                    let sub_name = sub_path.file_name()
+                                        .unwrap_or_default()
+                                        .to_string_lossy()
+                                        .to_string();
+                                    discovered.push(DiscoveredProject {
+                                        path: sub_path_str,
+                                        name: sub_name,
+                                        genre_label: dir_name.clone(),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            return Err(format!("Failed to read root folder: {}", e));
+        }
+    }
+
+    Ok(discovered)
+}
+
+/// Add a single project folder (any folder, .als not required).
+pub fn add_single_project(conn: &Connection, folder_path: &str, bounce_folder_name: &str) -> Result<ScanSummary, String> {
+    let path = Path::new(folder_path);
+    if !path.exists() || !path.is_dir() {
+        return Err(format!("Folder does not exist: {}", folder_path));
+    }
+
+    let project_name = path.file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+
+    // Try to infer genre_label from parent directory name if it's not the root
+    let genre_label = String::new();
+
+    let mut summary = ScanSummary {
+        found: 1,
+        new: 0,
+        updated: 0,
+        missing: 0,
+        errors: Vec::new(),
+    };
+
+    match process_project(conn, folder_path, &project_name, &genre_label, bounce_folder_name) {
+        Ok(is_new) => {
+            if is_new { summary.new = 1; } else { summary.updated = 1; }
+        }
+        Err(e) => {
+            summary.errors.push(format!("{}: {}", project_name, e));
+        }
+    }
+
+    Ok(summary)
+}
+
+/// Import multiple discovered projects.
+pub fn import_projects(conn: &Connection, projects: &[DiscoveredProject], bounce_folder_name: &str) -> Result<ScanSummary, String> {
+    let mut summary = ScanSummary {
+        found: projects.len(),
+        new: 0,
+        updated: 0,
+        missing: 0,
+        errors: Vec::new(),
+    };
+
+    for project in projects {
+        let path = Path::new(&project.path);
+        if !path.exists() || !path.is_dir() {
+            summary.errors.push(format!("{}: folder does not exist", project.name));
+            continue;
+        }
+
+        match process_project(conn, &project.path, &project.name, &project.genre_label, bounce_folder_name) {
+            Ok(is_new) => {
+                if is_new { summary.new += 1; } else { summary.updated += 1; }
+            }
+            Err(e) => {
+                summary.errors.push(format!("{}: {}", project.name, e));
+            }
+        }
+    }
+
+    log::info!(
+        "Import complete: {} processed, {} new, {} updated, {} errors",
+        summary.found, summary.new, summary.updated, summary.errors.len()
+    );
+
+    Ok(summary)
+}
+
+fn project_exists_in_db(conn: &Connection, path: &str) -> Result<bool, String> {
+    let count: i64 = conn.query_row(
+        "SELECT COUNT(*) FROM projects WHERE project_path = ?1",
+        params![path],
+        |row| row.get(0),
+    ).map_err(|e| e.to_string())?;
+    Ok(count > 0)
+}

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tauriInvoke } from './useTauriInvoke';
-import type { Project, ProjectDetail, ProjectFilters, ScanSummary } from '../types';
+import type { Project, ProjectDetail, ProjectFilters, ScanSummary, DiscoveredProject } from '../types';
 import { useLibraryStore } from '../stores/libraryStore';
 
 export function useProjects() {
@@ -70,10 +70,36 @@ export function useUpdateProject() {
   });
 }
 
-export function useScanLibrary() {
+export function useRefreshLibrary() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => tauriInvoke<ScanSummary>('scan_library'),
+    mutationFn: () => tauriInvoke<ScanSummary>('refresh_library'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+export function useAddProject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (folderPath: string) => tauriInvoke<ScanSummary>('add_project', { folderPath }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+export function useDiscoverProjects() {
+  return useMutation({
+    mutationFn: () => tauriInvoke<DiscoveredProject[]>('discover_untracked_projects'),
+  });
+}
+
+export function useImportProjects() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (projects: DiscoveredProject[]) => tauriInvoke<ScanSummary>('import_projects', { projects }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
