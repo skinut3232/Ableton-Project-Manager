@@ -1,0 +1,19 @@
+# Rust / Tauri
+target/
+
+# Node
+node_modules/
+dist/
+.env
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Word temp files
+~$*.docx
