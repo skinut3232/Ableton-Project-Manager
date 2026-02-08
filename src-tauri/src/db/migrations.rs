@@ -22,6 +22,15 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
             .query_row("SELECT MAX(version) FROM schema_version", [], |row| row.get(0))
             .map_err(|e| format!("Failed to get schema version: {}", e))?;
         log::info!("Database at schema version {}", version);
+
+        // Migration v1 → v2: add musical_key column
+        if version < 2 {
+            conn.execute_batch(
+                "ALTER TABLE projects ADD COLUMN musical_key TEXT NOT NULL DEFAULT '';
+                 INSERT INTO schema_version (version) VALUES (2);"
+            ).map_err(|e| format!("Migration v2 failed: {}", e))?;
+            log::info!("Migrated database to schema version 2");
+        }
     }
 
     Ok(())

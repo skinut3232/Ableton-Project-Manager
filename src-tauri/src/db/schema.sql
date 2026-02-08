@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT INTO schema_version (version) VALUES (1);
+INSERT INTO schema_version (version) VALUES (2);
 
 -- Settings (key-value pairs)
 CREATE TABLE IF NOT EXISTS settings (
@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS projects (
     status TEXT NOT NULL DEFAULT 'Sketch',
     rating INTEGER CHECK (rating IS NULL OR (rating >= 1 AND rating <= 5)),
     bpm REAL,
+    musical_key TEXT NOT NULL DEFAULT '',
     in_rotation INTEGER NOT NULL DEFAULT 0,
     notes TEXT NOT NULL DEFAULT '',
     artwork_path TEXT,

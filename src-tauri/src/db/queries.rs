@@ -36,7 +36,7 @@ pub fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<(), Stri
 
 pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<Project>, String> {
     let mut sql = String::from(
-        "SELECT p.id, p.name, p.project_path, p.genre_label, p.status, p.rating, p.bpm, \
+        "SELECT p.id, p.name, p.project_path, p.genre_label, p.musical_key, p.status, p.rating, p.bpm, \
          p.in_rotation, p.notes, p.artwork_path, p.current_set_path, p.archived, p.missing, \
          p.last_worked_on, p.created_at, p.updated_at FROM projects p"
     );
@@ -139,6 +139,7 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
             dir
         ),
         Some("bpm") => format!("p.bpm {} NULLS LAST, p.name ASC", dir),
+        Some("musical_key") => format!("p.musical_key {} NULLS LAST, p.name ASC", dir),
         Some("genre_label") => format!("p.genre_label {} NULLS LAST, p.name ASC", dir),
         Some("created_at") => format!("p.created_at {} NULLS LAST", dir),
         Some("updated_at") => format!("p.updated_at {} NULLS LAST", dir),
@@ -157,18 +158,19 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
                 name: row.get(1)?,
                 project_path: row.get(2)?,
                 genre_label: row.get(3)?,
-                status: row.get(4)?,
-                rating: row.get(5)?,
-                bpm: row.get(6)?,
-                in_rotation: row.get::<_, i64>(7)? != 0,
-                notes: row.get(8)?,
-                artwork_path: row.get(9)?,
-                current_set_path: row.get(10)?,
-                archived: row.get::<_, i64>(11)? != 0,
-                missing: row.get::<_, i64>(12)? != 0,
-                last_worked_on: row.get(13)?,
-                created_at: row.get(14)?,
-                updated_at: row.get(15)?,
+                musical_key: row.get(4)?,
+                status: row.get(5)?,
+                rating: row.get(6)?,
+                bpm: row.get(7)?,
+                in_rotation: row.get::<_, i64>(8)? != 0,
+                notes: row.get(9)?,
+                artwork_path: row.get(10)?,
+                current_set_path: row.get(11)?,
+                archived: row.get::<_, i64>(12)? != 0,
+                missing: row.get::<_, i64>(13)? != 0,
+                last_worked_on: row.get(14)?,
+                created_at: row.get(15)?,
+                updated_at: row.get(16)?,
                 tags: Vec::new(),
             })
         })
@@ -187,7 +189,7 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
 
 pub fn get_project_by_id(conn: &Connection, id: i64) -> Result<Project, String> {
     let mut project = conn.query_row(
-        "SELECT id, name, project_path, genre_label, status, rating, bpm, \
+        "SELECT id, name, project_path, genre_label, musical_key, status, rating, bpm, \
          in_rotation, notes, artwork_path, current_set_path, archived, missing, \
          last_worked_on, created_at, updated_at FROM projects WHERE id = ?1",
         params![id],
@@ -197,18 +199,19 @@ pub fn get_project_by_id(conn: &Connection, id: i64) -> Result<Project, String> 
                 name: row.get(1)?,
                 project_path: row.get(2)?,
                 genre_label: row.get(3)?,
-                status: row.get(4)?,
-                rating: row.get(5)?,
-                bpm: row.get(6)?,
-                in_rotation: row.get::<_, i64>(7)? != 0,
-                notes: row.get(8)?,
-                artwork_path: row.get(9)?,
-                current_set_path: row.get(10)?,
-                archived: row.get::<_, i64>(11)? != 0,
-                missing: row.get::<_, i64>(12)? != 0,
-                last_worked_on: row.get(13)?,
-                created_at: row.get(14)?,
-                updated_at: row.get(15)?,
+                musical_key: row.get(4)?,
+                status: row.get(5)?,
+                rating: row.get(6)?,
+                bpm: row.get(7)?,
+                in_rotation: row.get::<_, i64>(8)? != 0,
+                notes: row.get(9)?,
+                artwork_path: row.get(10)?,
+                current_set_path: row.get(11)?,
+                archived: row.get::<_, i64>(12)? != 0,
+                missing: row.get::<_, i64>(13)? != 0,
+                last_worked_on: row.get(14)?,
+                created_at: row.get(15)?,
+                updated_at: row.get(16)?,
                 tags: Vec::new(),
             })
         },
@@ -232,7 +235,7 @@ pub fn get_project_detail(conn: &Connection, id: i64) -> Result<ProjectDetail, S
     })
 }
 
-pub fn update_project(conn: &Connection, id: i64, status: Option<String>, rating: Option<i64>, bpm: Option<f64>, in_rotation: Option<bool>, notes: Option<String>, genre_label: Option<String>, archived: Option<bool>) -> Result<Project, String> {
+pub fn update_project(conn: &Connection, id: i64, status: Option<String>, rating: Option<i64>, bpm: Option<f64>, in_rotation: Option<bool>, notes: Option<String>, genre_label: Option<String>, musical_key: Option<String>, archived: Option<bool>) -> Result<Project, String> {
     if let Some(ref s) = status {
         conn.execute("UPDATE projects SET status = ?1, updated_at = datetime('now') WHERE id = ?2", params![s, id])
             .map_err(|e| e.to_string())?;
@@ -255,6 +258,10 @@ pub fn update_project(conn: &Connection, id: i64, status: Option<String>, rating
     }
     if let Some(ref g) = genre_label {
         conn.execute("UPDATE projects SET genre_label = ?1, updated_at = datetime('now') WHERE id = ?2", params![g, id])
+            .map_err(|e| e.to_string())?;
+    }
+    if let Some(ref k) = musical_key {
+        conn.execute("UPDATE projects SET musical_key = ?1, updated_at = datetime('now') WHERE id = ?2", params![k, id])
             .map_err(|e| e.to_string())?;
     }
     if let Some(a) = archived {

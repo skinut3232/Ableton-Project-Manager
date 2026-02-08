@@ -145,6 +145,13 @@ function CellRenderer({ column, project }: { column: TableColumnKey; project: Pr
         </span>
       );
 
+    case 'musical_key':
+      return (
+        <span className="text-neutral-400">
+          {project.musical_key || '—'}
+        </span>
+      );
+
     case 'genre_label':
       return (
         <span className="text-neutral-400">

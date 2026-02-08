@@ -6,6 +6,7 @@ pub struct Project {
     pub name: String,
     pub project_path: String,
     pub genre_label: String,
+    pub musical_key: String,
     pub status: String,
     pub rating: Option<i64>,
     pub bpm: Option<f64>,

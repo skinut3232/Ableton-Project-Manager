@@ -22,12 +22,29 @@ export const STATUS_TEXT_COLORS: Record<ProjectStatus, string> = {
   Done: 'text-green-400',
 };
 
+export const MUSICAL_KEYS = [
+  '', // empty = unset
+  'C Major', 'C Minor',
+  'C# Major', 'C# Minor',
+  'D Major', 'D Minor',
+  'Eb Major', 'Eb Minor',
+  'E Major', 'E Minor',
+  'F Major', 'F Minor',
+  'F# Major', 'F# Minor',
+  'G Major', 'G Minor',
+  'Ab Major', 'Ab Minor',
+  'A Major', 'A Minor',
+  'Bb Major', 'Bb Minor',
+  'B Major', 'B Minor',
+] as const;
+
 export const SORT_OPTIONS = [
   { value: 'last_worked_on', label: 'Last Worked On' },
   { value: 'name', label: 'Name' },
   { value: 'rating', label: 'Rating' },
   { value: 'status', label: 'Status' },
   { value: 'bpm', label: 'BPM' },
+  { value: 'musical_key', label: 'Key' },
   { value: 'genre_label', label: 'Genre' },
   { value: 'created_at', label: 'Created' },
   { value: 'updated_at', label: 'Updated' },
@@ -39,6 +56,7 @@ export type TableColumnKey =
   | 'status'
   | 'rating'
   | 'bpm'
+  | 'musical_key'
   | 'genre_label'
   | 'tags'
   | 'last_worked_on'
@@ -62,6 +80,7 @@ export const TABLE_COLUMNS: TableColumnDef[] = [
   { key: 'status', label: 'Status', defaultVisible: true, sortable: true, width: '100px' },
   { key: 'rating', label: 'Rating', defaultVisible: true, sortable: true, width: '110px' },
   { key: 'bpm', label: 'BPM', defaultVisible: true, sortable: true, width: '70px' },
+  { key: 'musical_key', label: 'Key', defaultVisible: true, sortable: true, width: '80px' },
   { key: 'genre_label', label: 'Genre', defaultVisible: true, sortable: true, width: '120px' },
   { key: 'tags', label: 'Tags', defaultVisible: true, sortable: false, width: 'minmax(100px, 1fr)' },
   { key: 'last_worked_on', label: 'Last Worked', defaultVisible: true, sortable: true, width: '120px' },

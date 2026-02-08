@@ -61,6 +61,7 @@ export function useUpdateProject() {
       inRotation?: boolean;
       notes?: string;
       genreLabel?: string;
+      musicalKey?: string;
       archived?: boolean;
     }) => tauriInvoke<Project>('update_project', args),
     onSuccess: (_, variables) => {

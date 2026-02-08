@@ -5,6 +5,7 @@ export interface Project {
   name: string;
   project_path: string;
   genre_label: string;
+  musical_key: string;
   status: ProjectStatus;
   rating: number | null;
   bpm: number | null;

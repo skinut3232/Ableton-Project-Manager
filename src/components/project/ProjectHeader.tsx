@@ -2,7 +2,7 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { RatingStars } from '../ui/RatingStars';
 import { Button } from '../ui/Button';
-import { PROJECT_STATUSES } from '../../lib/constants';
+import { PROJECT_STATUSES, MUSICAL_KEYS } from '../../lib/constants';
 import { tauriInvoke } from '../../hooks/useTauriInvoke';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Project } from '../../types';
@@ -153,7 +153,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
           />
         </div>
 
-        {/* BPM & Genre */}
+        {/* BPM, Key & Genre */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <label className="text-xs text-neutral-500">BPM:</label>
@@ -164,6 +164,18 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
               className="w-16 rounded border border-neutral-600 bg-neutral-800 px-2 py-0.5 text-sm text-white focus:border-blue-500 focus:outline-none"
               placeholder="&#8212;"
             />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <label className="text-xs text-neutral-500">Key:</label>
+            <select
+              value={project.musical_key}
+              onChange={(e) => onUpdate('musicalKey', e.target.value)}
+              className="rounded border border-neutral-600 bg-neutral-800 px-2 py-0.5 text-sm text-white focus:border-blue-500 focus:outline-none"
+            >
+              {MUSICAL_KEYS.map((k) => (
+                <option key={k} value={k}>{k || '—'}</option>
+              ))}
+            </select>
           </div>
           <div className="flex items-center gap-1.5">
             <label className="text-xs text-neutral-500">Genre:</label>
