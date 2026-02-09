@@ -38,7 +38,9 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
     let mut sql = String::from(
         "SELECT p.id, p.name, p.project_path, p.genre_label, p.musical_key, p.status, p.rating, p.bpm, \
          p.in_rotation, p.notes, p.artwork_path, p.current_set_path, p.archived, p.missing, p.progress, \
-         p.last_worked_on, p.created_at, p.updated_at FROM projects p"
+         p.last_worked_on, p.created_at, p.updated_at, \
+         p.cover_type, p.cover_locked, p.cover_seed, p.cover_style_preset, p.cover_asset_id, p.cover_updated_at \
+         FROM projects p"
     );
     let mut conditions: Vec<String> = Vec::new();
     let mut param_values: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
@@ -174,6 +176,12 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
                 created_at: row.get(16)?,
                 updated_at: row.get(17)?,
                 tags: Vec::new(),
+                cover_type: row.get(18)?,
+                cover_locked: row.get::<_, i64>(19)? != 0,
+                cover_seed: row.get(20)?,
+                cover_style_preset: row.get(21)?,
+                cover_asset_id: row.get(22)?,
+                cover_updated_at: row.get(23)?,
             })
         })
         .map_err(|e| e.to_string())?
@@ -193,7 +201,9 @@ pub fn get_project_by_id(conn: &Connection, id: i64) -> Result<Project, String> 
     let mut project = conn.query_row(
         "SELECT id, name, project_path, genre_label, musical_key, status, rating, bpm, \
          in_rotation, notes, artwork_path, current_set_path, archived, missing, progress, \
-         last_worked_on, created_at, updated_at FROM projects WHERE id = ?1",
+         last_worked_on, created_at, updated_at, \
+         cover_type, cover_locked, cover_seed, cover_style_preset, cover_asset_id, cover_updated_at \
+         FROM projects WHERE id = ?1",
         params![id],
         |row| {
             Ok(Project {
@@ -216,6 +226,12 @@ pub fn get_project_by_id(conn: &Connection, id: i64) -> Result<Project, String> 
                 created_at: row.get(16)?,
                 updated_at: row.get(17)?,
                 tags: Vec::new(),
+                cover_type: row.get(18)?,
+                cover_locked: row.get::<_, i64>(19)? != 0,
+                cover_seed: row.get(20)?,
+                cover_style_preset: row.get(21)?,
+                cover_asset_id: row.get(22)?,
+                cover_updated_at: row.get(23)?,
             })
         },
     ).map_err(|e| format!("Project not found: {}", e))?;
@@ -358,24 +374,76 @@ pub fn remove_tag_from_project(conn: &Connection, project_id: i64, tag_id: i64) 
     Ok(())
 }
 
+/// Strip HTML tags from a string, inserting spaces between tags to prevent word merging.
+pub fn strip_html_tags(html: &str) -> String {
+    let mut result = String::with_capacity(html.len());
+    let mut inside_tag = false;
+    for ch in html.chars() {
+        if ch == '<' {
+            inside_tag = true;
+        } else if ch == '>' {
+            inside_tag = false;
+            result.push(' ');
+        } else if !inside_tag {
+            result.push(ch);
+        }
+    }
+    result
+}
+
 pub fn rebuild_fts_tags(conn: &Connection, project_id: i64) -> Result<(), String> {
     let tags = get_tags_for_project(conn, project_id)?;
     let tags_text = tags.iter().map(|t| t.name.as_str()).collect::<Vec<_>>().join(" ");
 
     // Get current project data
     let project = get_project_by_id(conn, project_id)?;
+    let clean_notes = strip_html_tags(&project.notes);
 
-    // Delete old FTS entry
+    // Delete old FTS entry (standalone table: use standard DELETE)
     conn.execute(
-        "INSERT INTO projects_fts(projects_fts, rowid, name, genre_label, notes, tags_text) VALUES ('delete', ?1, ?2, ?3, ?4, ?5)",
-        params![project_id, project.name, project.genre_label, project.notes, ""],
-    ).map_err(|e| format!("FTS delete failed: {}", e))?;
+        "DELETE FROM projects_fts WHERE rowid = ?1",
+        params![project_id],
+    ).ok(); // Ignore if row doesn't exist
 
-    // Reinsert with updated tags
+    // Reinsert with HTML-stripped notes
     conn.execute(
         "INSERT INTO projects_fts(rowid, name, genre_label, notes, tags_text) VALUES (?1, ?2, ?3, ?4, ?5)",
-        params![project_id, project.name, project.genre_label, project.notes, tags_text],
+        params![project_id, project.name, project.genre_label, clean_notes, tags_text],
     ).map_err(|e| format!("FTS insert failed: {}", e))?;
+
+    Ok(())
+}
+
+/// Rebuild the entire FTS index for all projects. Called during migration.
+pub fn rebuild_all_fts(conn: &Connection) -> Result<(), String> {
+    conn.execute("DELETE FROM projects_fts", [])
+        .map_err(|e| format!("FTS clear failed: {}", e))?;
+
+    let mut stmt = conn.prepare(
+        "SELECT id, name, genre_label, notes FROM projects"
+    ).map_err(|e| e.to_string())?;
+
+    let rows: Vec<(i64, String, String, String)> = stmt
+        .query_map([], |row| {
+            Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+        })
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+
+    // Need to drop stmt before calling get_tags_for_project (which borrows conn)
+    drop(stmt);
+
+    for (id, name, genre_label, notes) in &rows {
+        let clean_notes = strip_html_tags(notes);
+        let tags = get_tags_for_project(conn, *id).unwrap_or_default();
+        let tags_text = tags.iter().map(|t| t.name.as_str()).collect::<Vec<_>>().join(" ");
+
+        conn.execute(
+            "INSERT INTO projects_fts(rowid, name, genre_label, notes, tags_text) VALUES (?1, ?2, ?3, ?4, ?5)",
+            params![id, name, genre_label, clean_notes, tags_text],
+        ).ok();
+    }
 
     Ok(())
 }
@@ -1028,4 +1096,118 @@ pub fn delete_asset(conn: &Connection, id: i64) -> Result<Option<String>, String
     conn.execute("DELETE FROM assets WHERE id = ?1", params![id])
         .map_err(|e| e.to_string())?;
     Ok(stored_path)
+}
+
+// ── Cover queries ──
+
+pub fn set_cover(
+    conn: &Connection,
+    project_id: i64,
+    cover_type: &str,
+    artwork_path: Option<&str>,
+    cover_seed: Option<&str>,
+    cover_style_preset: Option<&str>,
+    cover_asset_id: Option<i64>,
+) -> Result<(), String> {
+    conn.execute(
+        "UPDATE projects SET cover_type = ?1, artwork_path = ?2, cover_seed = ?3, \
+         cover_style_preset = COALESCE(?4, cover_style_preset), cover_asset_id = ?5, \
+         cover_updated_at = datetime('now'), updated_at = datetime('now') WHERE id = ?6",
+        params![cover_type, artwork_path, cover_seed, cover_style_preset, cover_asset_id, project_id],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+pub fn set_cover_locked(conn: &Connection, project_id: i64, locked: bool) -> Result<(), String> {
+    conn.execute(
+        "UPDATE projects SET cover_locked = ?1, updated_at = datetime('now') WHERE id = ?2",
+        params![locked as i64, project_id],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+// ── Mood Board queries ──
+
+pub fn get_mood_board_pins(conn: &Connection, project_id: i64) -> Result<Vec<MoodBoardPin>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT mb.id, mb.project_id, mb.asset_id, mb.sort_order, mb.created_at, \
+             a.stored_path, a.original_filename \
+             FROM mood_board mb JOIN assets a ON mb.asset_id = a.id \
+             WHERE mb.project_id = ?1 ORDER BY mb.sort_order ASC, mb.created_at ASC"
+        )
+        .map_err(|e| e.to_string())?;
+    let pins = stmt
+        .query_map(params![project_id], |row| {
+            Ok(MoodBoardPin {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                asset_id: row.get(2)?,
+                sort_order: row.get(3)?,
+                created_at: row.get(4)?,
+                stored_path: row.get(5)?,
+                original_filename: row.get(6)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(pins)
+}
+
+pub fn add_mood_board_pin(conn: &Connection, project_id: i64, asset_id: i64) -> Result<MoodBoardPin, String> {
+    // Get the next sort_order
+    let max_order: i64 = conn
+        .query_row(
+            "SELECT COALESCE(MAX(sort_order), -1) FROM mood_board WHERE project_id = ?1",
+            params![project_id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
+
+    conn.execute(
+        "INSERT OR IGNORE INTO mood_board (project_id, asset_id, sort_order) VALUES (?1, ?2, ?3)",
+        params![project_id, asset_id, max_order + 1],
+    )
+    .map_err(|e| e.to_string())?;
+
+    // Return the pin (may already exist due to OR IGNORE)
+    conn.query_row(
+        "SELECT mb.id, mb.project_id, mb.asset_id, mb.sort_order, mb.created_at, \
+         a.stored_path, a.original_filename \
+         FROM mood_board mb JOIN assets a ON mb.asset_id = a.id \
+         WHERE mb.project_id = ?1 AND mb.asset_id = ?2",
+        params![project_id, asset_id],
+        |row| {
+            Ok(MoodBoardPin {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                asset_id: row.get(2)?,
+                sort_order: row.get(3)?,
+                created_at: row.get(4)?,
+                stored_path: row.get(5)?,
+                original_filename: row.get(6)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn remove_mood_board_pin(conn: &Connection, pin_id: i64) -> Result<(), String> {
+    conn.execute("DELETE FROM mood_board WHERE id = ?1", params![pin_id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+pub fn reorder_mood_board_pins(conn: &Connection, project_id: i64, pin_ids: &[i64]) -> Result<(), String> {
+    for (i, pin_id) in pin_ids.iter().enumerate() {
+        conn.execute(
+            "UPDATE mood_board SET sort_order = ?1 WHERE id = ?2 AND project_id = ?3",
+            params![i as i64, pin_id, project_id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    Ok(())
 }

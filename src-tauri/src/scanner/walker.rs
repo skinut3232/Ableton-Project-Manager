@@ -2,8 +2,9 @@ use std::path::{Path, PathBuf};
 use std::fs;
 use rusqlite::{params, Connection};
 use crate::db::models::ScanSummary;
+use crate::cover_gen;
 
-pub fn scan_library(conn: &Connection, root_folder: &str, bounce_folder_name: &str) -> Result<ScanSummary, String> {
+pub fn scan_library(conn: &Connection, root_folder: &str, bounce_folder_name: &str, app_data_dir: &Path) -> Result<ScanSummary, String> {
     let root = Path::new(root_folder);
     if !root.exists() || !root.is_dir() {
         return Err(format!("Root folder does not exist: {}", root_folder));
@@ -70,7 +71,7 @@ pub fn scan_library(conn: &Connection, root_folder: &str, bounce_folder_name: &s
             .to_string_lossy()
             .to_string();
 
-        match process_project(conn, &path_str, &project_name, genre_label, bounce_folder_name) {
+        match process_project(conn, &path_str, &project_name, genre_label, bounce_folder_name, app_data_dir) {
             Ok(is_new) => {
                 if is_new {
                     summary.new += 1;
@@ -120,6 +121,7 @@ pub(crate) fn process_project(
     project_name: &str,
     genre_label: &str,
     bounce_folder_name: &str,
+    _app_data_dir: &Path,
 ) -> Result<bool, String> {
     let path = Path::new(project_path);
 
@@ -177,6 +179,15 @@ pub(crate) fn process_project(
                  VALUES (?1, ?2, ?3, ?4, ?5)",
                 params![project_name, project_path, genre_label, newest_set, last_worked_on],
             ).map_err(|e| e.to_string())?;
+
+            // Populate FTS index for the new project (no auto-trigger in standalone FTS)
+            let new_id: i64 = conn.query_row(
+                "SELECT id FROM projects WHERE project_path = ?1",
+                params![project_path],
+                |row| row.get(0),
+            ).map_err(|e| e.to_string())?;
+            crate::db::queries::rebuild_fts_tags(conn, new_id)?;
+
             true
         }
     };
@@ -222,6 +233,89 @@ pub(crate) fn process_project(
     }
 
     Ok(is_new)
+}
+
+/// Generate covers for all projects that need one (cover_type='none' and not locked).
+/// Called separately from the scan to avoid holding the DB lock during image generation.
+pub fn generate_missing_covers(conn: &Connection, app_data_dir: &Path) {
+    use crate::db::queries;
+
+    // Collect project IDs needing covers
+    let mut stmt = match conn.prepare(
+        "SELECT id, cover_type, cover_locked, cover_seed, artwork_path FROM projects WHERE archived = 0"
+    ) {
+        Ok(s) => s,
+        Err(_) => return,
+    };
+
+    struct CoverJob {
+        project_id: i64,
+        seed: String,
+    }
+
+    let rows: Vec<(i64, String, bool, Option<String>, Option<String>)> = match stmt
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, bool>(2)?,
+                row.get::<_, Option<String>>(3)?,
+                row.get::<_, Option<String>>(4)?,
+            ))
+        }) {
+            Ok(mapped) => mapped.filter_map(|r| r.ok()).collect(),
+            Err(_) => return,
+        };
+
+    let jobs: Vec<CoverJob> = rows
+        .into_iter()
+        .filter_map(|(id, cover_type, locked, seed, artwork_path)| {
+            if locked {
+                return None;
+            }
+            if cover_type == "uploaded" || cover_type == "moodboard" {
+                return None;
+            }
+            if cover_type == "generated" {
+                // Only regenerate if file is missing
+                if let Some(ref ap) = artwork_path {
+                    if !std::path::Path::new(ap).exists() {
+                        let s = seed.unwrap_or_else(|| format!("proj_{}", id));
+                        return Some(CoverJob { project_id: id, seed: s });
+                    }
+                }
+                return None;
+            }
+            // cover_type = 'none' → needs generation
+            Some(CoverJob {
+                project_id: id,
+                seed: format!("proj_{}", id),
+            })
+        })
+        .collect();
+
+    drop(stmt);
+
+    if jobs.is_empty() {
+        return;
+    }
+
+    log::info!("Generating covers for {} projects...", jobs.len());
+    let mut generated = 0;
+    for job in &jobs {
+        let cover_dir = app_data_dir.join("covers").join("generated").join(job.project_id.to_string());
+        match cover_gen::generate_cover(&job.seed, &cover_dir) {
+            Ok(thumb) => {
+                let thumb_str = thumb.to_string_lossy().to_string();
+                queries::set_cover(conn, job.project_id, "generated", Some(&thumb_str), Some(&job.seed), Some("default"), None).ok();
+                generated += 1;
+            }
+            Err(e) => {
+                log::warn!("Failed to generate cover for project {}: {}", job.project_id, e);
+            }
+        }
+    }
+    log::info!("Generated {} covers", generated);
 }
 
 fn scan_bounces(conn: &Connection, project_id: i64, bounces_dir: &Path) -> Result<(), String> {
@@ -318,7 +412,7 @@ use crate::db::models::DiscoveredProject;
 
 /// Refresh metadata for all non-archived projects already in the DB.
 /// Does NOT discover new projects.
-pub fn refresh_library(conn: &Connection, bounce_folder_name: &str) -> Result<ScanSummary, String> {
+pub fn refresh_library(conn: &Connection, bounce_folder_name: &str, app_data_dir: &Path) -> Result<ScanSummary, String> {
     let mut summary = ScanSummary {
         found: 0,
         new: 0,
@@ -358,7 +452,7 @@ pub fn refresh_library(conn: &Connection, bounce_folder_name: &str) -> Result<Sc
             params![project_path],
         ).ok();
 
-        match process_project(conn, project_path, project_name, &genre_label, bounce_folder_name) {
+        match process_project(conn, project_path, project_name, &genre_label, bounce_folder_name, app_data_dir) {
             Ok(_) => {
                 summary.updated += 1;
             }
@@ -440,7 +534,7 @@ pub fn discover_untracked_projects(conn: &Connection, root_folder: &str) -> Resu
 }
 
 /// Add a single project folder (any folder, .als not required).
-pub fn add_single_project(conn: &Connection, folder_path: &str, bounce_folder_name: &str) -> Result<ScanSummary, String> {
+pub fn add_single_project(conn: &Connection, folder_path: &str, bounce_folder_name: &str, app_data_dir: &Path) -> Result<ScanSummary, String> {
     let path = Path::new(folder_path);
     if !path.exists() || !path.is_dir() {
         return Err(format!("Folder does not exist: {}", folder_path));
@@ -462,7 +556,7 @@ pub fn add_single_project(conn: &Connection, folder_path: &str, bounce_folder_na
         errors: Vec::new(),
     };
 
-    match process_project(conn, folder_path, &project_name, &genre_label, bounce_folder_name) {
+    match process_project(conn, folder_path, &project_name, &genre_label, bounce_folder_name, app_data_dir) {
         Ok(is_new) => {
             if is_new { summary.new = 1; } else { summary.updated = 1; }
         }
@@ -475,7 +569,7 @@ pub fn add_single_project(conn: &Connection, folder_path: &str, bounce_folder_na
 }
 
 /// Import multiple discovered projects.
-pub fn import_projects(conn: &Connection, projects: &[DiscoveredProject], bounce_folder_name: &str) -> Result<ScanSummary, String> {
+pub fn import_projects(conn: &Connection, projects: &[DiscoveredProject], bounce_folder_name: &str, app_data_dir: &Path) -> Result<ScanSummary, String> {
     let mut summary = ScanSummary {
         found: projects.len(),
         new: 0,
@@ -491,7 +585,7 @@ pub fn import_projects(conn: &Connection, projects: &[DiscoveredProject], bounce
             continue;
         }
 
-        match process_project(conn, &project.path, &project.name, &project.genre_label, bounce_folder_name) {
+        match process_project(conn, &project.path, &project.name, &project.genre_label, bounce_folder_name, app_data_dir) {
             Ok(is_new) => {
                 if is_new { summary.new += 1; } else { summary.updated += 1; }
             }

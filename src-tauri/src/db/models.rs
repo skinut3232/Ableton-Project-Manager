@@ -21,6 +21,12 @@ pub struct Project {
     pub created_at: String,
     pub updated_at: String,
     pub tags: Vec<Tag>,
+    pub cover_type: String,
+    pub cover_locked: bool,
+    pub cover_seed: Option<String>,
+    pub cover_style_preset: String,
+    pub cover_asset_id: Option<i64>,
+    pub cover_updated_at: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -133,6 +139,17 @@ pub struct Asset {
     pub tags: String,
     pub created_at: String,
     pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct MoodBoardPin {
+    pub id: i64,
+    pub project_id: i64,
+    pub asset_id: i64,
+    pub sort_order: i64,
+    pub created_at: String,
+    pub stored_path: String,
+    pub original_filename: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -7,9 +7,12 @@ interface AssetCardProps {
   asset: ProjectAsset;
   onUpdateTags: (tags: string) => void;
   onDelete: () => void;
+  isPinned?: boolean;
+  onTogglePin?: () => void;
+  onSetAsCover?: () => void;
 }
 
-export function AssetCard({ asset, onUpdateTags, onDelete }: AssetCardProps) {
+export function AssetCard({ asset, onUpdateTags, onDelete, isPinned, onTogglePin, onSetAsCover }: AssetCardProps) {
   const [editingTags, setEditingTags] = useState(false);
   const [tagValue, setTagValue] = useState(asset.tags);
 
@@ -21,12 +24,10 @@ export function AssetCard({ asset, onUpdateTags, onDelete }: AssetCardProps) {
   };
 
   const handleOpen = () => {
-    // Open the file with the system default application
     openUrl(asset.stored_path);
   };
 
   const handleReveal = () => {
-    // Open the parent directory in Explorer
     const dir = asset.stored_path.replace(/[/\\][^/\\]+$/, '');
     openUrl(dir);
   };
@@ -34,7 +35,7 @@ export function AssetCard({ asset, onUpdateTags, onDelete }: AssetCardProps) {
   return (
     <div className="rounded-lg border border-neutral-700 bg-neutral-800/50 overflow-hidden group">
       {/* Preview area */}
-      <div className="h-32 bg-neutral-900 flex items-center justify-center">
+      <div className="h-32 bg-neutral-900 flex items-center justify-center relative">
         {asset.asset_type === 'image' ? (
           <img
             src={convertFileSrc(asset.stored_path)}
@@ -49,6 +50,14 @@ export function AssetCard({ asset, onUpdateTags, onDelete }: AssetCardProps) {
           <svg className="h-12 w-12 text-neutral-600" fill="currentColor" viewBox="0 0 24 24">
             <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" />
           </svg>
+        )}
+        {/* Pin indicator */}
+        {isPinned && (
+          <div className="absolute top-1 left-1 bg-blue-600/80 rounded-full p-0.5" title="Pinned to Mood Board">
+            <svg className="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+          </div>
         )}
       </div>
 
@@ -96,7 +105,7 @@ export function AssetCard({ asset, onUpdateTags, onDelete }: AssetCardProps) {
         )}
 
         {/* Actions */}
-        <div className="flex gap-1 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex flex-wrap gap-1 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={handleOpen}
             className="rounded bg-neutral-700 px-2 py-0.5 text-[10px] text-neutral-300 hover:bg-neutral-600 transition-colors"
@@ -109,6 +118,26 @@ export function AssetCard({ asset, onUpdateTags, onDelete }: AssetCardProps) {
           >
             Reveal
           </button>
+          {asset.asset_type === 'image' && onTogglePin && (
+            <button
+              onClick={onTogglePin}
+              className={`rounded px-2 py-0.5 text-[10px] transition-colors ${
+                isPinned
+                  ? 'bg-blue-600/20 text-blue-300 hover:bg-blue-600/30'
+                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+              }`}
+            >
+              {isPinned ? 'Unpin' : 'Pin'}
+            </button>
+          )}
+          {onSetAsCover && (
+            <button
+              onClick={onSetAsCover}
+              className="rounded bg-neutral-700 px-2 py-0.5 text-[10px] text-neutral-300 hover:bg-neutral-600 transition-colors"
+            >
+              Set Cover
+            </button>
+          )}
           <button
             onClick={onDelete}
             className="rounded bg-red-600/20 px-2 py-0.5 text-[10px] text-red-400 hover:bg-red-600/30 transition-colors"

@@ -20,6 +20,12 @@ export interface Project {
   created_at: string;
   updated_at: string;
   tags: Tag[];
+  cover_type: 'none' | 'generated' | 'uploaded' | 'moodboard';
+  cover_locked: boolean;
+  cover_seed: string | null;
+  cover_style_preset: string;
+  cover_asset_id: number | null;
+  cover_updated_at: string | null;
 }
 
 export interface ProjectDetail {
@@ -131,6 +137,16 @@ export interface ProjectReference {
   notes: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface MoodBoardPin {
+  id: number;
+  project_id: number;
+  asset_id: number;
+  sort_order: number;
+  created_at: string;
+  stored_path: string;
+  original_filename: string;
 }
 
 export type AssetType = 'image' | 'audio' | 'generic';

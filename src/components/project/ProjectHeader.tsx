@@ -1,10 +1,10 @@
-import { convertFileSrc } from '@tauri-apps/api/core';
-import { open } from '@tauri-apps/plugin-dialog';
 import { RatingStars } from '../ui/RatingStars';
 import { Button } from '../ui/Button';
+import { CoverImage } from '../ui/CoverImage';
+import { CoverLightbox } from '../cover/CoverLightbox';
+import { ChangeCoverModal } from '../cover/ChangeCoverModal';
 import { PROJECT_STATUSES, MUSICAL_KEYS } from '../../lib/constants';
 import { tauriInvoke } from '../../hooks/useTauriInvoke';
-import { useQueryClient } from '@tanstack/react-query';
 import type { Project } from '../../types';
 import { useState, useRef, useEffect } from 'react';
 
@@ -14,8 +14,8 @@ interface ProjectHeaderProps {
 }
 
 export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
-  const queryClient = useQueryClient();
-  const [uploading, setUploading] = useState(false);
+  const [showLightbox, setShowLightbox] = useState(false);
+  const [showCoverModal, setShowCoverModal] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(project.name);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -41,51 +41,6 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
     }
   };
 
-  const handleArtworkUpload = async () => {
-    const selected = await open({
-      multiple: false,
-      title: 'Select Artwork',
-      filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg'] }],
-    });
-    if (!selected) return;
-
-    setUploading(true);
-    try {
-      await tauriInvoke('upload_artwork', {
-        projectId: project.id,
-        sourcePath: selected as string,
-      });
-      queryClient.invalidateQueries({ queryKey: ['project', project.id] });
-    } catch (err) {
-      console.error('Artwork upload failed:', err);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleArtworkDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (!file || !file.type.startsWith('image/')) return;
-
-    // Use the file path from the drop event
-    const path = (file as any).path;
-    if (!path) return;
-
-    setUploading(true);
-    try {
-      await tauriInvoke('upload_artwork', {
-        projectId: project.id,
-        sourcePath: path,
-      });
-      queryClient.invalidateQueries({ queryKey: ['project', project.id] });
-    } catch (err) {
-      console.error('Artwork upload failed:', err);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleOpenAbleton = async () => {
     if (!project.current_set_path) return;
     try {
@@ -98,28 +53,34 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
   return (
     <div className="flex gap-6">
       {/* Artwork */}
-      <div
-        className="h-48 w-48 shrink-0 rounded-lg bg-neutral-700 overflow-hidden cursor-pointer relative group"
-        onClick={handleArtworkUpload}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleArtworkDrop}
-      >
-        {project.artwork_path ? (
-          <img
-            src={convertFileSrc(project.artwork_path)}
-            alt={project.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-neutral-500">
-            <span className="text-4xl mb-2">&#9835;</span>
-            <span className="text-xs">Click or drop image</span>
-          </div>
-        )}
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <span className="text-xs text-white">{uploading ? 'Uploading...' : 'Change artwork'}</span>
+      <div className="relative group">
+        <CoverImage
+          project={project}
+          size="lg"
+          className="shrink-0 rounded-lg"
+          onClick={() => setShowLightbox(true)}
+          showLock
+        />
+        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg cursor-pointer"
+          onClick={() => setShowLightbox(true)}
+        >
+          <span className="text-xs text-white">View cover</span>
         </div>
       </div>
+
+      {showLightbox && (
+        <CoverLightbox
+          project={project}
+          onClose={() => setShowLightbox(false)}
+          onChangeCover={() => { setShowLightbox(false); setShowCoverModal(true); }}
+        />
+      )}
+      {showCoverModal && (
+        <ChangeCoverModal
+          project={project}
+          onClose={() => setShowCoverModal(false)}
+        />
+      )}
 
       {/* Info */}
       <div className="flex-1 min-w-0">

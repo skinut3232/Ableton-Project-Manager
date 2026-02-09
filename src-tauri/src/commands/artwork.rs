@@ -19,6 +19,8 @@ pub fn upload_artwork(
 
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     queries::set_artwork_path(&conn, project_id, &thumbnail_str)?;
+    // Sync cover_type so old upload path stays consistent with cover system
+    queries::set_cover(&conn, project_id, "uploaded", Some(&thumbnail_str), None, None, None)?;
 
     Ok(thumbnail_str)
 }

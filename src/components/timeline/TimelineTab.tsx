@@ -6,11 +6,9 @@ import { useAudioStore } from '../../stores/audioStore';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
 import { useMarkers, useCreateMarker, useUpdateMarker, useDeleteMarker } from '../../hooks/useMarkers';
 import { useCreateTask } from '../../hooks/useTasks';
-import { useUpdateProject } from '../../hooks/useProjects';
 import { MARKER_TYPES } from '../../lib/constants';
 import { MarkerPopover } from './MarkerPopover';
 import { MarkerList } from './MarkerList';
-import { NotesEditor } from '../project/NotesEditor';
 import type { Bounce, Project, Marker, MarkerType } from '../../types';
 
 interface TimelineTabProps {
@@ -33,8 +31,6 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
   const audioElement = useAudioStore((s) => s.audioElement);
   const currentBounce = useAudioStore((s) => s.currentBounce);
   const { play, seek } = useAudioPlayer();
-  const updateProject = useUpdateProject();
-
   const { data: markers = [] } = useMarkers(project.id);
   const createMarker = useCreateMarker(project.id);
   const updateMarker = useUpdateMarker(project.id);
@@ -377,13 +373,6 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
             position: { x: rect.right + 8, y: rect.top },
           });
         }}
-      />
-
-      {/* Notes */}
-      <NotesEditor
-        projectId={project.id}
-        notes={project.notes}
-        onSave={(notes) => updateProject.mutate({ id: project.id, notes })}
       />
 
       {/* Marker Popover */}

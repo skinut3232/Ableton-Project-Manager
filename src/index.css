@@ -1,1 +1,150 @@
 @import "tailwindcss";
+
+/* TipTap WYSIWYG Editor — Dark Theme */
+.tiptap {
+  outline: none;
+  color: white;
+  font-size: 0.875rem;
+  line-height: 1.625;
+  caret-color: #3b82f6;
+  min-height: 320px;
+}
+
+.tiptap > *:first-child {
+  margin-top: 0;
+}
+
+.tiptap h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.tiptap h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.375rem;
+  line-height: 1.3;
+}
+
+.tiptap h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+}
+
+.tiptap p {
+  margin-bottom: 0.5rem;
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tiptap ul {
+  list-style-type: disc;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+}
+
+.tiptap li {
+  margin-bottom: 0.125rem;
+}
+
+.tiptap li p {
+  margin-bottom: 0;
+}
+
+/* Task list (checkboxes) */
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.tiptap ul[data-type="taskList"] li > label {
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+.tiptap ul[data-type="taskList"] li > label input[type="checkbox"] {
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.tiptap ul[data-type="taskList"] li > div {
+  flex: 1;
+}
+
+.tiptap ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  color: #737373;
+}
+
+/* Inline code */
+.tiptap code {
+  color: #f472b6;
+  background-color: rgba(244, 114, 182, 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-size: 0.8125rem;
+}
+
+/* Code block */
+.tiptap pre {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  overflow-x: auto;
+}
+
+.tiptap pre code {
+  color: #d4d4d4;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.8125rem;
+}
+
+/* Blockquote */
+.tiptap blockquote {
+  border-left: 3px solid #3b82f6;
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+  color: #a3a3a3;
+}
+
+/* Horizontal rule */
+.tiptap hr {
+  border: none;
+  border-top: 1px solid #525252;
+  margin: 1rem 0;
+}
+
+/* Placeholder */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #6b7280;
+  pointer-events: none;
+  height: 0;
+}

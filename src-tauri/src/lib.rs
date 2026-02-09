@@ -2,6 +2,7 @@ mod db;
 mod scanner;
 mod commands;
 mod artwork;
+mod cover_gen;
 
 use db::DbState;
 use std::sync::Mutex;
@@ -72,6 +73,15 @@ pub fn run() {
             commands::assets::upload_asset,
             commands::assets::update_asset,
             commands::assets::delete_asset,
+            commands::covers::generate_cover,
+            commands::covers::set_cover_from_upload,
+            commands::covers::set_cover_from_moodboard,
+            commands::covers::toggle_cover_lock,
+            commands::covers::remove_cover,
+            commands::covers::get_mood_board,
+            commands::covers::pin_to_mood_board,
+            commands::covers::unpin_from_mood_board,
+            commands::covers::reorder_mood_board,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

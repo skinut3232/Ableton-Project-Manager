@@ -108,6 +108,69 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
             ).map_err(|e| format!("Migration v4 failed: {}", e))?;
             log::info!("Migrated database to schema version 4");
         }
+
+        // Migration v4 → v5: add cover columns to projects + mood_board table
+        // Also check column existence as a safety net (handles partial migration
+        // where version was bumped but ALTER TABLEs didn't apply)
+        let has_cover_type: bool = conn
+            .query_row(
+                "SELECT COUNT(*) FROM pragma_table_info('projects') WHERE name='cover_type'",
+                [],
+                |row| row.get::<_, i64>(0),
+            )
+            .map(|count| count > 0)
+            .unwrap_or(false);
+
+        if version < 5 || !has_cover_type {
+            // Run each ALTER TABLE individually so partial failures don't block the rest
+            let alter_stmts = [
+                "ALTER TABLE projects ADD COLUMN cover_type TEXT NOT NULL DEFAULT 'none'",
+                "ALTER TABLE projects ADD COLUMN cover_locked INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE projects ADD COLUMN cover_seed TEXT",
+                "ALTER TABLE projects ADD COLUMN cover_style_preset TEXT NOT NULL DEFAULT 'default'",
+                "ALTER TABLE projects ADD COLUMN cover_asset_id INTEGER REFERENCES assets(id) ON DELETE SET NULL",
+                "ALTER TABLE projects ADD COLUMN cover_updated_at TEXT",
+            ];
+            for stmt in &alter_stmts {
+                conn.execute(stmt, []).ok(); // Ignore "duplicate column" errors
+            }
+
+            conn.execute_batch(
+                "CREATE TABLE IF NOT EXISTS mood_board (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                     asset_id INTEGER NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
+                     sort_order INTEGER NOT NULL DEFAULT 0,
+                     created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                     UNIQUE(project_id, asset_id)
+                 );
+                 CREATE INDEX IF NOT EXISTS idx_mood_board_project_id ON mood_board(project_id);
+
+                 -- Backfill existing artwork as 'uploaded'
+                 UPDATE projects SET cover_type = 'uploaded' WHERE artwork_path IS NOT NULL AND artwork_path != '';
+
+                 INSERT OR IGNORE INTO schema_version (version) VALUES (5);"
+            ).map_err(|e| format!("Migration v5 failed: {}", e))?;
+            log::info!("Migrated database to schema version 5 (cover columns + mood_board)");
+        }
+
+        // Migration v5 → v6: standalone FTS table (strip HTML from notes before indexing)
+        if version < 6 {
+            // Drop the content-sync triggers (they insert raw HTML into FTS)
+            conn.execute_batch(
+                "DROP TRIGGER IF EXISTS projects_ai;
+                 DROP TRIGGER IF EXISTS projects_ad;
+                 DROP TRIGGER IF EXISTS projects_au;
+                 DROP TABLE IF EXISTS projects_fts;
+                 CREATE VIRTUAL TABLE projects_fts USING fts5(name, genre_label, notes, tags_text);
+                 INSERT INTO schema_version (version) VALUES (6);"
+            ).map_err(|e| format!("Migration v6 failed: {}", e))?;
+
+            // Rebuild entire FTS index with HTML-stripped notes
+            crate::db::queries::rebuild_all_fts(conn)?;
+
+            log::info!("Migrated database to schema version 6 (standalone FTS, HTML stripping)");
+        }
     }
 
     Ok(())

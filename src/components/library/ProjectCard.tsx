@@ -1,7 +1,7 @@
-import { convertFileSrc } from '@tauri-apps/api/core';
 import { StatusBadge } from '../ui/StatusBadge';
 import { RatingStars } from '../ui/RatingStars';
 import { PlayButton } from '../audio/PlayButton';
+import { CoverImage } from '../ui/CoverImage';
 import type { Project, ProjectStatus } from '../../types';
 
 interface ProjectCardProps {
@@ -26,16 +26,8 @@ export function ProjectCard({ project, index, isFocused, onClick }: ProjectCardP
       }`}
     >
       {/* Artwork */}
-      <div className="relative h-36 rounded-md bg-neutral-700 mb-3 overflow-hidden">
-        {project.artwork_path ? (
-          <img
-            src={convertFileSrc(project.artwork_path)}
-            alt={project.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full text-3xl text-neutral-600">♪</div>
-        )}
+      <div className="relative mb-3">
+        <CoverImage project={project} size="md" className="rounded-md" />
         {/* Play button overlay */}
         <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
           <PlayButton projectId={project.id} project={project} />

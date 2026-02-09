@@ -9,10 +9,12 @@ import { TasksTab } from '../components/tasks/TasksTab';
 import { ReferencesTab } from '../components/references/ReferencesTab';
 import { AssetsTab } from '../components/assets/AssetsTab';
 import { InsightsTab } from '../components/insights/InsightsTab';
+import { RichNotesEditor } from '../components/project/RichNotesEditor';
 import { Button } from '../components/ui/Button';
 
 const TABS = [
   { key: 'timeline', label: 'Timeline' },
+  { key: 'notes', label: 'Notes' },
   { key: 'tasks', label: 'Tasks' },
   { key: 'references', label: 'References' },
   { key: 'assets', label: 'Assets' },
@@ -92,6 +94,13 @@ export function ProjectDetailView() {
       <div className="min-h-[400px]">
         {activeTab === 'timeline' && (
           <TimelineTab project={project} bounces={bounces} />
+        )}
+        {activeTab === 'notes' && (
+          <RichNotesEditor
+            projectId={project.id}
+            notes={project.notes}
+            onSave={(notes) => updateProject.mutate({ id: project.id, notes })}
+          />
         )}
         {activeTab === 'tasks' && (
           <TasksTab projectId={project.id} />

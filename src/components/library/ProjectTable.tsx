@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { convertFileSrc } from '@tauri-apps/api/core';
 import { useLibraryStore } from '../../stores/libraryStore';
 import { TABLE_COLUMNS, type TableColumnKey } from '../../lib/constants';
 import { StatusBadge } from '../ui/StatusBadge';
 import { RatingStars } from '../ui/RatingStars';
 import { PlayButton } from '../audio/PlayButton';
+import { CoverImage } from '../ui/CoverImage';
 import type { Project, ProjectStatus } from '../../types';
 
 interface ProjectTableProps {
@@ -119,17 +119,7 @@ function CellRenderer({ column, project }: { column: TableColumnKey; project: Pr
     case 'name':
       return (
         <div className="flex items-center gap-2 min-w-0">
-          <div className="h-7 w-7 shrink-0 rounded bg-neutral-700 overflow-hidden">
-            {project.artwork_path ? (
-              <img
-                src={convertFileSrc(project.artwork_path)}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-xs text-neutral-600">♪</div>
-            )}
-          </div>
+          <CoverImage project={project} size="sm" className="shrink-0 rounded" />
           <span className="text-white font-medium truncate">{project.name}</span>
           {project.in_rotation && (
             <span className="shrink-0 h-2 w-2 rounded-full bg-green-400" title="In Rotation" />

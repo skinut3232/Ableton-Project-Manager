@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT INTO schema_version (version) VALUES (4);
+INSERT INTO schema_version (version) VALUES (6);
 
 -- Settings (key-value pairs)
 CREATE TABLE IF NOT EXISTS settings (
@@ -35,7 +35,13 @@ CREATE TABLE IF NOT EXISTS projects (
     progress INTEGER DEFAULT NULL,
     last_worked_on TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    cover_type TEXT NOT NULL DEFAULT 'none',
+    cover_locked INTEGER NOT NULL DEFAULT 0,
+    cover_seed TEXT,
+    cover_style_preset TEXT NOT NULL DEFAULT 'default',
+    cover_asset_id INTEGER REFERENCES assets(id) ON DELETE SET NULL,
+    cover_updated_at TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
@@ -148,30 +154,21 @@ CREATE TABLE IF NOT EXISTS assets (
 
 CREATE INDEX IF NOT EXISTS idx_assets_project_id ON assets(project_id);
 
--- FTS5 Virtual Table
+-- Mood Board (pinned images from assets)
+CREATE TABLE IF NOT EXISTS mood_board (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    asset_id INTEGER NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(project_id, asset_id)
+);
+CREATE INDEX IF NOT EXISTS idx_mood_board_project_id ON mood_board(project_id);
+
+-- FTS5 Virtual Table (standalone — Rust manages inserts/deletes with HTML stripping)
 CREATE VIRTUAL TABLE IF NOT EXISTS projects_fts USING fts5(
     name,
     genre_label,
     notes,
-    tags_text,
-    content='projects',
-    content_rowid='id'
+    tags_text
 );
-
--- FTS5 Triggers
-CREATE TRIGGER IF NOT EXISTS projects_ai AFTER INSERT ON projects BEGIN
-    INSERT INTO projects_fts(rowid, name, genre_label, notes, tags_text)
-    VALUES (new.id, new.name, new.genre_label, new.notes, '');
-END;
-
-CREATE TRIGGER IF NOT EXISTS projects_ad AFTER DELETE ON projects BEGIN
-    INSERT INTO projects_fts(projects_fts, rowid, name, genre_label, notes, tags_text)
-    VALUES ('delete', old.id, old.name, old.genre_label, old.notes, '');
-END;
-
-CREATE TRIGGER IF NOT EXISTS projects_au AFTER UPDATE ON projects BEGIN
-    INSERT INTO projects_fts(projects_fts, rowid, name, genre_label, notes, tags_text)
-    VALUES ('delete', old.id, old.name, old.genre_label, old.notes, '');
-    INSERT INTO projects_fts(rowid, name, genre_label, notes, tags_text)
-    VALUES (new.id, new.name, new.genre_label, new.notes, '');
-END;
