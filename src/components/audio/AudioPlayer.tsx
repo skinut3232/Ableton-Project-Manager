@@ -1,8 +1,13 @@
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
+import { useAudioStore } from '../../stores/audioStore';
 
 export function AudioPlayer() {
   const { currentBounce, currentProject, isPlaying, progress, duration, togglePlayPause, seek, stop } = useAudioPlayer();
+  const volume = useAudioStore(s => s.volume);
+  const loop = useAudioStore(s => s.loop);
+  const setVolume = useAudioStore(s => s.setVolume);
+  const setLoop = useAudioStore(s => s.setLoop);
 
   if (!currentBounce || !currentProject) return null;
 
@@ -26,7 +31,7 @@ export function AudioPlayer() {
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-neutral-600 text-sm">♪</div>
+          <div className="flex items-center justify-center h-full text-neutral-600 text-sm">&#9835;</div>
         )}
       </div>
 
@@ -70,6 +75,38 @@ export function AudioPlayer() {
         </div>
         <span className="text-[10px] text-neutral-500 w-10">{formatTime(duration)}</span>
       </div>
+
+      {/* Volume */}
+      <div className="flex items-center gap-1">
+        <svg className="h-4 w-4 text-neutral-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8.5v7a4.49 4.49 0 002.5-3.5z" />
+        </svg>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={volume}
+          onChange={(e) => setVolume(parseFloat(e.target.value))}
+          className="w-16 h-1 rounded-full appearance-none cursor-pointer bg-neutral-600
+            [&::-webkit-slider-thumb]:appearance-none
+            [&::-webkit-slider-thumb]:h-3
+            [&::-webkit-slider-thumb]:w-3
+            [&::-webkit-slider-thumb]:rounded-full
+            [&::-webkit-slider-thumb]:bg-white"
+        />
+      </div>
+
+      {/* Loop toggle */}
+      <button
+        onClick={() => setLoop(!loop)}
+        className={`transition-colors ${loop ? 'text-blue-400' : 'text-neutral-500 hover:text-white'}`}
+        title={loop ? 'Loop on' : 'Loop off'}
+      >
+        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" />
+        </svg>
+      </button>
 
       {/* Stop */}
       <button onClick={stop} className="text-neutral-500 hover:text-white transition-colors" title="Stop">

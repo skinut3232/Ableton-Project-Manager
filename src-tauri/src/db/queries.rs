@@ -566,3 +566,466 @@ pub fn resolve_session(conn: &Connection, session_id: i64, save: bool, note: &st
 
 // Needed by rusqlite for optional queries
 use rusqlite::OptionalExtension;
+
+// ── Marker queries ──
+
+pub fn get_markers_for_project(conn: &Connection, project_id: i64) -> Result<Vec<Marker>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, project_id, bounce_id, timestamp_seconds, type, text, created_at, updated_at \
+             FROM markers WHERE project_id = ?1 ORDER BY timestamp_seconds ASC"
+        )
+        .map_err(|e| e.to_string())?;
+    let markers = stmt
+        .query_map(params![project_id], |row| {
+            Ok(Marker {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                bounce_id: row.get(2)?,
+                timestamp_seconds: row.get(3)?,
+                marker_type: row.get(4)?,
+                text: row.get(5)?,
+                created_at: row.get(6)?,
+                updated_at: row.get(7)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(markers)
+}
+
+pub fn create_marker(
+    conn: &Connection,
+    project_id: i64,
+    bounce_id: Option<i64>,
+    timestamp_seconds: f64,
+    marker_type: &str,
+    text: &str,
+) -> Result<Marker, String> {
+    conn.execute(
+        "INSERT INTO markers (project_id, bounce_id, timestamp_seconds, type, text) VALUES (?1, ?2, ?3, ?4, ?5)",
+        params![project_id, bounce_id, timestamp_seconds, marker_type, text],
+    )
+    .map_err(|e| e.to_string())?;
+    let id = conn.last_insert_rowid();
+    conn.query_row(
+        "SELECT id, project_id, bounce_id, timestamp_seconds, type, text, created_at, updated_at FROM markers WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(Marker {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                bounce_id: row.get(2)?,
+                timestamp_seconds: row.get(3)?,
+                marker_type: row.get(4)?,
+                text: row.get(5)?,
+                created_at: row.get(6)?,
+                updated_at: row.get(7)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn update_marker(
+    conn: &Connection,
+    id: i64,
+    timestamp_seconds: Option<f64>,
+    marker_type: Option<String>,
+    text: Option<String>,
+) -> Result<Marker, String> {
+    if let Some(ts) = timestamp_seconds {
+        conn.execute(
+            "UPDATE markers SET timestamp_seconds = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![ts, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(ref mt) = marker_type {
+        conn.execute(
+            "UPDATE markers SET type = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![mt, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(ref t) = text {
+        conn.execute(
+            "UPDATE markers SET text = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![t, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    conn.query_row(
+        "SELECT id, project_id, bounce_id, timestamp_seconds, type, text, created_at, updated_at FROM markers WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(Marker {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                bounce_id: row.get(2)?,
+                timestamp_seconds: row.get(3)?,
+                marker_type: row.get(4)?,
+                text: row.get(5)?,
+                created_at: row.get(6)?,
+                updated_at: row.get(7)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn delete_marker(conn: &Connection, id: i64) -> Result<(), String> {
+    conn.execute("DELETE FROM markers WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+// ── Task queries ──
+
+pub fn get_tasks_for_project(conn: &Connection, project_id: i64) -> Result<Vec<ProjectTask>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, project_id, title, done, category, linked_marker_id, linked_timestamp_seconds, \
+             created_at, updated_at FROM tasks WHERE project_id = ?1 \
+             ORDER BY done ASC, category ASC, created_at DESC"
+        )
+        .map_err(|e| e.to_string())?;
+    let tasks = stmt
+        .query_map(params![project_id], |row| {
+            Ok(ProjectTask {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                title: row.get(2)?,
+                done: row.get::<_, i64>(3)? != 0,
+                category: row.get(4)?,
+                linked_marker_id: row.get(5)?,
+                linked_timestamp_seconds: row.get(6)?,
+                created_at: row.get(7)?,
+                updated_at: row.get(8)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(tasks)
+}
+
+pub fn create_task(
+    conn: &Connection,
+    project_id: i64,
+    title: &str,
+    category: &str,
+    linked_marker_id: Option<i64>,
+    linked_timestamp_seconds: Option<f64>,
+) -> Result<ProjectTask, String> {
+    conn.execute(
+        "INSERT INTO tasks (project_id, title, category, linked_marker_id, linked_timestamp_seconds) \
+         VALUES (?1, ?2, ?3, ?4, ?5)",
+        params![project_id, title, category, linked_marker_id, linked_timestamp_seconds],
+    )
+    .map_err(|e| e.to_string())?;
+    let id = conn.last_insert_rowid();
+    conn.query_row(
+        "SELECT id, project_id, title, done, category, linked_marker_id, linked_timestamp_seconds, \
+         created_at, updated_at FROM tasks WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(ProjectTask {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                title: row.get(2)?,
+                done: row.get::<_, i64>(3)? != 0,
+                category: row.get(4)?,
+                linked_marker_id: row.get(5)?,
+                linked_timestamp_seconds: row.get(6)?,
+                created_at: row.get(7)?,
+                updated_at: row.get(8)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn update_task(
+    conn: &Connection,
+    id: i64,
+    title: Option<String>,
+    done: Option<bool>,
+    category: Option<String>,
+    linked_marker_id: Option<i64>,
+    linked_timestamp_seconds: Option<f64>,
+) -> Result<ProjectTask, String> {
+    if let Some(ref t) = title {
+        conn.execute(
+            "UPDATE tasks SET title = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![t, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(d) = done {
+        conn.execute(
+            "UPDATE tasks SET done = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![d as i64, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(ref c) = category {
+        conn.execute(
+            "UPDATE tasks SET category = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![c, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(mid) = linked_marker_id {
+        conn.execute(
+            "UPDATE tasks SET linked_marker_id = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![mid, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(ts) = linked_timestamp_seconds {
+        conn.execute(
+            "UPDATE tasks SET linked_timestamp_seconds = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![ts, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    conn.query_row(
+        "SELECT id, project_id, title, done, category, linked_marker_id, linked_timestamp_seconds, \
+         created_at, updated_at FROM tasks WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(ProjectTask {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                title: row.get(2)?,
+                done: row.get::<_, i64>(3)? != 0,
+                category: row.get(4)?,
+                linked_marker_id: row.get(5)?,
+                linked_timestamp_seconds: row.get(6)?,
+                created_at: row.get(7)?,
+                updated_at: row.get(8)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn delete_task(conn: &Connection, id: i64) -> Result<(), String> {
+    conn.execute("DELETE FROM tasks WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+// ── Reference queries ──
+
+pub fn get_references_for_project(conn: &Connection, project_id: i64) -> Result<Vec<ProjectReference>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, project_id, url, title, notes, created_at, updated_at \
+             FROM project_references WHERE project_id = ?1 ORDER BY created_at DESC"
+        )
+        .map_err(|e| e.to_string())?;
+    let refs = stmt
+        .query_map(params![project_id], |row| {
+            Ok(ProjectReference {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                url: row.get(2)?,
+                title: row.get(3)?,
+                notes: row.get(4)?,
+                created_at: row.get(5)?,
+                updated_at: row.get(6)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(refs)
+}
+
+pub fn create_reference(
+    conn: &Connection,
+    project_id: i64,
+    url: &str,
+    title: Option<String>,
+    notes: &str,
+) -> Result<ProjectReference, String> {
+    conn.execute(
+        "INSERT INTO project_references (project_id, url, title, notes) VALUES (?1, ?2, ?3, ?4)",
+        params![project_id, url, title, notes],
+    )
+    .map_err(|e| e.to_string())?;
+    let id = conn.last_insert_rowid();
+    conn.query_row(
+        "SELECT id, project_id, url, title, notes, created_at, updated_at FROM project_references WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(ProjectReference {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                url: row.get(2)?,
+                title: row.get(3)?,
+                notes: row.get(4)?,
+                created_at: row.get(5)?,
+                updated_at: row.get(6)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn update_reference(
+    conn: &Connection,
+    id: i64,
+    url: Option<String>,
+    title: Option<String>,
+    notes: Option<String>,
+) -> Result<ProjectReference, String> {
+    if let Some(ref u) = url {
+        conn.execute(
+            "UPDATE project_references SET url = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![u, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(ref t) = title {
+        conn.execute(
+            "UPDATE project_references SET title = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![t, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if let Some(ref n) = notes {
+        conn.execute(
+            "UPDATE project_references SET notes = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![n, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    conn.query_row(
+        "SELECT id, project_id, url, title, notes, created_at, updated_at FROM project_references WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(ProjectReference {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                url: row.get(2)?,
+                title: row.get(3)?,
+                notes: row.get(4)?,
+                created_at: row.get(5)?,
+                updated_at: row.get(6)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn delete_reference(conn: &Connection, id: i64) -> Result<(), String> {
+    conn.execute("DELETE FROM project_references WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+// ── Asset queries ──
+
+pub fn get_assets_for_project(conn: &Connection, project_id: i64) -> Result<Vec<Asset>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, project_id, original_filename, stored_path, asset_type, tags, created_at, updated_at \
+             FROM assets WHERE project_id = ?1 ORDER BY created_at DESC"
+        )
+        .map_err(|e| e.to_string())?;
+    let assets = stmt
+        .query_map(params![project_id], |row| {
+            Ok(Asset {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                original_filename: row.get(2)?,
+                stored_path: row.get(3)?,
+                asset_type: row.get(4)?,
+                tags: row.get(5)?,
+                created_at: row.get(6)?,
+                updated_at: row.get(7)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(assets)
+}
+
+pub fn create_asset(
+    conn: &Connection,
+    project_id: i64,
+    original_filename: &str,
+    stored_path: &str,
+    asset_type: &str,
+) -> Result<Asset, String> {
+    conn.execute(
+        "INSERT INTO assets (project_id, original_filename, stored_path, asset_type) VALUES (?1, ?2, ?3, ?4)",
+        params![project_id, original_filename, stored_path, asset_type],
+    )
+    .map_err(|e| e.to_string())?;
+    let id = conn.last_insert_rowid();
+    conn.query_row(
+        "SELECT id, project_id, original_filename, stored_path, asset_type, tags, created_at, updated_at FROM assets WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(Asset {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                original_filename: row.get(2)?,
+                stored_path: row.get(3)?,
+                asset_type: row.get(4)?,
+                tags: row.get(5)?,
+                created_at: row.get(6)?,
+                updated_at: row.get(7)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn update_asset(
+    conn: &Connection,
+    id: i64,
+    tags: Option<String>,
+) -> Result<Asset, String> {
+    if let Some(ref t) = tags {
+        conn.execute(
+            "UPDATE assets SET tags = ?1, updated_at = datetime('now') WHERE id = ?2",
+            params![t, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    conn.query_row(
+        "SELECT id, project_id, original_filename, stored_path, asset_type, tags, created_at, updated_at FROM assets WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(Asset {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                original_filename: row.get(2)?,
+                stored_path: row.get(3)?,
+                asset_type: row.get(4)?,
+                tags: row.get(5)?,
+                created_at: row.get(6)?,
+                updated_at: row.get(7)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn delete_asset(conn: &Connection, id: i64) -> Result<Option<String>, String> {
+    // Return stored_path so the caller can delete the file
+    let stored_path: Option<String> = conn
+        .query_row("SELECT stored_path FROM assets WHERE id = ?1", params![id], |row| row.get(0))
+        .optional()
+        .map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM assets WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(stored_path)
+}

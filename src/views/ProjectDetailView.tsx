@@ -1,13 +1,25 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProjectDetail, useUpdateProject } from '../hooks/useProjects';
 import { ProjectHeader } from '../components/project/ProjectHeader';
-import { BouncesList } from '../components/project/BouncesList';
-import { CurrentSetSection } from '../components/project/CurrentSetSection';
-import { SessionTimer } from '../components/project/SessionTimer';
-import { SessionHistory } from '../components/project/SessionHistory';
-import { NotesEditor } from '../components/project/NotesEditor';
 import { TagInput } from '../components/project/TagInput';
+import { CurrentSetSection } from '../components/project/CurrentSetSection';
+import { TimelineTab } from '../components/timeline/TimelineTab';
+import { TasksTab } from '../components/tasks/TasksTab';
+import { ReferencesTab } from '../components/references/ReferencesTab';
+import { AssetsTab } from '../components/assets/AssetsTab';
+import { InsightsTab } from '../components/insights/InsightsTab';
 import { Button } from '../components/ui/Button';
+
+const TABS = [
+  { key: 'timeline', label: 'Timeline' },
+  { key: 'tasks', label: 'Tasks' },
+  { key: 'references', label: 'References' },
+  { key: 'assets', label: 'Assets' },
+  { key: 'insights', label: 'Insights' },
+] as const;
+
+type TabKey = (typeof TABS)[number]['key'];
 
 export function ProjectDetailView() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +27,7 @@ export function ProjectDetailView() {
   const projectId = parseInt(id || '0');
   const { data: detail, isLoading, error } = useProjectDetail(projectId);
   const updateProject = useUpdateProject();
+  const [activeTab, setActiveTab] = useState<TabKey>('timeline');
 
   if (isLoading) {
     return <div className="text-neutral-400">Loading project...</div>;
@@ -32,7 +45,7 @@ export function ProjectDetailView() {
   const { project, sets, bounces, sessions } = detail;
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="space-y-4">
       {/* Back button */}
       <button
         onClick={() => navigate('/')}
@@ -41,31 +54,61 @@ export function ProjectDetailView() {
         &larr; Back to Library
       </button>
 
-      <ProjectHeader project={project} onUpdate={(field, value) => {
-        updateProject.mutate({ id: project.id, [field]: value });
-      }} />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column: main content */}
-        <div className="lg:col-span-2 space-y-6">
-          <TagInput projectId={project.id} tags={project.tags} />
-          <NotesEditor
-            projectId={project.id}
-            notes={project.notes}
-            onSave={(notes) => updateProject.mutate({ id: project.id, notes })}
-          />
-          <BouncesList bounces={bounces} project={project} />
+      {/* Header area: ProjectHeader + CurrentSetSection inline */}
+      <div className="flex gap-6 items-start">
+        <div className="flex-1 min-w-0">
+          <ProjectHeader project={project} onUpdate={(field, value) => {
+            updateProject.mutate({ id: project.id, [field]: value });
+          }} />
         </div>
+        <div className="w-56 shrink-0">
+          <CurrentSetSection project={project} sets={sets} />
+        </div>
+      </div>
 
-        {/* Right column: sidebar */}
-        <div className="space-y-6">
-          <CurrentSetSection
+      {/* Tags (always visible, not inside a tab) */}
+      <TagInput projectId={project.id} tags={project.tags} />
+
+      {/* Tab bar */}
+      <div className="border-b border-neutral-700">
+        <nav className="flex gap-1">
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                activeTab === tab.key
+                  ? 'border-blue-500 text-blue-400'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Tab content */}
+      <div className="min-h-[400px]">
+        {activeTab === 'timeline' && (
+          <TimelineTab project={project} bounces={bounces} />
+        )}
+        {activeTab === 'tasks' && (
+          <TasksTab projectId={project.id} />
+        )}
+        {activeTab === 'references' && (
+          <ReferencesTab projectId={project.id} />
+        )}
+        {activeTab === 'assets' && (
+          <AssetsTab projectId={project.id} />
+        )}
+        {activeTab === 'insights' && (
+          <InsightsTab
             project={project}
-            sets={sets}
+            bounces={bounces}
+            sessions={sessions}
           />
-          <SessionTimer projectId={project.id} projectName={project.name} />
-          <SessionHistory sessions={sessions} />
-        </div>
+        )}
       </div>
     </div>
   );

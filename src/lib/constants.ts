@@ -1,4 +1,4 @@
-import type { ProjectStatus } from '../types';
+import type { ProjectStatus, MarkerType, TaskCategory } from '../types';
 
 export const PROJECT_STATUSES: ProjectStatus[] = [
   'Sketch', 'Write', 'Arrange', 'Mix', 'Master', 'Done'
@@ -98,3 +98,17 @@ export const TABLE_COLUMNS: TableColumnDef[] = [
 export const DEFAULT_VISIBLE_COLUMNS: TableColumnKey[] = TABLE_COLUMNS
   .filter((c) => c.defaultVisible)
   .map((c) => c.key);
+
+// ── Studio Timeline constants ──
+
+export const MARKER_TYPES: { value: MarkerType; label: string; color: string }[] = [
+  { value: 'note', label: 'Note', color: '#3b82f6' },       // blue
+  { value: 'mix', label: 'Mix Note', color: '#f97316' },    // orange
+  { value: 'task', label: 'Task', color: '#a855f7' },       // purple
+  { value: 'idea', label: 'Idea', color: '#22c55e' },       // green
+  { value: 'issue', label: 'Issue/Flag', color: '#ef4444' }, // red
+];
+
+export const TASK_CATEGORIES: TaskCategory[] = [
+  'Drums', 'Bass', 'Synths', 'Arrangement', 'Mix', 'Master', 'Release',
+];

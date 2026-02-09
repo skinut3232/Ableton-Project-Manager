@@ -56,6 +56,22 @@ pub fn run() {
             commands::sessions::get_sessions,
             commands::sessions::get_incomplete_sessions,
             commands::sessions::resolve_session,
+            commands::markers::get_markers,
+            commands::markers::create_marker,
+            commands::markers::update_marker,
+            commands::markers::delete_marker,
+            commands::tasks::get_tasks,
+            commands::tasks::create_task,
+            commands::tasks::update_task,
+            commands::tasks::delete_task,
+            commands::references::get_references,
+            commands::references::create_reference,
+            commands::references::update_reference,
+            commands::references::delete_reference,
+            commands::assets::get_assets,
+            commands::assets::upload_asset,
+            commands::assets::update_asset,
+            commands::assets::delete_asset,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -7,12 +7,16 @@ interface AudioState {
   isPlaying: boolean;
   progress: number;
   duration: number;
+  volume: number;
+  loop: boolean;
   audioElement: HTMLAudioElement;
 
   setCurrentTrack: (bounce: Bounce, project: Project) => void;
   setIsPlaying: (playing: boolean) => void;
   setProgress: (time: number) => void;
   setDuration: (duration: number) => void;
+  setVolume: (volume: number) => void;
+  setLoop: (loop: boolean) => void;
   clearTrack: () => void;
 }
 
@@ -43,6 +47,8 @@ export const useAudioStore = create<AudioState>((set) => {
     isPlaying: false,
     progress: 0,
     duration: 0,
+    volume: 1.0,
+    loop: false,
     audioElement: globalAudio,
 
     setCurrentTrack: (bounce, project) =>
@@ -50,6 +56,14 @@ export const useAudioStore = create<AudioState>((set) => {
     setIsPlaying: (playing) => set({ isPlaying: playing }),
     setProgress: (time) => set({ progress: time }),
     setDuration: (duration) => set({ duration: duration }),
+    setVolume: (volume) => {
+      globalAudio.volume = volume;
+      set({ volume });
+    },
+    setLoop: (loop) => {
+      globalAudio.loop = loop;
+      set({ loop });
+    },
     clearTrack: () => {
       globalAudio.pause();
       globalAudio.src = '';

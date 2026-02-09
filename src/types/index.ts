@@ -93,3 +93,55 @@ export interface IncompleteSession {
   session: Session;
   project_name: string;
 }
+
+// ── Studio Timeline types ──
+
+export type MarkerType = 'note' | 'mix' | 'task' | 'idea' | 'issue';
+
+export interface Marker {
+  id: number;
+  project_id: number;
+  bounce_id: number | null;
+  timestamp_seconds: number;
+  type: MarkerType;
+  text: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type TaskCategory = 'Drums' | 'Bass' | 'Synths' | 'Arrangement' | 'Mix' | 'Master' | 'Release';
+
+export interface ProjectTask {
+  id: number;
+  project_id: number;
+  title: string;
+  done: boolean;
+  category: TaskCategory;
+  linked_marker_id: number | null;
+  linked_timestamp_seconds: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectReference {
+  id: number;
+  project_id: number;
+  url: string;
+  title: string | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type AssetType = 'image' | 'audio' | 'generic';
+
+export interface ProjectAsset {
+  id: number;
+  project_id: number;
+  original_filename: string;
+  stored_path: string;
+  asset_type: AssetType;
+  tags: string;
+  created_at: string;
+  updated_at: string;
+}

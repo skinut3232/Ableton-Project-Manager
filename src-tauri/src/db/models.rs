@@ -86,6 +86,55 @@ pub struct DiscoveredProject {
     pub genre_label: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Marker {
+    pub id: i64,
+    pub project_id: i64,
+    pub bounce_id: Option<i64>,
+    pub timestamp_seconds: f64,
+    #[serde(rename = "type")]
+    pub marker_type: String,
+    pub text: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ProjectTask {
+    pub id: i64,
+    pub project_id: i64,
+    pub title: String,
+    pub done: bool,
+    pub category: String,
+    pub linked_marker_id: Option<i64>,
+    pub linked_timestamp_seconds: Option<f64>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ProjectReference {
+    pub id: i64,
+    pub project_id: i64,
+    pub url: String,
+    pub title: Option<String>,
+    pub notes: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Asset {
+    pub id: i64,
+    pub project_id: i64,
+    pub original_filename: String,
+    pub stored_path: String,
+    pub asset_type: String,
+    pub tags: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProjectFilters {
     pub statuses: Option<Vec<String>>,

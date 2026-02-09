@@ -7,3 +7,7 @@ pub mod ableton;
 pub mod bounces;
 pub mod sets;
 pub mod sessions;
+pub mod markers;
+pub mod tasks;
+pub mod references;
+pub mod assets;
