@@ -82,6 +82,10 @@ pub fn run() {
             commands::covers::pin_to_mood_board,
             commands::covers::unpin_from_mood_board,
             commands::covers::reorder_mood_board,
+            commands::notes::get_notes,
+            commands::notes::create_note,
+            commands::notes::update_note,
+            commands::notes::delete_note,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

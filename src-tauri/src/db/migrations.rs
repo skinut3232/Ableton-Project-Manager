@@ -171,6 +171,51 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
 
             log::info!("Migrated database to schema version 6 (standalone FTS, HTML stripping)");
         }
+
+        // Migration v6 → v7: add project_notes table + migrate existing notes
+        if version < 7 {
+            conn.execute_batch(
+                "CREATE TABLE IF NOT EXISTS project_notes (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                     content TEXT NOT NULL DEFAULT '',
+                     created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+                 );
+                 CREATE INDEX IF NOT EXISTS idx_project_notes_project_id ON project_notes(project_id);"
+            ).map_err(|e| format!("Migration v7 failed (create table): {}", e))?;
+
+            // Migrate existing projects.notes → project_notes (strip HTML, skip empty)
+            let mut stmt = conn.prepare(
+                "SELECT id, notes FROM projects WHERE notes IS NOT NULL AND notes != ''"
+            ).map_err(|e| format!("Migration v7 failed (read notes): {}", e))?;
+
+            let rows: Vec<(i64, String)> = stmt
+                .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+                .map_err(|e| format!("Migration v7 failed (query notes): {}", e))?
+                .filter_map(|r| r.ok())
+                .collect();
+            drop(stmt);
+
+            for (project_id, html_notes) in &rows {
+                let plain = crate::db::queries::strip_html_tags(html_notes).trim().to_string();
+                if !plain.is_empty() {
+                    conn.execute(
+                        "INSERT INTO project_notes (project_id, content) VALUES (?1, ?2)",
+                        rusqlite::params![project_id, plain],
+                    ).ok();
+                }
+            }
+
+            conn.execute_batch(
+                "INSERT INTO schema_version (version) VALUES (7);"
+            ).map_err(|e| format!("Migration v7 failed (version bump): {}", e))?;
+
+            // Rebuild FTS to use project_notes instead of projects.notes
+            crate::db::queries::rebuild_all_fts(conn)?;
+
+            log::info!("Migrated database to schema version 7 (project_notes table)");
+        }
     }
 
     Ok(())

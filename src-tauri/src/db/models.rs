@@ -152,6 +152,15 @@ pub struct MoodBoardPin {
     pub original_filename: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ProjectNote {
+    pub id: i64,
+    pub project_id: i64,
+    pub content: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProjectFilters {
     pub statuses: Option<Vec<String>>,

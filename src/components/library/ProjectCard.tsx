@@ -13,9 +13,6 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, index, isFocused, onClick }: ProjectCardProps) {
   const relativeTime = getRelativeTime(project.last_worked_on);
-  const notesSnippet = project.notes.length > 120
-    ? project.notes.slice(0, 120) + '...'
-    : project.notes;
 
   return (
     <div
@@ -72,11 +69,6 @@ export function ProjectCard({ project, index, isFocused, onClick }: ProjectCardP
             <span className="text-[10px] text-neutral-500">+{project.tags.length - 3}</span>
           )}
         </div>
-      )}
-
-      {/* Notes snippet */}
-      {notesSnippet && (
-        <p className="text-xs text-neutral-500 line-clamp-2 mb-2">{notesSnippet}</p>
       )}
 
       {/* Last worked on */}

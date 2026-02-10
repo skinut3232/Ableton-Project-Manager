@@ -186,7 +186,7 @@ function CellRenderer({ column, project }: { column: TableColumnKey; project: Pr
     case 'notes':
       return (
         <span className="text-neutral-500 truncate block max-w-[200px]">
-          {project.notes || '—'}
+          —
         </span>
       );
 

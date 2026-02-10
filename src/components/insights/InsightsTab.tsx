@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useMarkers } from '../../hooks/useMarkers';
 import { useTasks } from '../../hooks/useTasks';
+import { useNotes } from '../../hooks/useNotes';
 import { SessionTimer } from '../project/SessionTimer';
 import { SessionHistory } from '../project/SessionHistory';
 import type { Project, Bounce, Session } from '../../types';
@@ -14,6 +15,7 @@ interface InsightsTabProps {
 export function InsightsTab({ project, bounces, sessions }: InsightsTabProps) {
   const { data: markers = [] } = useMarkers(project.id);
   const { data: tasks = [] } = useTasks(project.id);
+  const { data: notes = [] } = useNotes(project.id);
 
   const momentum = useMemo(() => {
     const now = Date.now();
@@ -43,10 +45,10 @@ export function InsightsTab({ project, bounces, sessions }: InsightsTabProps) {
 
   const health = useMemo(() => ({
     hasBounce: bounces.length > 0,
-    hasMarkersOrNotes: markers.length > 0 || project.notes.trim().length > 0,
+    hasMarkersOrNotes: markers.length > 0 || notes.length > 0,
     hasTasks: tasks.length > 0,
     hasArtwork: !!project.artwork_path,
-  }), [bounces, markers, tasks, project]);
+  }), [bounces, markers, tasks, notes, project]);
 
   return (
     <div className="space-y-6">

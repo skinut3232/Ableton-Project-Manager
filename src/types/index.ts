@@ -149,6 +149,14 @@ export interface MoodBoardPin {
   original_filename: string;
 }
 
+export interface ProjectNote {
+  id: number;
+  project_id: number;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export type AssetType = 'image' | 'audio' | 'generic';
 
 export interface ProjectAsset {

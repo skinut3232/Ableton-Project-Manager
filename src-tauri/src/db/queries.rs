@@ -391,13 +391,26 @@ pub fn strip_html_tags(html: &str) -> String {
     result
 }
 
+/// Concatenate all project_notes for a given project into a single string for FTS indexing.
+pub fn get_notes_text_for_fts(conn: &Connection, project_id: i64) -> Result<String, String> {
+    let mut stmt = conn
+        .prepare("SELECT content FROM project_notes WHERE project_id = ?1 ORDER BY created_at ASC")
+        .map_err(|e| e.to_string())?;
+    let notes: Vec<String> = stmt
+        .query_map(params![project_id], |row| row.get(0))
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(notes.join(" "))
+}
+
 pub fn rebuild_fts_tags(conn: &Connection, project_id: i64) -> Result<(), String> {
     let tags = get_tags_for_project(conn, project_id)?;
     let tags_text = tags.iter().map(|t| t.name.as_str()).collect::<Vec<_>>().join(" ");
 
     // Get current project data
     let project = get_project_by_id(conn, project_id)?;
-    let clean_notes = strip_html_tags(&project.notes);
+    let notes_text = get_notes_text_for_fts(conn, project_id)?;
 
     // Delete old FTS entry (standalone table: use standard DELETE)
     conn.execute(
@@ -405,10 +418,10 @@ pub fn rebuild_fts_tags(conn: &Connection, project_id: i64) -> Result<(), String
         params![project_id],
     ).ok(); // Ignore if row doesn't exist
 
-    // Reinsert with HTML-stripped notes
+    // Reinsert with concatenated project_notes content
     conn.execute(
         "INSERT INTO projects_fts(rowid, name, genre_label, notes, tags_text) VALUES (?1, ?2, ?3, ?4, ?5)",
-        params![project_id, project.name, project.genre_label, clean_notes, tags_text],
+        params![project_id, project.name, project.genre_label, notes_text, tags_text],
     ).map_err(|e| format!("FTS insert failed: {}", e))?;
 
     Ok(())
@@ -420,28 +433,28 @@ pub fn rebuild_all_fts(conn: &Connection) -> Result<(), String> {
         .map_err(|e| format!("FTS clear failed: {}", e))?;
 
     let mut stmt = conn.prepare(
-        "SELECT id, name, genre_label, notes FROM projects"
+        "SELECT id, name, genre_label FROM projects"
     ).map_err(|e| e.to_string())?;
 
-    let rows: Vec<(i64, String, String, String)> = stmt
+    let rows: Vec<(i64, String, String)> = stmt
         .query_map([], |row| {
-            Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+            Ok((row.get(0)?, row.get(1)?, row.get(2)?))
         })
         .map_err(|e| e.to_string())?
         .filter_map(|r| r.ok())
         .collect();
 
-    // Need to drop stmt before calling get_tags_for_project (which borrows conn)
+    // Need to drop stmt before calling other functions (which borrow conn)
     drop(stmt);
 
-    for (id, name, genre_label, notes) in &rows {
-        let clean_notes = strip_html_tags(notes);
+    for (id, name, genre_label) in &rows {
+        let notes_text = get_notes_text_for_fts(conn, *id).unwrap_or_default();
         let tags = get_tags_for_project(conn, *id).unwrap_or_default();
         let tags_text = tags.iter().map(|t| t.name.as_str()).collect::<Vec<_>>().join(" ");
 
         conn.execute(
             "INSERT INTO projects_fts(rowid, name, genre_label, notes, tags_text) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![id, name, genre_label, clean_notes, tags_text],
+            params![id, name, genre_label, notes_text, tags_text],
         ).ok();
     }
 
@@ -1210,4 +1223,99 @@ pub fn reorder_mood_board_pins(conn: &Connection, project_id: i64, pin_ids: &[i6
         .map_err(|e| e.to_string())?;
     }
     Ok(())
+}
+
+// ── Project Note queries ──
+
+pub fn get_notes_for_project(conn: &Connection, project_id: i64) -> Result<Vec<ProjectNote>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, project_id, content, created_at, updated_at \
+             FROM project_notes WHERE project_id = ?1 ORDER BY created_at ASC"
+        )
+        .map_err(|e| e.to_string())?;
+    let notes = stmt
+        .query_map(params![project_id], |row| {
+            Ok(ProjectNote {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                content: row.get(2)?,
+                created_at: row.get(3)?,
+                updated_at: row.get(4)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(notes)
+}
+
+pub fn create_note(conn: &Connection, project_id: i64, content: &str) -> Result<ProjectNote, String> {
+    conn.execute(
+        "INSERT INTO project_notes (project_id, content) VALUES (?1, ?2)",
+        params![project_id, content],
+    )
+    .map_err(|e| e.to_string())?;
+    let id = conn.last_insert_rowid();
+
+    // Rebuild FTS for this project
+    rebuild_fts_tags(conn, project_id)?;
+
+    conn.query_row(
+        "SELECT id, project_id, content, created_at, updated_at FROM project_notes WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(ProjectNote {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                content: row.get(2)?,
+                created_at: row.get(3)?,
+                updated_at: row.get(4)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn update_note(conn: &Connection, id: i64, content: &str) -> Result<ProjectNote, String> {
+    conn.execute(
+        "UPDATE project_notes SET content = ?1, updated_at = datetime('now') WHERE id = ?2",
+        params![content, id],
+    )
+    .map_err(|e| e.to_string())?;
+
+    let note = conn.query_row(
+        "SELECT id, project_id, content, created_at, updated_at FROM project_notes WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(ProjectNote {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                content: row.get(2)?,
+                created_at: row.get(3)?,
+                updated_at: row.get(4)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())?;
+
+    // Rebuild FTS for this project
+    rebuild_fts_tags(conn, note.project_id)?;
+
+    Ok(note)
+}
+
+pub fn delete_note(conn: &Connection, id: i64) -> Result<i64, String> {
+    // Get project_id before deleting
+    let project_id: i64 = conn
+        .query_row("SELECT project_id FROM project_notes WHERE id = ?1", params![id], |row| row.get(0))
+        .map_err(|e| format!("Note not found: {}", e))?;
+
+    conn.execute("DELETE FROM project_notes WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+
+    // Rebuild FTS for this project
+    rebuild_fts_tags(conn, project_id)?;
+
+    Ok(project_id)
 }

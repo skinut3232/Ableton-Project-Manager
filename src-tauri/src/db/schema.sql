@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT INTO schema_version (version) VALUES (6);
+INSERT INTO schema_version (version) VALUES (7);
 
 -- Settings (key-value pairs)
 CREATE TABLE IF NOT EXISTS settings (
@@ -164,6 +164,17 @@ CREATE TABLE IF NOT EXISTS mood_board (
     UNIQUE(project_id, asset_id)
 );
 CREATE INDEX IF NOT EXISTS idx_mood_board_project_id ON mood_board(project_id);
+
+-- Project Notes (multiple small notes per project)
+CREATE TABLE IF NOT EXISTS project_notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    content TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_project_notes_project_id ON project_notes(project_id);
 
 -- FTS5 Virtual Table (standalone — Rust manages inserts/deletes with HTML stripping)
 CREATE VIRTUAL TABLE IF NOT EXISTS projects_fts USING fts5(
