@@ -26,10 +26,42 @@ const COVER_TYPE_LABELS: Record<string, string> = {
   none: 'No Cover',
 };
 
+const ICON_OPTIONS = [
+  { key: 'note', label: '\u266B Note' },
+  { key: 'star', label: '\u2605 Star' },
+  { key: 'heart', label: '\u2665 Heart' },
+  { key: 'lightning', label: '\u26A1 Bolt' },
+  { key: 'diamond', label: '\u25C6 Diamond' },
+  { key: 'flame', label: '\uD83D\uDD25 Flame' },
+  { key: 'ring', label: '\u25CE Ring' },
+  { key: 'moon', label: '\u263D Moon' },
+  { key: 'sun', label: '\u2600 Sun' },
+  { key: 'cloud', label: '\u2601 Cloud' },
+  { key: 'cross', label: '\u271A Cross' },
+  { key: 'arrow', label: '\u25B2 Arrow' },
+  { key: 'wave', label: '\u301C Wave' },
+  { key: 'triangle', label: '\u25B3 Triangle' },
+  { key: 'hexagon', label: '\u2B21 Hex' },
+  { key: 'eye', label: '\uD83D\uDC41 Eye' },
+  { key: 'crown', label: '\u265B Crown' },
+  { key: 'leaf', label: '\uD83C\uDF43 Leaf' },
+  { key: 'droplet', label: '\uD83D\uDCA7 Drop' },
+  { key: 'infinity', label: '\u221E Infinity' },
+  { key: 'skull', label: '\uD83D\uDC80 Skull' },
+  { key: 'peaks', label: '\u26F0 Peaks' },
+  { key: 'bars', label: '\u25A8 EQ' },
+  { key: 'random', label: '\uD83C\uDFB2 Random' },
+] as const;
+
 export function ChangeCoverModal({ project, onClose }: ChangeCoverModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>('generate');
   const [selectedUploadPath, setSelectedUploadPath] = useState<string | null>(null);
   const [selectedMoodBoardAssetId, setSelectedMoodBoardAssetId] = useState<number | null>(null);
+  const [selectedIcon, setSelectedIcon] = useState<string>(
+    project.cover_style_preset && project.cover_style_preset !== 'default'
+      ? project.cover_style_preset
+      : 'random'
+  );
 
   const generateCover = useGenerateCover(project.id);
   const setCoverFromUpload = useSetCoverFromUpload(project.id);
@@ -49,7 +81,15 @@ export function ChangeCoverModal({ project, onClose }: ChangeCoverModalProps) {
 
   const handleShuffle = () => {
     const randomSeed = `proj_${project.id}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    generateCover.mutate(randomSeed);
+    const preset = selectedIcon === 'random' ? undefined : selectedIcon;
+    generateCover.mutate({ seed: randomSeed, stylePreset: preset });
+  };
+
+  const handleIconSelect = (iconKey: string) => {
+    setSelectedIcon(iconKey);
+    const randomSeed = `proj_${project.id}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const preset = iconKey === 'random' ? undefined : iconKey;
+    generateCover.mutate({ seed: randomSeed, stylePreset: preset });
   };
 
   const handleBrowseUpload = async () => {
@@ -136,6 +176,8 @@ export function ChangeCoverModal({ project, onClose }: ChangeCoverModalProps) {
           {activeTab === 'generate' && (
             <GenerateTab
               project={project}
+              selectedIcon={selectedIcon}
+              onIconSelect={handleIconSelect}
               onShuffle={handleShuffle}
               isShuffling={generateCover.isPending}
             />
@@ -199,21 +241,45 @@ export function ChangeCoverModal({ project, onClose }: ChangeCoverModalProps) {
 
 function GenerateTab({
   project,
+  selectedIcon,
+  onIconSelect,
   onShuffle,
   isShuffling,
 }: {
   project: Project;
+  selectedIcon: string;
+  onIconSelect: (icon: string) => void;
   onShuffle: () => void;
   isShuffling: boolean;
 }) {
   const fallbackHue = (project.id * 137) % 360;
+  const cacheBust = project.cover_updated_at ? `?t=${encodeURIComponent(project.cover_updated_at)}` : '';
 
   return (
     <div className="flex flex-col items-center gap-4">
+      {/* Icon selector row */}
+      <div className="flex flex-wrap justify-center gap-1.5">
+        {ICON_OPTIONS.map((icon) => (
+          <button
+            key={icon.key}
+            onClick={() => onIconSelect(icon.key)}
+            disabled={isShuffling}
+            className={`px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+              selectedIcon === icon.key
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200'
+            } disabled:opacity-40`}
+          >
+            {icon.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Cover preview */}
       <div className="w-64 h-64 rounded-lg overflow-hidden shadow-lg">
         {project.artwork_path ? (
           <img
-            src={convertFileSrc(project.artwork_path)}
+            src={convertFileSrc(project.artwork_path) + cacheBust}
             alt="Current cover"
             className="w-full h-full object-cover"
           />
@@ -228,11 +294,8 @@ function GenerateTab({
           </div>
         )}
       </div>
-      <p className="text-xs text-neutral-500">
-        {project.cover_type === 'generated'
-          ? 'Click Shuffle to generate a new cover'
-          : 'Generate a procedural cover with muted tones and film grain'}
-      </p>
+
+      {/* Shuffle button */}
       <button
         onClick={onShuffle}
         disabled={isShuffling}

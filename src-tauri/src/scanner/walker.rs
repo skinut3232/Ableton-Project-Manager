@@ -304,7 +304,7 @@ pub fn generate_missing_covers(conn: &Connection, app_data_dir: &Path) {
     let mut generated = 0;
     for job in &jobs {
         let cover_dir = app_data_dir.join("covers").join("generated").join(job.project_id.to_string());
-        match cover_gen::generate_cover(&job.seed, &cover_dir) {
+        match cover_gen::generate_cover(&job.seed, &cover_dir, None) {
             Ok(thumb) => {
                 let thumb_str = thumb.to_string_lossy().to_string();
                 queries::set_cover(conn, job.project_id, "generated", Some(&thumb_str), Some(&job.seed), Some("default"), None).ok();

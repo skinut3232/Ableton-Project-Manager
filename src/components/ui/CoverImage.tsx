@@ -35,7 +35,7 @@ export function CoverImage({ project, size, className = '', onClick, showLock }:
     >
       {project.artwork_path ? (
         <img
-          src={convertFileSrc(project.artwork_path)}
+          src={convertFileSrc(project.artwork_path) + (project.cover_updated_at ? `?t=${encodeURIComponent(project.cover_updated_at)}` : '')}
           alt={project.name}
           className="w-full h-full object-cover"
         />

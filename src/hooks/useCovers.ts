@@ -5,8 +5,12 @@ import type { Project, MoodBoardPin } from '../types';
 export function useGenerateCover(projectId: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (seed?: string) =>
-      tauriInvoke<Project>('generate_cover', { projectId, seed }),
+    mutationFn: (params?: { seed?: string; stylePreset?: string }) =>
+      tauriInvoke<Project>('generate_cover', {
+        projectId,
+        seed: params?.seed,
+        stylePreset: params?.stylePreset,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });

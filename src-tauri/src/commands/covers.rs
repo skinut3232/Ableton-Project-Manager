@@ -11,6 +11,7 @@ pub fn generate_cover(
     state: State<DbState>,
     project_id: i64,
     seed: Option<String>,
+    style_preset: Option<String>,
 ) -> Result<Project, String> {
     let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
     let conn = state.0.lock().map_err(|e| e.to_string())?;
@@ -18,16 +19,18 @@ pub fn generate_cover(
     let actual_seed = seed.unwrap_or_else(|| format!("proj_{}", project_id));
     let cover_dir = app_data_dir.join("covers").join("generated").join(project_id.to_string());
 
-    let thumb_path = cover_gen::generate_cover(&actual_seed, &cover_dir)?;
+    let preset_ref = style_preset.as_deref();
+    let thumb_path = cover_gen::generate_cover(&actual_seed, &cover_dir, preset_ref)?;
     let thumb_str = thumb_path.to_string_lossy().to_string();
 
+    let stored_preset = preset_ref.unwrap_or("default");
     queries::set_cover(
         &conn,
         project_id,
         "generated",
         Some(&thumb_str),
         Some(&actual_seed),
-        Some("default"),
+        Some(stored_preset),
         None,
     )?;
 
