@@ -4,6 +4,7 @@ mod commands;
 mod artwork;
 mod cover_gen;
 mod spotify;
+mod mp3;
 
 use db::DbState;
 use spotify::{SpotifyState, SpotifyInner};
@@ -103,6 +104,7 @@ pub fn run() {
             commands::spotify::spotify_wait_for_callback,
             commands::spotify::spotify_get_access_token,
             commands::spotify::spotify_logout,
+            commands::share::share_bounce,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

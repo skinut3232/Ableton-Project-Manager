@@ -6,6 +6,7 @@ import { useAudioStore } from '../../stores/audioStore';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
 import { useMarkers, useCreateMarker, useUpdateMarker, useDeleteMarker } from '../../hooks/useMarkers';
 import { useCreateTask } from '../../hooks/useTasks';
+import { tauriInvoke } from '../../hooks/useTauriInvoke';
 import { MARKER_TYPES } from '../../lib/constants';
 import { MarkerPopover } from './MarkerPopover';
 import { MarkerList } from './MarkerList';
@@ -21,6 +22,8 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
   const wsRef = useRef<WaveSurfer | null>(null);
   const regionsRef = useRef<RegionsPlugin | null>(null);
   const [selectedBounce, setSelectedBounce] = useState<Bounce | null>(bounces[0] ?? null);
+  const [isSharing, setIsSharing] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
   const [popover, setPopover] = useState<{
     marker: Marker | null;
     isNew: boolean;
@@ -320,6 +323,21 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
     setPopover(null);
   };
 
+  const handleShare = async () => {
+    if (!selectedBounce || isSharing) return;
+    setIsSharing(true);
+    setShowCopied(false);
+    try {
+      await tauriInvoke('share_bounce', { bouncePath: selectedBounce.bounce_path });
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
+    } catch (err) {
+      console.error('Share failed:', err);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   if (bounces.length === 0) {
     return (
       <div className="text-center py-16">
@@ -351,6 +369,30 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
             </option>
           ))}
         </select>
+        <button
+          onClick={handleShare}
+          disabled={isSharing || !selectedBounce}
+          title="Share as MP3 (copy to clipboard)"
+          className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 disabled:opacity-50 transition-colors"
+        >
+          {isSharing ? (
+            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+          )}
+        </button>
+        {showCopied && (
+          <span className="text-[11px] text-green-400 font-medium animate-pulse">
+            MP3 copied!
+          </span>
+        )}
         <span className="text-[10px] text-neutral-600">
           Double-click or M: add marker | N/P: next/prev | Scroll: zoom
         </span>
