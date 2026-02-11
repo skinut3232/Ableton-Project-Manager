@@ -6,6 +6,7 @@ import { Toggle } from '../components/ui/Toggle';
 import { Select } from '../components/ui/Select';
 import { useSettings, useUpdateSettings, getSettingValue } from '../hooks/useSettings';
 import { useRefreshLibrary, useDiscoverProjects, useImportProjects } from '../hooks/useProjects';
+import { useSoundCloudAuthStatus, useSoundCloudLogout } from '../hooks/useSoundCloud';
 import type { DiscoveredProject } from '../types';
 
 export function SettingsView() {
@@ -175,13 +176,11 @@ export function SettingsView() {
           </p>
         </div>
 
-        {/* SoundCloud Upload Privacy */}
-        <Toggle
-          label="SoundCloud: Upload as Public"
-          checked={scPublicUpload}
-          onChange={setScPublicUpload}
-          description="When enabled, bounces uploaded to SoundCloud will be public. Default is private."
-        />
+        {/* SoundCloud */}
+        <div className="border-t border-neutral-700 pt-6">
+          <h3 className="text-sm font-medium text-neutral-300 mb-3">SoundCloud</h3>
+          <SoundCloudSection scPublicUpload={scPublicUpload} setScPublicUpload={setScPublicUpload} />
+        </div>
 
         {/* Save Button */}
         <div className="flex items-center gap-3 pt-2">
@@ -308,6 +307,40 @@ export function SettingsView() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function SoundCloudSection({ scPublicUpload, setScPublicUpload }: { scPublicUpload: boolean; setScPublicUpload: (v: boolean) => void }) {
+  const scAuth = useSoundCloudAuthStatus();
+  const scLogout = useSoundCloudLogout();
+
+  return (
+    <div className="space-y-3">
+      <Toggle
+        label="Upload as Public"
+        checked={scPublicUpload}
+        onChange={setScPublicUpload}
+        description="When enabled, bounces uploaded to SoundCloud will be public. Default is private."
+      />
+      {scAuth.data?.logged_in && (
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-neutral-400">
+            Logged in as <span className="text-orange-400 font-medium">{scAuth.data.username}</span>
+          </span>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => scLogout.mutate()}
+            disabled={scLogout.isPending}
+          >
+            {scLogout.isPending ? 'Logging out...' : 'Logout'}
+          </Button>
+        </div>
+      )}
+      {scAuth.data && !scAuth.data.logged_in && (
+        <p className="text-xs text-neutral-500">Not logged in. Click the SoundCloud button on a bounce to connect.</p>
+      )}
     </div>
   );
 }
