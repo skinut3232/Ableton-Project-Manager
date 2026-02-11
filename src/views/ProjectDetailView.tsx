@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useProjectDetail, useUpdateProject } from '../hooks/useProjects';
 import { ProjectHeader } from '../components/project/ProjectHeader';
 import { TagInput } from '../components/project/TagInput';
@@ -11,6 +11,8 @@ import { AssetsTab } from '../components/assets/AssetsTab';
 import { InsightsTab } from '../components/insights/InsightsTab';
 import { NotesPanel } from '../components/project/NotesPanel';
 import { Button } from '../components/ui/Button';
+import { useAudioPlayer } from '../hooks/useAudioPlayer';
+import { useAudioStore } from '../stores/audioStore';
 
 const TABS = [
   { key: 'timeline', label: 'Timeline' },
@@ -26,10 +28,35 @@ type TabKey = (typeof TABS)[number]['key'];
 export function ProjectDetailView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const projectId = parseInt(id || '0');
   const { data: detail, isLoading, error } = useProjectDetail(projectId);
   const updateProject = useUpdateProject();
   const [activeTab, setActiveTab] = useState<TabKey>('timeline');
+  const { play } = useAudioPlayer();
+  const autoPreviewDone = useRef(false);
+
+  // Auto-preview: play latest bounce for 30s when arriving via Random
+  useEffect(() => {
+    if (
+      !autoPreviewDone.current &&
+      (location.state as { autoPreview?: boolean })?.autoPreview &&
+      detail?.bounces?.length
+    ) {
+      autoPreviewDone.current = true;
+      const bounce = detail.bounces[0];
+      play(bounce, detail.project);
+
+      const timer = setTimeout(() => {
+        const state = useAudioStore.getState();
+        if (state.currentBounce?.id === bounce.id) {
+          state.audioElement.pause();
+        }
+      }, 30000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [detail, location.state, play]);
 
   if (isLoading) {
     return <div className="text-neutral-400">Loading project...</div>;

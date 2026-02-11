@@ -50,6 +50,12 @@ export function AppLayout() {
       }
     }
 
+    if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+      e.preventDefault();
+      window.dispatchEvent(new CustomEvent('random-project'));
+      return;
+    }
+
     if (e.ctrlKey && e.key === 'r') {
       e.preventDefault();
       // Trigger refresh via custom event

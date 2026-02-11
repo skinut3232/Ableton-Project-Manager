@@ -6,9 +6,11 @@ import { ColumnSelector } from './ColumnSelector';
 interface TopBarProps {
   isAdding: boolean;
   onAddProject: () => void;
+  onRandomProject: () => void;
+  projectCount: number;
 }
 
-export function TopBar({ isAdding, onAddProject }: TopBarProps) {
+export function TopBar({ isAdding, onAddProject, onRandomProject, projectCount }: TopBarProps) {
   const searchQuery = useLibraryStore((s) => s.searchQuery);
   const setSearchQuery = useLibraryStore((s) => s.setSearchQuery);
   const sortBy = useLibraryStore((s) => s.sortBy);
@@ -78,6 +80,22 @@ export function TopBar({ isAdding, onAddProject }: TopBarProps) {
           </svg>
         </button>
       </div>
+
+      {/* Random Project */}
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={onRandomProject}
+        disabled={projectCount === 0}
+        title="Random project (Ctrl+Shift+R)"
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect x="3" y="3" width="18" height="18" rx="3" strokeWidth={2} />
+          <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" stroke="none" />
+        </svg>
+      </Button>
 
       {/* Add Project */}
       <Button

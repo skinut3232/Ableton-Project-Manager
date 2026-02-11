@@ -3,6 +3,7 @@ import { open } from '@tauri-apps/plugin-dialog';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Toggle } from '../components/ui/Toggle';
+import { Select } from '../components/ui/Select';
 import { useSettings, useUpdateSettings, getSettingValue } from '../hooks/useSettings';
 import { useRefreshLibrary, useDiscoverProjects, useImportProjects } from '../hooks/useProjects';
 import type { DiscoveredProject } from '../types';
@@ -18,6 +19,7 @@ export function SettingsView() {
   const [abletonPath, setAbletonPath] = useState('');
   const [bounceFolderName, setBounceFolderName] = useState('Bounces');
   const [scanOnLaunch, setScanOnLaunch] = useState(true);
+  const [randomProjectMode, setRandomProjectMode] = useState('preview');
   const [saved, setSaved] = useState(false);
 
   // Import checklist state
@@ -30,6 +32,7 @@ export function SettingsView() {
       setAbletonPath(getSettingValue(settings, 'ableton_exe_path'));
       setBounceFolderName(getSettingValue(settings, 'bounce_folder_name') || 'Bounces');
       setScanOnLaunch(getSettingValue(settings, 'scan_on_launch') !== 'false');
+      setRandomProjectMode(getSettingValue(settings, 'random_project_mode') || 'preview');
     }
   }, [settings]);
 
@@ -53,6 +56,7 @@ export function SettingsView() {
       { key: 'ableton_exe_path', value: abletonPath },
       { key: 'bounce_folder_name', value: bounceFolderName },
       { key: 'scan_on_launch', value: scanOnLaunch.toString() },
+      { key: 'random_project_mode', value: randomProjectMode },
     ]);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -151,6 +155,22 @@ export function SettingsView() {
           onChange={setScanOnLaunch}
           description="Automatically refresh metadata for existing projects when the app starts."
         />
+
+        {/* Random Project Behavior */}
+        <div>
+          <Select
+            label="Random Project Behavior"
+            value={randomProjectMode}
+            onChange={(e) => setRandomProjectMode(e.target.value)}
+            options={[
+              { value: 'preview', label: 'Preview — Play latest bounce for 30s' },
+              { value: 'ableton', label: 'Open directly in Ableton Live' },
+            ]}
+          />
+          <p className="mt-1 text-xs text-neutral-500">
+            What happens when you click the Random button or press Ctrl+Shift+R.
+          </p>
+        </div>
 
         {/* Save Button */}
         <div className="flex items-center gap-3 pt-2">

@@ -6,6 +6,7 @@ import { ProjectGrid } from '../components/library/ProjectGrid';
 import { ProjectTable } from '../components/library/ProjectTable';
 import { useProjects, useRefreshLibrary, useAddProject } from '../hooks/useProjects';
 import { useSettings, getSettingValue } from '../hooks/useSettings';
+import { tauriInvoke } from '../hooks/useTauriInvoke';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Button } from '../components/ui/Button';
@@ -51,6 +52,30 @@ export function LibraryView() {
     }
   };
 
+  // Random project selection
+  const handleRandomProject = useCallback(async () => {
+    if (!projects?.length) return;
+    const project = projects[Math.floor(Math.random() * projects.length)];
+    const mode = getSettingValue(settings, 'random_project_mode') || 'preview';
+
+    if (mode === 'ableton' && project.current_set_path) {
+      try {
+        await tauriInvoke('open_in_ableton', { setPath: project.current_set_path });
+      } catch {
+        // Fall back to preview mode if Ableton launch fails
+        navigate(`/project/${project.id}`, { state: { autoPreview: true } });
+      }
+    } else {
+      navigate(`/project/${project.id}`, { state: { autoPreview: true } });
+    }
+  }, [projects, settings, navigate]);
+
+  // Listen for random-project event (Ctrl+Shift+R)
+  useEffect(() => {
+    window.addEventListener('random-project', handleRandomProject);
+    return () => window.removeEventListener('random-project', handleRandomProject);
+  }, [handleRandomProject]);
+
   // No root folder configured
   if (!rootFolder) {
     return (
@@ -67,6 +92,8 @@ export function LibraryView() {
       <TopBar
         isAdding={addProject.isPending}
         onAddProject={handleAddProject}
+        onRandomProject={handleRandomProject}
+        projectCount={projects?.length ?? 0}
       />
       <FilterBar />
 
