@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useReferences, useCreateReference, useUpdateReference, useDeleteReference } from '../../hooks/useReferences';
+import { SpotifyReferencesSection } from './SpotifyReferencesSection';
 
 interface ReferencesTabProps {
   projectId: number;
@@ -35,6 +36,12 @@ export function ReferencesTab({ projectId }: ReferencesTabProps) {
 
   return (
     <div className="space-y-4">
+      {/* Spotify Reference Tracks */}
+      <SpotifyReferencesSection projectId={projectId} />
+
+      {/* Divider */}
+      <div className="border-t border-neutral-700" />
+
       {/* Add button */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-neutral-300">

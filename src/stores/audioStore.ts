@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Bounce, Project } from '../types';
+import { useSpotifyPlayerStore } from './spotifyPlayerStore';
 
 interface AudioState {
   currentBounce: Bounce | null;
@@ -39,6 +40,11 @@ export const useAudioStore = create<AudioState>((set) => {
   });
   globalAudio.addEventListener('play', () => {
     set({ isPlaying: true });
+    // Cross-player: pause Spotify when WAV plays
+    const spotifyPlayer = useSpotifyPlayerStore.getState().player;
+    if (spotifyPlayer) {
+      spotifyPlayer.pause().catch(() => {});
+    }
   });
 
   return {

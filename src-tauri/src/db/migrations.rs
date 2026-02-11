@@ -216,6 +216,31 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
 
             log::info!("Migrated database to schema version 7 (project_notes table)");
         }
+
+        // Migration v7 → v8: add spotify_references table
+        if version < 8 {
+            conn.execute_batch(
+                "CREATE TABLE IF NOT EXISTS spotify_references (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                     spotify_id TEXT NOT NULL,
+                     spotify_type TEXT NOT NULL DEFAULT 'track',
+                     name TEXT NOT NULL,
+                     artist_name TEXT NOT NULL DEFAULT '',
+                     album_name TEXT NOT NULL DEFAULT '',
+                     album_art_url TEXT NOT NULL DEFAULT '',
+                     duration_ms INTEGER,
+                     spotify_url TEXT NOT NULL DEFAULT '',
+                     notes TEXT NOT NULL DEFAULT '',
+                     created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+                     UNIQUE(project_id, spotify_id)
+                 );
+                 CREATE INDEX IF NOT EXISTS idx_spotify_references_project_id ON spotify_references(project_id);
+                 INSERT INTO schema_version (version) VALUES (8);"
+            ).map_err(|e| format!("Migration v8 failed: {}", e))?;
+            log::info!("Migrated database to schema version 8 (spotify_references)");
+        }
     }
 
     Ok(())

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT INTO schema_version (version) VALUES (7);
+INSERT INTO schema_version (version) VALUES (8);
 
 -- Settings (key-value pairs)
 CREATE TABLE IF NOT EXISTS settings (
@@ -175,6 +175,26 @@ CREATE TABLE IF NOT EXISTS project_notes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_project_notes_project_id ON project_notes(project_id);
+
+-- Spotify References (saved Spotify tracks/albums per project)
+CREATE TABLE IF NOT EXISTS spotify_references (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    spotify_id TEXT NOT NULL,
+    spotify_type TEXT NOT NULL DEFAULT 'track',
+    name TEXT NOT NULL,
+    artist_name TEXT NOT NULL DEFAULT '',
+    album_name TEXT NOT NULL DEFAULT '',
+    album_art_url TEXT NOT NULL DEFAULT '',
+    duration_ms INTEGER,
+    spotify_url TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(project_id, spotify_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_spotify_references_project_id ON spotify_references(project_id);
 
 -- FTS5 Virtual Table (standalone — Rust manages inserts/deletes with HTML stripping)
 CREATE VIRTUAL TABLE IF NOT EXISTS projects_fts USING fts5(

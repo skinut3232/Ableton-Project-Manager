@@ -161,6 +161,35 @@ pub struct ProjectNote {
     pub updated_at: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SpotifyReference {
+    pub id: i64,
+    pub project_id: i64,
+    pub spotify_id: String,
+    pub spotify_type: String,
+    pub name: String,
+    pub artist_name: String,
+    pub album_name: String,
+    pub album_art_url: String,
+    pub duration_ms: Option<i64>,
+    pub spotify_url: String,
+    pub notes: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SpotifySearchResult {
+    pub spotify_id: String,
+    pub spotify_type: String,
+    pub name: String,
+    pub artist_name: String,
+    pub album_name: String,
+    pub album_art_url: String,
+    pub duration_ms: Option<i64>,
+    pub spotify_url: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProjectFilters {
     pub statuses: Option<Vec<String>>,

@@ -13,3 +13,4 @@ pub mod references;
 pub mod assets;
 pub mod covers;
 pub mod notes;
+pub mod spotify;

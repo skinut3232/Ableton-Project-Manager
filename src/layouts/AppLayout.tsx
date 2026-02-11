@@ -3,11 +3,22 @@ import { AudioPlayer } from '../components/audio/AudioPlayer';
 import { useAudioStore } from '../stores/audioStore';
 import { useEffect, useCallback } from 'react';
 import { useLibraryStore } from '../stores/libraryStore';
+import { useSpotifyAuthStatus } from '../hooks/useSpotify';
+import { useSpotifyPlayer } from '../hooks/useSpotifyPlayer';
+import { useSpotifyPlayerStore } from '../stores/spotifyPlayerStore';
 
 export function AppLayout() {
   const currentBounce = useAudioStore((s) => s.currentBounce);
   const navigate = useNavigate();
   const setSearchQuery = useLibraryStore((s) => s.setSearchQuery);
+
+  // Spotify auth status + SDK init
+  const { data: authStatus } = useSpotifyAuthStatus();
+  const setAuthStatus = useSpotifyPlayerStore((s) => s.setAuthStatus);
+  useEffect(() => {
+    if (authStatus) setAuthStatus(authStatus);
+  }, [authStatus, setAuthStatus]);
+  useSpotifyPlayer(authStatus?.logged_in ?? false, authStatus?.is_premium ?? false);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const target = e.target as HTMLElement;

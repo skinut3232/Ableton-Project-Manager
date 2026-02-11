@@ -3,8 +3,10 @@ mod scanner;
 mod commands;
 mod artwork;
 mod cover_gen;
+mod spotify;
 
 use db::DbState;
+use spotify::{SpotifyState, SpotifyInner};
 use std::sync::Mutex;
 use tauri::Manager;
 
@@ -24,6 +26,11 @@ pub fn run() {
             let app_data_dir = app.path().app_data_dir().expect("Failed to get app data dir");
             let conn = db::init_db(&app_data_dir).expect("Failed to initialize database");
             app.manage(DbState(Mutex::new(conn)));
+            app.manage(SpotifyState(Mutex::new(SpotifyInner {
+                client_token: None,
+                user_auth: None,
+                pkce_pending: None,
+            })));
 
             // Show window after setup (prevents position flash with window-state plugin)
             if let Some(window) = app.get_webview_window("main") {
@@ -86,6 +93,16 @@ pub fn run() {
             commands::notes::create_note,
             commands::notes::update_note,
             commands::notes::delete_note,
+            commands::spotify::spotify_search,
+            commands::spotify::get_spotify_references,
+            commands::spotify::add_spotify_reference,
+            commands::spotify::update_spotify_reference_notes,
+            commands::spotify::delete_spotify_reference,
+            commands::spotify::spotify_get_auth_status,
+            commands::spotify::spotify_start_login,
+            commands::spotify::spotify_wait_for_callback,
+            commands::spotify::spotify_get_access_token,
+            commands::spotify::spotify_logout,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

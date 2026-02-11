@@ -34,6 +34,12 @@ pub fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<(), Stri
     Ok(())
 }
 
+pub fn delete_setting(conn: &Connection, key: &str) -> Result<(), String> {
+    conn.execute("DELETE FROM settings WHERE key = ?1", params![key])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<Project>, String> {
     let mut sql = String::from(
         "SELECT p.id, p.name, p.project_path, p.genre_label, p.musical_key, p.status, p.rating, p.bpm, \
@@ -647,6 +653,125 @@ pub fn resolve_session(conn: &Connection, session_id: i64, save: bool, note: &st
 
 // Needed by rusqlite for optional queries
 use rusqlite::OptionalExtension;
+
+// ── Spotify Reference queries ──
+
+pub fn get_spotify_references_for_project(conn: &Connection, project_id: i64) -> Result<Vec<SpotifyReference>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, project_id, spotify_id, spotify_type, name, artist_name, album_name, \
+             album_art_url, duration_ms, spotify_url, notes, created_at, updated_at \
+             FROM spotify_references WHERE project_id = ?1 ORDER BY created_at DESC"
+        )
+        .map_err(|e| e.to_string())?;
+    let refs = stmt
+        .query_map(params![project_id], |row| {
+            Ok(SpotifyReference {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                spotify_id: row.get(2)?,
+                spotify_type: row.get(3)?,
+                name: row.get(4)?,
+                artist_name: row.get(5)?,
+                album_name: row.get(6)?,
+                album_art_url: row.get(7)?,
+                duration_ms: row.get(8)?,
+                spotify_url: row.get(9)?,
+                notes: row.get(10)?,
+                created_at: row.get(11)?,
+                updated_at: row.get(12)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(refs)
+}
+
+pub fn create_spotify_reference(
+    conn: &Connection,
+    project_id: i64,
+    spotify_id: &str,
+    spotify_type: &str,
+    name: &str,
+    artist_name: &str,
+    album_name: &str,
+    album_art_url: &str,
+    duration_ms: Option<i64>,
+    spotify_url: &str,
+) -> Result<SpotifyReference, String> {
+    conn.execute(
+        "INSERT OR IGNORE INTO spotify_references \
+         (project_id, spotify_id, spotify_type, name, artist_name, album_name, album_art_url, duration_ms, spotify_url) \
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+        params![project_id, spotify_id, spotify_type, name, artist_name, album_name, album_art_url, duration_ms, spotify_url],
+    )
+    .map_err(|e| e.to_string())?;
+
+    conn.query_row(
+        "SELECT id, project_id, spotify_id, spotify_type, name, artist_name, album_name, \
+         album_art_url, duration_ms, spotify_url, notes, created_at, updated_at \
+         FROM spotify_references WHERE project_id = ?1 AND spotify_id = ?2",
+        params![project_id, spotify_id],
+        |row| {
+            Ok(SpotifyReference {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                spotify_id: row.get(2)?,
+                spotify_type: row.get(3)?,
+                name: row.get(4)?,
+                artist_name: row.get(5)?,
+                album_name: row.get(6)?,
+                album_art_url: row.get(7)?,
+                duration_ms: row.get(8)?,
+                spotify_url: row.get(9)?,
+                notes: row.get(10)?,
+                created_at: row.get(11)?,
+                updated_at: row.get(12)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn update_spotify_reference_notes(conn: &Connection, id: i64, notes: &str) -> Result<SpotifyReference, String> {
+    conn.execute(
+        "UPDATE spotify_references SET notes = ?1, updated_at = datetime('now') WHERE id = ?2",
+        params![notes, id],
+    )
+    .map_err(|e| e.to_string())?;
+
+    conn.query_row(
+        "SELECT id, project_id, spotify_id, spotify_type, name, artist_name, album_name, \
+         album_art_url, duration_ms, spotify_url, notes, created_at, updated_at \
+         FROM spotify_references WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(SpotifyReference {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                spotify_id: row.get(2)?,
+                spotify_type: row.get(3)?,
+                name: row.get(4)?,
+                artist_name: row.get(5)?,
+                album_name: row.get(6)?,
+                album_art_url: row.get(7)?,
+                duration_ms: row.get(8)?,
+                spotify_url: row.get(9)?,
+                notes: row.get(10)?,
+                created_at: row.get(11)?,
+                updated_at: row.get(12)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn delete_spotify_reference(conn: &Connection, id: i64) -> Result<(), String> {
+    conn.execute("DELETE FROM spotify_references WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
 
 // ── Marker queries ──
 

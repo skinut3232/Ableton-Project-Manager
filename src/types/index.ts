@@ -157,6 +157,39 @@ export interface ProjectNote {
   updated_at: string;
 }
 
+export interface SpotifyReference {
+  id: number;
+  project_id: number;
+  spotify_id: string;
+  spotify_type: 'track' | 'album';
+  name: string;
+  artist_name: string;
+  album_name: string;
+  album_art_url: string;
+  duration_ms: number | null;
+  spotify_url: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SpotifySearchResult {
+  spotify_id: string;
+  spotify_type: 'track' | 'album';
+  name: string;
+  artist_name: string;
+  album_name: string;
+  album_art_url: string;
+  duration_ms: number | null;
+  spotify_url: string;
+}
+
+export interface SpotifyAuthStatus {
+  logged_in: boolean;
+  display_name: string | null;
+  is_premium: boolean;
+}
+
 export type AssetType = 'image' | 'audio' | 'generic';
 
 export interface ProjectAsset {
