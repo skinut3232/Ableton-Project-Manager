@@ -7,6 +7,7 @@ import { useAudioPlayer } from '../../hooks/useAudioPlayer';
 import { useMarkers, useCreateMarker, useUpdateMarker, useDeleteMarker } from '../../hooks/useMarkers';
 import { useCreateTask } from '../../hooks/useTasks';
 import { tauriInvoke } from '../../hooks/useTauriInvoke';
+import { useSoundCloudAuthStatus, useSoundCloudLogin, useSoundCloudUpload } from '../../hooks/useSoundCloud';
 import { MARKER_TYPES } from '../../lib/constants';
 import { MarkerPopover } from './MarkerPopover';
 import { MarkerList } from './MarkerList';
@@ -24,6 +25,10 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
   const [selectedBounce, setSelectedBounce] = useState<Bounce | null>(bounces[0] ?? null);
   const [isSharing, setIsSharing] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showUploaded, setShowUploaded] = useState(false);
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+  const [scError, setScError] = useState<string | null>(null);
   const [popover, setPopover] = useState<{
     marker: Marker | null;
     isNew: boolean;
@@ -39,6 +44,9 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
   const updateMarker = useUpdateMarker(project.id);
   const deleteMarker = useDeleteMarker(project.id);
   const createTask = useCreateTask(project.id);
+  const scAuth = useSoundCloudAuthStatus();
+  const scLogin = useSoundCloudLogin();
+  const scUpload = useSoundCloudUpload();
 
   // Load bounce into audio player if needed
   useEffect(() => {
@@ -338,6 +346,43 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
     }
   };
 
+  const handleSoundCloudUpload = async () => {
+    if (!selectedBounce || isUploading) return;
+    setIsUploading(true);
+    setShowUploaded(false);
+    setUploadedUrl(null);
+    setScError(null);
+    try {
+      if (!scAuth.data?.logged_in) {
+        await scLogin.mutateAsync();
+      }
+      const fileName = selectedBounce.bounce_path.split(/[/\\]/).pop() || '';
+      const stem = fileName.replace(/\.[^.]+$/, '');
+      const title = `${project.name} - ${stem}`;
+      const tagList = project.tags?.map(t => t.name).join(' ') || '';
+      const result = await scUpload.mutateAsync({
+        bouncePath: selectedBounce.bounce_path,
+        title,
+        genre: project.genre_label || '',
+        tags: tagList,
+        bpm: project.bpm,
+      });
+      setShowUploaded(true);
+      setUploadedUrl(result.permalink_url);
+      setTimeout(() => {
+        setShowUploaded(false);
+        setUploadedUrl(null);
+      }, 3000);
+    } catch (err: any) {
+      console.error('SoundCloud upload failed:', err);
+      const msg = typeof err === 'string' ? err : err?.message || 'Upload failed';
+      setScError(msg);
+      setTimeout(() => setScError(null), 5000);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   if (bounces.length === 0) {
     return (
       <div className="text-center py-16">
@@ -391,6 +436,42 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
         {showCopied && (
           <span className="text-[11px] text-green-400 font-medium animate-pulse">
             MP3 copied!
+          </span>
+        )}
+        <button
+          onClick={handleSoundCloudUpload}
+          disabled={isUploading || !selectedBounce || scLogin.isPending}
+          title="Upload to SoundCloud (private)"
+          className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-orange-400 disabled:opacity-50 transition-colors"
+        >
+          {isUploading ? (
+            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M11.56 8.87V17h-1.12V8.87H8L11 4l3 4.87h-2.44zM20 12c0-2.21-1.79-4-4-4-.34 0-.68.04-1 .12C14.44 5.56 12.07 4 9.38 4 6.09 4 3.38 6.69 3.34 9.98 1.42 10.53 0 12.3 0 14.41 0 16.95 2.05 19 4.59 19H11v-1.5H4.59C2.87 17.5 1.5 16.13 1.5 14.41c0-1.5 1.06-2.76 2.5-3.07l.76-.17.07-.78C4.94 7.59 6.89 5.5 9.38 5.5c2.24 0 4.17 1.58 4.64 3.76l.22 1.03.96-.32c.27-.09.52-.12.8-.12 1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5H13v1.5h3c2.21 0 4-1.79 4-4z" />
+            </svg>
+          )}
+        </button>
+        {showUploaded && (
+          <a
+            href="#"
+            className="text-[11px] text-orange-400 font-medium animate-pulse hover:underline"
+            onClick={(e) => {
+              e.preventDefault();
+              if (uploadedUrl) {
+                import('@tauri-apps/plugin-opener').then(m => m.openUrl(uploadedUrl));
+              }
+            }}
+          >
+            Uploaded!
+          </a>
+        )}
+        {scError && (
+          <span className="text-[11px] text-red-400 font-medium">
+            {scError}
           </span>
         )}
         <span className="text-[10px] text-neutral-600">

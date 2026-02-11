@@ -15,3 +15,4 @@ pub mod covers;
 pub mod notes;
 pub mod spotify;
 pub mod share;
+pub mod soundcloud;

@@ -4,10 +4,12 @@ mod commands;
 mod artwork;
 mod cover_gen;
 mod spotify;
+mod soundcloud;
 mod mp3;
 
 use db::DbState;
 use spotify::{SpotifyState, SpotifyInner};
+use soundcloud::{SoundCloudState, SoundCloudInner};
 use std::sync::Mutex;
 use tauri::Manager;
 
@@ -29,6 +31,10 @@ pub fn run() {
             app.manage(DbState(Mutex::new(conn)));
             app.manage(SpotifyState(Mutex::new(SpotifyInner {
                 client_token: None,
+                user_auth: None,
+                pkce_pending: None,
+            })));
+            app.manage(SoundCloudState(Mutex::new(SoundCloudInner {
                 user_auth: None,
                 pkce_pending: None,
             })));
@@ -105,6 +111,11 @@ pub fn run() {
             commands::spotify::spotify_get_access_token,
             commands::spotify::spotify_logout,
             commands::share::share_bounce,
+            commands::soundcloud::sc_get_auth_status,
+            commands::soundcloud::sc_start_login,
+            commands::soundcloud::sc_wait_for_callback,
+            commands::soundcloud::sc_upload_bounce,
+            commands::soundcloud::sc_logout,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

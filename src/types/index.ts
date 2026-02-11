@@ -190,6 +190,18 @@ export interface SpotifyAuthStatus {
   is_premium: boolean;
 }
 
+// ── SoundCloud types ──
+
+export interface SoundCloudAuthStatus {
+  logged_in: boolean;
+  username: string | null;
+}
+
+export interface SoundCloudUploadResult {
+  permalink_url: string;
+  title: string;
+}
+
 export type AssetType = 'image' | 'audio' | 'generic';
 
 export interface ProjectAsset {

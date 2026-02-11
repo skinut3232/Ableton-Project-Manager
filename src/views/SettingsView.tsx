@@ -20,6 +20,7 @@ export function SettingsView() {
   const [bounceFolderName, setBounceFolderName] = useState('Bounces');
   const [scanOnLaunch, setScanOnLaunch] = useState(true);
   const [randomProjectMode, setRandomProjectMode] = useState('preview');
+  const [scPublicUpload, setScPublicUpload] = useState(false);
   const [saved, setSaved] = useState(false);
 
   // Import checklist state
@@ -33,6 +34,7 @@ export function SettingsView() {
       setBounceFolderName(getSettingValue(settings, 'bounce_folder_name') || 'Bounces');
       setScanOnLaunch(getSettingValue(settings, 'scan_on_launch') !== 'false');
       setRandomProjectMode(getSettingValue(settings, 'random_project_mode') || 'preview');
+      setScPublicUpload(getSettingValue(settings, 'soundcloud_public_upload') === 'true');
     }
   }, [settings]);
 
@@ -57,6 +59,7 @@ export function SettingsView() {
       { key: 'bounce_folder_name', value: bounceFolderName },
       { key: 'scan_on_launch', value: scanOnLaunch.toString() },
       { key: 'random_project_mode', value: randomProjectMode },
+      { key: 'soundcloud_public_upload', value: scPublicUpload.toString() },
     ]);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -171,6 +174,14 @@ export function SettingsView() {
             What happens when you click the Random button or press Ctrl+Shift+R.
           </p>
         </div>
+
+        {/* SoundCloud Upload Privacy */}
+        <Toggle
+          label="SoundCloud: Upload as Public"
+          checked={scPublicUpload}
+          onChange={setScPublicUpload}
+          description="When enabled, bounces uploaded to SoundCloud will be public. Default is private."
+        />
 
         {/* Save Button */}
         <div className="flex items-center gap-3 pt-2">
