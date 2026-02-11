@@ -7,6 +7,7 @@ import { PROJECT_STATUSES, MUSICAL_KEYS } from '../../lib/constants';
 import { tauriInvoke } from '../../hooks/useTauriInvoke';
 import type { Project } from '../../types';
 import { useState, useRef, useEffect } from 'react';
+import { generateSongName } from '../../lib/songNameGenerator';
 
 interface ProjectHeaderProps {
   project: Project;
@@ -86,17 +87,31 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-4 mb-3">
           {editingName ? (
-            <input
-              ref={nameInputRef}
-              value={nameValue}
-              onChange={(e) => setNameValue(e.target.value)}
-              onBlur={commitName}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitName();
-                if (e.key === 'Escape') { setNameValue(project.name); setEditingName(false); }
-              }}
-              className="text-2xl font-bold text-white bg-neutral-800 border border-neutral-600 rounded px-2 py-0.5 focus:border-blue-500 focus:outline-none w-full"
-            />
+            <div className="flex items-center gap-2 w-full">
+              <input
+                ref={nameInputRef}
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                onBlur={commitName}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') commitName();
+                  if (e.key === 'Escape') { setNameValue(project.name); setEditingName(false); }
+                }}
+                className="text-2xl font-bold text-white bg-neutral-800 border border-neutral-600 rounded px-2 py-0.5 focus:border-blue-500 focus:outline-none flex-1 min-w-0"
+              />
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setNameValue(generateSongName())}
+                className="shrink-0 flex items-center gap-1 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-[10px] text-neutral-400 hover:text-white hover:border-neutral-500 transition-colors"
+                title="Generate a random song name"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
+                  <path d="M13.5 2.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm2-9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-6 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm9 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm6 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-9 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm6 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm3-3a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm0 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+                </svg>
+                Name it for me
+              </button>
+            </div>
           ) : (
             <h1
               className="text-2xl font-bold text-white truncate cursor-pointer hover:text-neutral-300 transition-colors"
