@@ -1,3 +1,4 @@
+import { formatTimestamp } from '../../lib/utils';
 import type { Session } from '../../types';
 
 interface SessionHistoryProps {
@@ -27,7 +28,7 @@ export function SessionHistory({ sessions }: SessionHistoryProps) {
             <div key={session.id} className="rounded border border-neutral-700 px-3 py-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-neutral-400">
-                  {new Date(session.started_at + 'Z').toLocaleDateString()}
+                  {formatTimestamp(session.started_at)}
                 </span>
                 <span className="text-neutral-300 font-medium">
                   {formatDuration(session.duration_seconds)}

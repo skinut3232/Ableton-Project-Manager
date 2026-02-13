@@ -32,6 +32,7 @@ interface LibraryState {
   setVisibleColumns: (columns: TableColumnKey[]) => void;
   toggleColumn: (column: TableColumnKey) => void;
   setTableSort: (sortBy: string, dir: 'asc' | 'desc') => void;
+  resetFilters: () => void;
   getFilters: () => ProjectFilters;
 }
 
@@ -80,6 +81,23 @@ export const useLibraryStore = create<LibraryState>()(
           };
         }),
       setTableSort: (sortBy, dir) => set({ sortBy, tableSortDir: dir }),
+
+      resetFilters: () =>
+        set({
+          searchQuery: '',
+          sortBy: 'last_worked_on',
+          showArchived: false,
+          statusFilters: [],
+          tagFilters: [],
+          smartFilters: [
+            { key: 'in_rotation', label: 'In Rotation', active: false },
+            { key: 'top_rated', label: 'Top Rated', active: false },
+            { key: 'last_7_days', label: 'Last 7 Days', active: false },
+            { key: 'last_30_days', label: 'Last 30 Days', active: false },
+            { key: 'near_done', label: 'Near Done', active: false },
+          ],
+          tableSortDir: 'desc',
+        }),
 
       getFilters: () => {
         const state = get();

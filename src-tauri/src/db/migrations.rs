@@ -1,3 +1,16 @@
+// ============================================================================
+// MIGRATION CHECKLIST (before writing a new migration)
+// ============================================================================
+// [ ] Is every CREATE TABLE guarded by a table-existence check?
+// [ ] Is every ALTER TABLE ADD COLUMN guarded by a column-existence check?
+// [ ] Are ALTER TABLE statements wrapped in .ok()?
+// [ ] Is the version bump the LAST statement?
+// [ ] Am I adding a searchable field? → Update FTS rebuild (see queries.rs)
+// [ ] Did I add the new migration call to the migration runner function?
+// [ ] Did I test with a fresh DB (no existing data)?
+// [ ] Did I test with an existing DB (data already present)?
+// ============================================================================
+
 use rusqlite::Connection;
 
 const SCHEMA_SQL: &str = include_str!("schema.sql");
@@ -245,3 +258,69 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
 
     Ok(())
 }
+
+// ============================================================================
+// MIGRATION TEMPLATE
+// ============================================================================
+// Copy this template when adding a new migration. Every migration MUST be
+// idempotent — it must be safe to run multiple times without crashing.
+//
+// Rules:
+//   1. Always check if a table exists before CREATE TABLE
+//   2. Always check if a column exists before ALTER TABLE ADD COLUMN
+//   3. Wrap ALTER TABLE statements in .ok() so partial migrations can recover
+//   4. Bump the schema version as the last step (atomically)
+//   5. Never rename or remove columns — add new ones and deprecate the old
+//   6. Never delete data as part of a migration
+//   7. If adding a searchable field (name, genre, notes, tags), also update
+//      the FTS rebuild function (see Fix #4 in gotcha-fixes.md)
+//
+// fn migrate_vN_to_vN_plus_1(conn: &Connection) -> Result<(), String> {
+//
+//     // --- NEW TABLE (check existence first) ---
+//     let table_exists: bool = conn
+//         .query_row(
+//             "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='my_new_table'",
+//             [],
+//             |row| row.get(0),
+//         )
+//         .unwrap_or(false);
+//
+//     if !table_exists {
+//         conn.execute_batch(
+//             "CREATE TABLE my_new_table (
+//                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+//                 project_id INTEGER NOT NULL,
+//                 value TEXT NOT NULL DEFAULT '',
+//                 created_at TEXT NOT NULL DEFAULT (datetime('now')),
+//                 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+//             );"
+//         ).map_err(|e| format!("Failed to create my_new_table: {}", e))?;
+//     }
+//
+//     // --- NEW COLUMN (check existence first) ---
+//     let has_column: bool = conn
+//         .prepare("SELECT COUNT(*) FROM pragma_table_info('projects') WHERE name='my_new_column'")
+//         .and_then(|mut stmt| stmt.query_row([], |row| row.get::<_, i64>(0)))
+//         .unwrap_or(0) > 0;
+//
+//     if !has_column {
+//         conn.execute(
+//             "ALTER TABLE projects ADD COLUMN my_new_column TEXT NOT NULL DEFAULT ''",
+//             [],
+//         ).ok(); // .ok() so it won't crash if column was partially added before
+//     }
+//
+//     // --- NEW INDEX (use IF NOT EXISTS) ---
+//     conn.execute(
+//         "CREATE INDEX IF NOT EXISTS idx_my_new_table_project_id ON my_new_table(project_id)",
+//         [],
+//     ).ok();
+//
+//     // --- BUMP VERSION (always last) ---
+//     conn.execute("UPDATE schema_version SET version = N+1", [])
+//         .map_err(|e| format!("Failed to update schema version: {}", e))?;
+//
+//     Ok(())
+// }
+// ============================================================================

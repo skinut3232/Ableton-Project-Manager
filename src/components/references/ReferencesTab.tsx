@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useReferences, useCreateReference, useUpdateReference, useDeleteReference } from '../../hooks/useReferences';
 import { SpotifyReferencesSection } from './SpotifyReferencesSection';
+import { formatTimestamp } from '../../lib/utils';
 
 interface ReferencesTabProps {
   projectId: number;
@@ -161,7 +162,7 @@ export function ReferencesTab({ projectId }: ReferencesTabProps) {
               )}
 
               <p className="text-[10px] text-neutral-600 mt-1">
-                Added {new Date(ref.created_at + 'Z').toLocaleDateString()}
+                Added {formatTimestamp(ref.created_at)}
               </p>
             </div>
           ))}

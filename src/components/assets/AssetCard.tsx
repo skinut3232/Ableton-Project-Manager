@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import { formatTimestamp } from '../../lib/utils';
 import type { ProjectAsset } from '../../types';
 
 interface AssetCardProps {
@@ -67,7 +68,7 @@ export function AssetCard({ asset, onUpdateTags, onDelete, isPinned, onTogglePin
           {asset.original_filename}
         </p>
         <p className="text-[10px] text-neutral-500">
-          {asset.asset_type} &middot; {new Date(asset.created_at + 'Z').toLocaleDateString()}
+          {asset.asset_type} &middot; {formatTimestamp(asset.created_at)}
         </p>
 
         {/* Tags */}

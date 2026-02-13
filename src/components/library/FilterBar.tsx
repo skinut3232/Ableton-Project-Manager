@@ -6,6 +6,7 @@ import { tauriInvoke } from '../../hooks/useTauriInvoke';
 import type { Tag } from '../../types';
 
 export function FilterBar() {
+  const searchQuery = useLibraryStore((s) => s.searchQuery);
   const smartFilters = useLibraryStore((s) => s.smartFilters);
   const toggleSmartFilter = useLibraryStore((s) => s.toggleSmartFilter);
   const statusFilters = useLibraryStore((s) => s.statusFilters);
@@ -14,6 +15,14 @@ export function FilterBar() {
   const setTagFilters = useLibraryStore((s) => s.setTagFilters);
   const showArchived = useLibraryStore((s) => s.showArchived);
   const setShowArchived = useLibraryStore((s) => s.setShowArchived);
+  const resetFilters = useLibraryStore((s) => s.resetFilters);
+
+  const hasActiveFilters =
+    searchQuery.trim() !== '' ||
+    statusFilters.length > 0 ||
+    tagFilters.length > 0 ||
+    smartFilters.some((f) => f.active) ||
+    showArchived;
 
   const { data: allTags } = useQuery({
     queryKey: ['tags'],
@@ -70,6 +79,19 @@ export function FilterBar() {
       >
         Show Archived
       </button>
+
+      {/* Clear all filters */}
+      {hasActiveFilters && (
+        <>
+          <div className="w-px h-5 bg-neutral-700" />
+          <button
+            onClick={resetFilters}
+            className="rounded-full px-3 py-1 text-xs font-medium text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors"
+          >
+            Clear all filters
+          </button>
+        </>
+      )}
     </div>
   );
 }

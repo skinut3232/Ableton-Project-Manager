@@ -5,6 +5,7 @@ import { StatusBadge } from '../ui/StatusBadge';
 import { RatingStars } from '../ui/RatingStars';
 import { PlayButton } from '../audio/PlayButton';
 import { CoverImage } from '../ui/CoverImage';
+import { parseTimestamp } from '../../lib/utils';
 import type { Project, ProjectStatus } from '../../types';
 
 interface ProjectTableProps {
@@ -233,7 +234,7 @@ function CellRenderer({ column, project }: { column: TableColumnKey; project: Pr
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return '—';
-  const date = new Date(dateStr + 'Z');
+  const date = parseTimestamp(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / 86400000);

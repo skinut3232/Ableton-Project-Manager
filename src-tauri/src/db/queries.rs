@@ -1,3 +1,25 @@
+// ============================================================================
+// FTS SYNC PATTERN
+// ============================================================================
+// The projects_fts search index must stay in sync with these fields:
+//   - projects.name
+//   - projects.genre_label
+//   - project_notes (all notes for a project)
+//   - project_tags (all tags for a project)
+//
+// Any function that modifies these fields MUST call rebuild_fts_tags()
+// afterward. To enforce this:
+//
+//   1. Raw write functions are PRIVATE (fn ..._inner)
+//   2. Public wrappers call the inner function + rebuild_fts_tags()
+//   3. Command handlers can ONLY call the public wrappers
+//
+// If you add a new function that writes to a searchable field:
+//   1. Write it as a private fn ..._inner
+//   2. Create a public wrapper that calls it + rebuild_fts_tags()
+//   3. Never make the inner function pub
+// ============================================================================
+
 use rusqlite::{params, Connection};
 use crate::db::models::*;
 
@@ -260,7 +282,7 @@ pub fn get_project_detail(conn: &Connection, id: i64) -> Result<ProjectDetail, S
     })
 }
 
-pub fn update_project(conn: &Connection, id: i64, name: Option<String>, status: Option<String>, rating: Option<i64>, bpm: Option<f64>, in_rotation: Option<bool>, notes: Option<String>, genre_label: Option<String>, musical_key: Option<String>, archived: Option<bool>, progress: Option<i64>) -> Result<Project, String> {
+fn update_project_inner(conn: &Connection, id: i64, name: &Option<String>, status: &Option<String>, rating: Option<i64>, bpm: Option<f64>, in_rotation: Option<bool>, notes: &Option<String>, genre_label: &Option<String>, musical_key: &Option<String>, archived: Option<bool>, progress: Option<i64>) -> Result<(), String> {
     if let Some(ref n) = name {
         let trimmed = n.trim();
         if !trimmed.is_empty() {
@@ -304,12 +326,15 @@ pub fn update_project(conn: &Connection, id: i64, name: Option<String>, status: 
         conn.execute("UPDATE projects SET progress = ?1, updated_at = datetime('now') WHERE id = ?2", params![p, id])
             .map_err(|e| e.to_string())?;
     }
+    Ok(())
+}
 
-    // Rebuild FTS index if any FTS-indexed field changed
-    if name.is_some() || notes.is_some() || genre_label.is_some() {
+pub fn update_project(conn: &Connection, id: i64, name: Option<String>, status: Option<String>, rating: Option<i64>, bpm: Option<f64>, in_rotation: Option<bool>, notes: Option<String>, genre_label: Option<String>, musical_key: Option<String>, archived: Option<bool>, progress: Option<i64>) -> Result<Project, String> {
+    let needs_fts = name.is_some() || notes.is_some() || genre_label.is_some();
+    update_project_inner(conn, id, &name, &status, rating, bpm, in_rotation, &notes, &genre_label, &musical_key, archived, progress)?;
+    if needs_fts {
         rebuild_fts_tags(conn, id)?;
     }
-
     get_project_by_id(conn, id)
 }
 
@@ -362,20 +387,30 @@ pub fn create_tag(conn: &Connection, name: &str) -> Result<Tag, String> {
     Ok(tag)
 }
 
-pub fn add_tag_to_project(conn: &Connection, project_id: i64, tag_id: i64) -> Result<(), String> {
+fn add_tag_to_project_inner(conn: &Connection, project_id: i64, tag_id: i64) -> Result<(), String> {
     conn.execute(
         "INSERT OR IGNORE INTO project_tags (project_id, tag_id) VALUES (?1, ?2)",
         params![project_id, tag_id],
     ).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+pub fn add_tag_to_project(conn: &Connection, project_id: i64, tag_id: i64) -> Result<(), String> {
+    add_tag_to_project_inner(conn, project_id, tag_id)?;
     rebuild_fts_tags(conn, project_id)?;
     Ok(())
 }
 
-pub fn remove_tag_from_project(conn: &Connection, project_id: i64, tag_id: i64) -> Result<(), String> {
+fn remove_tag_from_project_inner(conn: &Connection, project_id: i64, tag_id: i64) -> Result<(), String> {
     conn.execute(
         "DELETE FROM project_tags WHERE project_id = ?1 AND tag_id = ?2",
         params![project_id, tag_id],
     ).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+pub fn remove_tag_from_project(conn: &Connection, project_id: i64, tag_id: i64) -> Result<(), String> {
+    remove_tag_from_project_inner(conn, project_id, tag_id)?;
     rebuild_fts_tags(conn, project_id)?;
     Ok(())
 }
@@ -1375,7 +1410,7 @@ pub fn get_notes_for_project(conn: &Connection, project_id: i64) -> Result<Vec<P
     Ok(notes)
 }
 
-pub fn create_note(conn: &Connection, project_id: i64, content: &str) -> Result<ProjectNote, String> {
+fn create_note_inner(conn: &Connection, project_id: i64, content: &str) -> Result<ProjectNote, String> {
     conn.execute(
         "INSERT INTO project_notes (project_id, content) VALUES (?1, ?2)",
         params![project_id, content],
@@ -1383,8 +1418,34 @@ pub fn create_note(conn: &Connection, project_id: i64, content: &str) -> Result<
     .map_err(|e| e.to_string())?;
     let id = conn.last_insert_rowid();
 
-    // Rebuild FTS for this project
+    conn.query_row(
+        "SELECT id, project_id, content, created_at, updated_at FROM project_notes WHERE id = ?1",
+        params![id],
+        |row| {
+            Ok(ProjectNote {
+                id: row.get(0)?,
+                project_id: row.get(1)?,
+                content: row.get(2)?,
+                created_at: row.get(3)?,
+                updated_at: row.get(4)?,
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn create_note(conn: &Connection, project_id: i64, content: &str) -> Result<ProjectNote, String> {
+    let note = create_note_inner(conn, project_id, content)?;
     rebuild_fts_tags(conn, project_id)?;
+    Ok(note)
+}
+
+fn update_note_inner(conn: &Connection, id: i64, content: &str) -> Result<ProjectNote, String> {
+    conn.execute(
+        "UPDATE project_notes SET content = ?1, updated_at = datetime('now') WHERE id = ?2",
+        params![content, id],
+    )
+    .map_err(|e| e.to_string())?;
 
     conn.query_row(
         "SELECT id, project_id, content, created_at, updated_at FROM project_notes WHERE id = ?1",
@@ -1403,34 +1464,12 @@ pub fn create_note(conn: &Connection, project_id: i64, content: &str) -> Result<
 }
 
 pub fn update_note(conn: &Connection, id: i64, content: &str) -> Result<ProjectNote, String> {
-    conn.execute(
-        "UPDATE project_notes SET content = ?1, updated_at = datetime('now') WHERE id = ?2",
-        params![content, id],
-    )
-    .map_err(|e| e.to_string())?;
-
-    let note = conn.query_row(
-        "SELECT id, project_id, content, created_at, updated_at FROM project_notes WHERE id = ?1",
-        params![id],
-        |row| {
-            Ok(ProjectNote {
-                id: row.get(0)?,
-                project_id: row.get(1)?,
-                content: row.get(2)?,
-                created_at: row.get(3)?,
-                updated_at: row.get(4)?,
-            })
-        },
-    )
-    .map_err(|e| e.to_string())?;
-
-    // Rebuild FTS for this project
+    let note = update_note_inner(conn, id, content)?;
     rebuild_fts_tags(conn, note.project_id)?;
-
     Ok(note)
 }
 
-pub fn delete_note(conn: &Connection, id: i64) -> Result<i64, String> {
+fn delete_note_inner(conn: &Connection, id: i64) -> Result<i64, String> {
     // Get project_id before deleting
     let project_id: i64 = conn
         .query_row("SELECT project_id FROM project_notes WHERE id = ?1", params![id], |row| row.get(0))
@@ -1439,8 +1478,11 @@ pub fn delete_note(conn: &Connection, id: i64) -> Result<i64, String> {
     conn.execute("DELETE FROM project_notes WHERE id = ?1", params![id])
         .map_err(|e| e.to_string())?;
 
-    // Rebuild FTS for this project
-    rebuild_fts_tags(conn, project_id)?;
+    Ok(project_id)
+}
 
+pub fn delete_note(conn: &Connection, id: i64) -> Result<i64, String> {
+    let project_id = delete_note_inner(conn, id)?;
+    rebuild_fts_tags(conn, project_id)?;
     Ok(project_id)
 }

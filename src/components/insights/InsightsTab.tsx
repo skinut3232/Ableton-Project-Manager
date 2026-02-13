@@ -4,6 +4,7 @@ import { useTasks } from '../../hooks/useTasks';
 import { useNotes } from '../../hooks/useNotes';
 import { SessionTimer } from '../project/SessionTimer';
 import { SessionHistory } from '../project/SessionHistory';
+import { parseTimestamp } from '../../lib/utils';
 import type { Project, Bounce, Session } from '../../types';
 
 interface InsightsTabProps {
@@ -22,13 +23,13 @@ export function InsightsTab({ project, bounces, sessions }: InsightsTabProps) {
 
     // Days since last worked on
     const daysSinceWorked = project.last_worked_on
-      ? Math.floor((now - new Date(project.last_worked_on + 'Z').getTime()) / 86400000)
+      ? Math.floor((now - parseTimestamp(project.last_worked_on).getTime()) / 86400000)
       : null;
 
     // Days since last bounce
     const latestBounce = bounces[0];
     const daysSinceBounce = latestBounce
-      ? Math.floor((now - new Date(latestBounce.modified_time + 'Z').getTime()) / 86400000)
+      ? Math.floor((now - parseTimestamp(latestBounce.modified_time).getTime()) / 86400000)
       : null;
 
     // Bounce count
