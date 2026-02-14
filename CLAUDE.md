@@ -8,12 +8,12 @@ A Tauri v2 desktop app (Windows) for managing ~100+ Ableton Live projects. Scans
 - **Frontend:** React 19, TypeScript, Vite 7, Tailwind CSS v4 (`@tailwindcss/vite`), Zustand 5, TanStack React Query 5, react-router-dom 7
 - **Plugins:** tauri-plugin-dialog, tauri-plugin-opener, tauri-plugin-window-state, tauri-plugin-log
 
-## Current Status — ALL 11 PHASES COMPLETE
-The app builds successfully (both TypeScript and Rust compile with zero errors). An NSIS installer was produced. The app has NOT been runtime-tested yet — first launch testing is the next step.
+## Current Status — ALL 11 PHASES COMPLETE + CLOUD SYNC + MOBILE APP
+The desktop app is runtime-tested and working. The Expo mobile companion app is live.
 
 ### What's Built
 1. **Phase 1** — Tauri v2 scaffold with React + TS + Tailwind CSS v4
-2. **Phase 2** — SQLite database layer with FTS5, migrations, full schema (9 tables + triggers)
+2. **Phase 2** — SQLite database layer with FTS5, migrations, full schema (11 tables + FTS5)
 3. **Phase 3** — File system scanner (walks root folder, discovers projects, parses WAV RIFF chunks for duration)
 4. **Phase 4** — Frontend architecture, routing (Library/Detail/Settings), global state, Settings view with native file pickers
 5. **Phase 5** — Library view with responsive project card grid, FTS5 search, sorting
@@ -23,9 +23,10 @@ The app builds successfully (both TypeScript and Rust compile with zero errors).
 9. **Phase 9** — Work session timer with note capture, session history, crash recovery for incomplete sessions
 10. **Phase 10** — Keyboard shortcuts (Ctrl+F, Space, Escape, Ctrl+R, arrow keys) + window-state plugin for geometry persistence
 11. **Phase 11** — Logging plugin (rotating 5MB files), error handling, loading skeletons, empty states, NSIS installer config
+12. **Supabase Cloud Sync** — Auth, push/pull sync engine, initial migration, WAV→MP3 bounce upload, cover image upload
+13. **Mobile App** — Expo SDK 54 companion app with library browsing, metadata editing, audio playback with seeking, cover images
 
-### What's NOT Done / Needs Testing
-- **No runtime testing yet** — the app compiled but hasn't been launched
+### Known Minor Issues
 - Bundle identifier was changed from `.app` to `.desktop` to fix a macOS conflict warning
 - Node.js version warning (v20.11.0 vs Vite 7's requirement of v20.19+) — builds fine but upgrading would be cleaner
 - The `SessionTimer` receives `projectName` prop but doesn't use it (prefixed with `_` to suppress TS error)
@@ -107,10 +108,27 @@ Alternatively, use a **Developer Command Prompt for VS 2022** which sets these a
 │   │   │   ├── ableton.rs             # open_in_ableton, open_bounces_folder
 │   │   │   ├── bounces.rs             # get_bounces_for_project
 │   │   │   ├── sets.rs                # get_sets_for_project, set_current_set
-│   │   │   └── sessions.rs            # start/stop/get/resolve sessions
-│   │   └── artwork/
-│   │       └── mod.rs                 # Image resize to 300x300 thumbnail
+│   │   │   ├── sessions.rs            # start/stop/get/resolve sessions
+│   │   │   ├── covers.rs              # cover generation commands
+│   │   │   └── sync.rs                # trigger_sync, inline migration, MP3/cover uploads
+│   │   ├── artwork/
+│   │   │   └── mod.rs                 # Image resize to 300x300 thumbnail
+│   │   ├── cover_gen/                 # Procedural cover generation (gradient + grain)
+│   │   ├── supabase/                  # Supabase client, auth, API, sync engine, uploads
+│   │   └── mp3/                       # WAV → MP3 conversion (lame encoder)
 │   └── icons/                         # Default Tauri icons
+├── mobile/                            # Expo React Native companion app
+│   ├── App.tsx                        # Root: AuthProvider + QueryProvider + Navigation
+│   ├── src/
+│   │   ├── screens/                   # Library, ProjectDetail, NowPlaying, Login, Settings
+│   │   ├── components/                # UI, library, project, audio components
+│   │   ├── hooks/                     # useProjects, useTags, useNotes, useTasks, etc.
+│   │   ├── stores/                    # audioStore, libraryStore (Zustand)
+│   │   ├── lib/                       # supabase client, audioPlayer, theme, utils
+│   │   ├── navigation/                # RootNavigator, LibraryStack
+│   │   ├── providers/                 # AuthProvider, QueryProvider
+│   │   └── types/                     # TypeScript interfaces
+│   └── package.json                   # Expo SDK 54, React Native 0.81
 ```
 
 ## Key Architecture Decisions
@@ -123,9 +141,9 @@ Alternatively, use a **Developer Command Prompt for VS 2022** which sets these a
 - **Asset protocol** enabled in CSP for both `asset:` and `http://asset.localhost` to serve local artwork and WAV files
 
 ## Database Schema
-SQLite at `%APPDATA%/AbletonProjectLibrary/library.db`
+SQLite at `%APPDATA%/AbletonProjectLibrary/library.db` — schema version 11
 
-Tables: `schema_version`, `settings`, `projects`, `ableton_sets`, `bounces`, `tags`, `project_tags`, `sessions`, `projects_fts` (FTS5 virtual table)
+Tables: `schema_version`, `settings`, `projects`, `ableton_sets`, `bounces`, `tags`, `project_tags`, `sessions`, `markers`, `tasks`, `project_references`, `assets`, `mood_board`, `project_notes`, `spotify_references`, `sync_meta`, `projects_fts` (FTS5 virtual table)
 
 ## Build Commands
 ```bash
