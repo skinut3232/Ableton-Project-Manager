@@ -1,10 +1,5 @@
 // Sync engine: push dirty local records to Supabase, pull remote changes.
 
-use std::sync::mpsc;
-use std::sync::{Arc, Mutex};
-use std::thread;
-use std::time::Duration;
-
 use rusqlite::{params, Connection};
 use serde_json::{json, Value};
 use crate::supabase::SupabaseClient;
@@ -27,191 +22,9 @@ const SYNC_ORDER: &[&str] = &[
     "mood_board",
 ];
 
-/// Spawn the background sync thread.
-/// Returns a sender that can be used to trigger immediate sync cycles.
-pub fn spawn_sync_thread(
-    db: Arc<Mutex<Connection>>,
-    supabase: Arc<Mutex<SupabaseClient>>,
-) -> mpsc::Sender<()> {
-    let (tx, rx) = mpsc::channel::<()>();
-
-    thread::spawn(move || {
-        log::info!("Sync thread started");
-        loop {
-            // Wait for a trigger or timeout after 30s
-            match rx.recv_timeout(Duration::from_secs(30)) {
-                Ok(()) => {
-                    // Debounce: wait 2s for more changes before syncing
-                    thread::sleep(Duration::from_secs(2));
-                    // Drain any additional triggers that arrived during debounce
-                    while rx.try_recv().is_ok() {}
-                }
-                Err(mpsc::RecvTimeoutError::Timeout) => {
-                    // Periodic sync cycle
-                }
-                Err(mpsc::RecvTimeoutError::Disconnected) => {
-                    log::info!("Sync thread shutting down (channel disconnected)");
-                    break;
-                }
-            }
-
-            // Check if still authenticated
-            {
-                let client = supabase.lock().unwrap();
-                if !client.is_authenticated() {
-                    continue;
-                }
-            }
-
-            // Run push cycle
-            if let Err(e) = push_cycle(&db, &supabase) {
-                log::error!("Push sync error: {}", e);
-            }
-
-            // Run pull cycle
-            if let Err(e) = pull_cycle(&db, &supabase) {
-                log::error!("Pull sync error: {}", e);
-            }
-        }
-    });
-
-    tx
-}
-
 // ============================================================================
-// PUSH CYCLE
+// PUSH — payload builders (used by commands/sync.rs inline functions)
 // ============================================================================
-
-/// Push dirty local records to Supabase.
-fn push_cycle(
-    db: &Arc<Mutex<Connection>>,
-    supabase: &Arc<Mutex<SupabaseClient>>,
-) -> Result<(), String> {
-    let conn = db.lock().map_err(|e| e.to_string())?;
-
-    // Get user_id from the authenticated client
-    let user_id = {
-        let client = supabase.lock().map_err(|e| e.to_string())?;
-        client.user_id.clone().ok_or("Not authenticated")?
-    };
-
-    let mut pushed = 0;
-
-    // Push pending records in dependency order
-    for table in SYNC_ORDER {
-        let count = push_table(&conn, supabase, table, &user_id)?;
-        pushed += count;
-    }
-
-    // Push project_tags junction table
-    let tag_count = push_project_tags(&conn, supabase, &user_id)?;
-    pushed += tag_count;
-
-    // Handle pending deletes (reverse order — children first)
-    for table in SYNC_ORDER.iter().rev() {
-        delete_pending(&conn, supabase, table)?;
-    }
-
-    if pushed > 0 {
-        // Update last_push_at
-        let now = chrono::Utc::now().to_rfc3339();
-        conn.execute(
-            "INSERT INTO sync_meta (key, value) VALUES ('last_push_at', ?1) \
-             ON CONFLICT(key) DO UPDATE SET value = ?1",
-            params![now],
-        ).ok();
-        log::info!("Push cycle complete: {} records pushed", pushed);
-    }
-
-    // Upload MP3s for latest bounces (non-fatal — log warnings on failure)
-    if let Err(e) = upload_bounce_mp3s(&conn, supabase, &user_id) {
-        log::warn!("Bounce MP3 upload error: {}", e);
-    }
-
-    Ok(())
-}
-
-/// Push all pending records from a single table.
-fn push_table(
-    conn: &Connection,
-    supabase: &Arc<Mutex<SupabaseClient>>,
-    table: &str,
-    user_id: &str,
-) -> Result<usize, String> {
-    // Get all records with sync_status = 'pending_push'
-    let mut stmt = conn.prepare(
-        &format!("SELECT id FROM {} WHERE sync_status = 'pending_push'", table)
-    ).map_err(|e| e.to_string())?;
-    let ids: Vec<i64> = stmt.query_map([], |row| row.get(0))
-        .map_err(|e| e.to_string())?
-        .filter_map(|r| r.ok())
-        .collect();
-    drop(stmt);
-
-    if ids.is_empty() {
-        return Ok(0);
-    }
-
-    let mut count = 0;
-    for local_id in &ids {
-        match push_record(conn, supabase, table, *local_id, user_id) {
-            Ok(()) => count += 1,
-            Err(e) => {
-                log::warn!("Failed to push {}.{}: {}", table, local_id, e);
-                // Don't fail the whole cycle — skip this record and retry next time
-            }
-        }
-    }
-
-    Ok(count)
-}
-
-/// Push a single record to Supabase.
-fn push_record(
-    conn: &Connection,
-    supabase: &Arc<Mutex<SupabaseClient>>,
-    table: &str,
-    local_id: i64,
-    user_id: &str,
-) -> Result<(), String> {
-    // Build the JSON payload from the local record
-    let payload = build_push_payload(conn, table, local_id, user_id)?;
-
-    // Check if this record already has a remote_id
-    let remote_id: Option<i64> = conn.query_row(
-        &format!("SELECT remote_id FROM {} WHERE id = ?1", table),
-        params![local_id],
-        |row| row.get(0),
-    ).map_err(|e| e.to_string())?;
-
-    let client = supabase.lock().map_err(|e| e.to_string())?;
-
-    let result = if let Some(rid) = remote_id {
-        // Update existing remote record
-        api::update(&client, table, rid, &payload)?
-    } else {
-        // Insert new remote record
-        api::insert(&client, table, &payload)?
-    };
-
-    drop(client);
-
-    // Store the remote_id from the response
-    if let Some(new_remote_id) = result.get("id").and_then(|v| v.as_i64()) {
-        conn.execute(
-            &format!("UPDATE {} SET remote_id = ?1, sync_status = 'synced' WHERE id = ?2", table),
-            params![new_remote_id, local_id],
-        ).map_err(|e| e.to_string())?;
-    } else {
-        // Mark as synced even if we can't parse the remote ID
-        conn.execute(
-            &format!("UPDATE {} SET sync_status = 'synced' WHERE id = ?1", table),
-            params![local_id],
-        ).map_err(|e| e.to_string())?;
-    }
-
-    Ok(())
-}
 
 /// Build a JSON payload for pushing a record to Supabase.
 /// Maps local column names/types to what Supabase expects.
@@ -477,278 +290,14 @@ fn build_mood_board_payload(conn: &Connection, local_id: i64) -> Result<Value, S
     }))
 }
 
-/// Push project_tags junction entries.
-fn push_project_tags(
-    conn: &Connection,
-    supabase: &Arc<Mutex<SupabaseClient>>,
-    _user_id: &str,
-) -> Result<usize, String> {
-    let mut stmt = conn.prepare(
-        "SELECT project_id, tag_id FROM project_tags WHERE sync_status = 'pending_push'"
-    ).map_err(|e| e.to_string())?;
-    let entries: Vec<(i64, i64)> = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
-        .map_err(|e| e.to_string())?
-        .filter_map(|r| r.ok())
-        .collect();
-    drop(stmt);
-
-    if entries.is_empty() {
-        return Ok(0);
-    }
-
-    let mut count = 0;
-    for (project_id, tag_id) in &entries {
-        let remote_project_id = get_remote_id(conn, "projects", *project_id)?;
-        let remote_tag_id = get_remote_id(conn, "tags", *tag_id)?;
-
-        if let (Some(rpid), Some(rtid)) = (remote_project_id, remote_tag_id) {
-            let payload = json!({
-                "project_id": rpid,
-                "tag_id": rtid,
-            });
-
-            let client = supabase.lock().map_err(|e| e.to_string())?;
-            match api::upsert(&client, "project_tags", &payload) {
-                Ok(_) => {
-                    drop(client);
-                    let now = chrono::Utc::now().to_rfc3339();
-                    conn.execute(
-                        "UPDATE project_tags SET sync_status = 'synced', sync_updated_at = ?1 \
-                         WHERE project_id = ?2 AND tag_id = ?3",
-                        params![now, project_id, tag_id],
-                    ).ok();
-                    count += 1;
-                }
-                Err(e) => {
-                    drop(client);
-                    log::warn!("Failed to push project_tag ({}, {}): {}", project_id, tag_id, e);
-                }
-            }
-        }
-    }
-
-    Ok(count)
-}
-
-/// Delete records marked as pending_delete from Supabase, then remove locally.
-fn delete_pending(
-    conn: &Connection,
-    supabase: &Arc<Mutex<SupabaseClient>>,
-    table: &str,
-) -> Result<(), String> {
-    let mut stmt = conn.prepare(
-        &format!("SELECT id, remote_id FROM {} WHERE sync_status = 'pending_delete'", table)
-    ).map_err(|e| e.to_string())?;
-    let records: Vec<(i64, Option<i64>)> = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
-        .map_err(|e| e.to_string())?
-        .filter_map(|r| r.ok())
-        .collect();
-    drop(stmt);
-
-    for (local_id, remote_id) in records {
-        if let Some(rid) = remote_id {
-            let client = supabase.lock().map_err(|e| e.to_string())?;
-            match api::delete(&client, table, rid) {
-                Ok(()) => {
-                    drop(client);
-                    // Remove local record now that remote is deleted
-                    conn.execute(
-                        &format!("DELETE FROM {} WHERE id = ?1", table),
-                        params![local_id],
-                    ).ok();
-                }
-                Err(e) => {
-                    drop(client);
-                    log::warn!("Failed to delete {}.{} from remote: {}", table, rid, e);
-                }
-            }
-        } else {
-            // No remote_id means it was never synced — just clean up locally
-            conn.execute(
-                &format!("DELETE FROM {} WHERE id = ?1", table),
-                params![local_id],
-            ).ok();
-        }
-    }
-
-    Ok(())
-}
-
 // ============================================================================
-// BOUNCE MP3 UPLOAD
+// PULL — used by commands/sync.rs for both inline and background sync
 // ============================================================================
-
-/// For each project with a remote_id, find the latest bounce (by modified_time)
-/// that has no mp3_url yet, convert WAV → MP3, upload to Supabase Storage,
-/// and store the public URL locally + remotely.
-fn upload_bounce_mp3s(
-    conn: &Connection,
-    supabase: &Arc<Mutex<SupabaseClient>>,
-    user_id: &str,
-) -> Result<(), String> {
-    // Find bounces that need MP3 conversion:
-    // - project has a remote_id (already synced)
-    // - bounce has no mp3_url yet
-    // - bounce is the latest per project (highest modified_time)
-    // - WAV file still exists on disk
-    let mut stmt = conn.prepare(
-        "SELECT b.id, b.bounce_path, b.remote_id, p.remote_id AS project_remote_id
-         FROM bounces b
-         JOIN projects p ON b.project_id = p.id
-         WHERE p.remote_id IS NOT NULL
-           AND b.mp3_url IS NULL
-           AND b.remote_id IS NOT NULL
-           AND b.modified_time = (
-               SELECT MAX(b2.modified_time) FROM bounces b2 WHERE b2.project_id = b.project_id
-           )"
-    ).map_err(|e| e.to_string())?;
-
-    let bounces: Vec<(i64, String, i64, i64)> = stmt.query_map([], |row| {
-        Ok((
-            row.get::<_, i64>(0)?,      // local bounce id
-            row.get::<_, String>(1)?,    // bounce_path (WAV)
-            row.get::<_, i64>(2)?,       // bounce remote_id
-            row.get::<_, i64>(3)?,       // project remote_id
-        ))
-    })
-    .map_err(|e| e.to_string())?
-    .filter_map(|r| r.ok())
-    .collect();
-    drop(stmt);
-
-    if bounces.is_empty() {
-        return Ok(());
-    }
-
-    log::info!("Found {} bounces needing MP3 upload", bounces.len());
-
-    // Get app data dir for temp files
-    let temp_dir = std::env::temp_dir().join("ableton-project-library-mp3");
-    std::fs::create_dir_all(&temp_dir).ok();
-
-    for (local_id, wav_path, bounce_remote_id, project_remote_id) in &bounces {
-        let wav = std::path::Path::new(wav_path);
-        if !wav.exists() {
-            log::debug!("Skipping bounce {} — WAV not found: {}", local_id, wav_path);
-            continue;
-        }
-
-        // Derive MP3 filename from WAV filename
-        let stem = wav.file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("bounce");
-        let mp3_filename = format!("{}.mp3", stem);
-        let temp_mp3 = temp_dir.join(&mp3_filename);
-
-        // Convert WAV → MP3
-        log::info!("Converting bounce {} to MP3: {}", local_id, wav_path);
-        if let Err(e) = crate::mp3::convert_wav_to_mp3(wav, &temp_mp3) {
-            log::warn!("MP3 conversion failed for bounce {}: {}", local_id, e);
-            continue;
-        }
-
-        // Read MP3 bytes
-        let mp3_data = match std::fs::read(&temp_mp3) {
-            Ok(data) => data,
-            Err(e) => {
-                log::warn!("Failed to read temp MP3 for bounce {}: {}", local_id, e);
-                std::fs::remove_file(&temp_mp3).ok();
-                continue;
-            }
-        };
-
-        // Upload to Supabase Storage: bounces/{user_id}/{project_remote_id}/{filename}.mp3
-        let storage_path = format!("{}/{}/{}", user_id, project_remote_id, mp3_filename);
-
-        let public_url = {
-            let client = supabase.lock().map_err(|e| e.to_string())?;
-            match crate::supabase::upload::upload_file(
-                &client, "bounces", &storage_path, mp3_data, "audio/mpeg",
-            ) {
-                Ok(url) => url,
-                Err(e) => {
-                    log::warn!("Upload failed for bounce {}: {}", local_id, e);
-                    std::fs::remove_file(&temp_mp3).ok();
-                    continue;
-                }
-            }
-        };
-
-        // Update local SQLite
-        conn.execute(
-            "UPDATE bounces SET mp3_url = ?1 WHERE id = ?2",
-            params![public_url, local_id],
-        ).ok();
-
-        // Update remote Supabase record
-        {
-            let client = supabase.lock().map_err(|e| e.to_string())?;
-            if let Err(e) = crate::supabase::api::update(
-                &client, "bounces", *bounce_remote_id, &json!({"mp3_url": public_url}),
-            ) {
-                log::warn!("Failed to patch remote bounce {} with mp3_url: {}", bounce_remote_id, e);
-            }
-        }
-
-        // Clean up temp file
-        std::fs::remove_file(&temp_mp3).ok();
-
-        log::info!("Uploaded MP3 for bounce {} → {}", local_id, public_url);
-    }
-
-    Ok(())
-}
-
-// ============================================================================
-// PULL CYCLE
-// ============================================================================
-
-/// Pull remote changes into local SQLite.
-fn pull_cycle(
-    db: &Arc<Mutex<Connection>>,
-    supabase: &Arc<Mutex<SupabaseClient>>,
-) -> Result<(), String> {
-    let conn = db.lock().map_err(|e| e.to_string())?;
-
-    // Get last_pull_at timestamp
-    let last_pull: Option<String> = conn.query_row(
-        "SELECT value FROM sync_meta WHERE key = 'last_pull_at'",
-        [],
-        |row| row.get(0),
-    ).ok();
-
-    let user_id = {
-        let client = supabase.lock().map_err(|e| e.to_string())?;
-        client.user_id.clone().ok_or("Not authenticated")?
-    };
-
-    let mut pulled = 0;
-
-    // Pull each table
-    for table in SYNC_ORDER {
-        let count = pull_table(&conn, supabase, table, &user_id, last_pull.as_deref())?;
-        pulled += count;
-    }
-
-    // Update last_pull_at
-    let now = chrono::Utc::now().to_rfc3339();
-    conn.execute(
-        "INSERT INTO sync_meta (key, value) VALUES ('last_pull_at', ?1) \
-         ON CONFLICT(key) DO UPDATE SET value = ?1",
-        params![now],
-    ).ok();
-
-    if pulled > 0 {
-        log::info!("Pull cycle complete: {} records pulled", pulled);
-    }
-
-    Ok(())
-}
 
 /// Pull updated records for a single table.
-fn pull_table(
+pub fn pull_table(
     conn: &Connection,
-    supabase: &Arc<Mutex<SupabaseClient>>,
+    client: &SupabaseClient,
     table: &str,
     user_id: &str,
     last_pull_at: Option<&str>,
@@ -765,9 +314,7 @@ fn pull_table(
         query_params.push_str(&format!("&updated_at=gt.{}", ts));
     }
 
-    let client = supabase.lock().map_err(|e| e.to_string())?;
-    let records = api::get(&client, table, &query_params)?;
-    drop(client);
+    let records = api::get(client, table, &query_params)?;
 
     if records.is_empty() {
         return Ok(0);
@@ -830,7 +377,7 @@ fn pull_table(
 }
 
 /// Update an existing local record with data from Supabase.
-fn update_local_from_remote(
+pub fn update_local_from_remote(
     conn: &Connection,
     table: &str,
     local_id: i64,
@@ -931,7 +478,7 @@ fn update_local_from_remote(
 }
 
 /// Insert a new local record from Supabase data.
-fn insert_local_from_remote(
+pub fn insert_local_from_remote(
     conn: &Connection,
     table: &str,
     record: &Value,

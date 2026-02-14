@@ -6,6 +6,7 @@ use crate::supabase::sync::build_push_payload;
 use serde::{Serialize, Deserialize};
 use serde_json::json;
 use rusqlite::params;
+use std::sync::mpsc;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SyncStatus {
@@ -171,7 +172,123 @@ pub fn trigger_sync(
         log::info!("Background upload thread finished");
     });
 
+    // Reset bg sync thread timer so it doesn't duplicate work
+    let sender = _sync_trigger.0.lock().map_err(|e| e.to_string())?;
+    if let Some(ref tx) = *sender {
+        tx.send(()).ok(); // Non-blocking, ignore if channel full
+    }
+
     Ok(format!("Synced {} records, MP3 upload started in background", pushed))
+}
+
+/// Pull remote changes into local SQLite (reuses pub pull_table from sync.rs).
+fn pull_changes_inline(
+    conn: &rusqlite::Connection,
+    client: &crate::supabase::SupabaseClient,
+    user_id: &str,
+) -> Result<(), String> {
+    let last_pull: Option<String> = conn.query_row(
+        "SELECT value FROM sync_meta WHERE key = 'last_pull_at'", [], |row| row.get(0),
+    ).ok();
+
+    let mut pulled = 0;
+    for table in SYNC_ORDER {
+        let count = crate::supabase::sync::pull_table(conn, client, table, user_id, last_pull.as_deref())?;
+        pulled += count;
+    }
+
+    let now = chrono::Utc::now().to_rfc3339();
+    conn.execute(
+        "INSERT INTO sync_meta (key, value) VALUES ('last_pull_at', ?1) \
+         ON CONFLICT(key) DO UPDATE SET value = ?1",
+        params![now],
+    ).ok();
+
+    if pulled > 0 {
+        log::info!("BG pull: {} records", pulled);
+    }
+    Ok(())
+}
+
+/// Spawn the background sync thread.
+/// Opens its own SQLite connection (WAL mode), reads fresh Supabase tokens
+/// from managed state each cycle, runs push → pull → uploads on a 30s timer
+/// with 2s debounce. Shuts down on channel disconnect (sign-out).
+pub fn spawn_bg_sync_thread(app: tauri::AppHandle) -> mpsc::Sender<()> {
+    let (tx, rx) = mpsc::channel::<()>();
+
+    std::thread::spawn(move || {
+        // Open own DB connection
+        let db_path = match app.path().app_data_dir() {
+            Ok(dir) => dir.join("library.db"),
+            Err(e) => { log::error!("BG sync: no app_data_dir: {}", e); return; }
+        };
+        let conn = match rusqlite::Connection::open(&db_path) {
+            Ok(c) => c,
+            Err(e) => { log::error!("BG sync: DB open failed: {}", e); return; }
+        };
+        conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;").ok();
+
+        log::info!("Background sync thread started");
+
+        loop {
+            // Wait for trigger or 30s timeout
+            match rx.recv_timeout(std::time::Duration::from_secs(30)) {
+                Ok(()) => {
+                    // Debounce: wait 2s, drain extras
+                    std::thread::sleep(std::time::Duration::from_secs(2));
+                    while rx.try_recv().is_ok() {}
+                }
+                Err(mpsc::RecvTimeoutError::Timeout) => { /* periodic */ }
+                Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    log::info!("Background sync thread shutting down");
+                    break;
+                }
+            }
+
+            // Read fresh credentials from managed state
+            let (sb_url, sb_key, sb_token, sb_refresh, user_id) = {
+                let state = app.state::<crate::supabase::SupabaseState>();
+                let client = state.0.lock().unwrap();
+                if !client.is_authenticated() { continue; }
+                (
+                    client.url.clone(),
+                    client.anon_key.clone(),
+                    client.access_token.clone(),
+                    client.refresh_token.clone(),
+                    client.user_id.clone().unwrap(),
+                )
+            };
+
+            let client = crate::supabase::SupabaseClient {
+                url: sb_url, anon_key: sb_key,
+                access_token: sb_token, refresh_token: sb_refresh,
+                user_id: Some(user_id.clone()), email: None,
+            };
+
+            // Push
+            for table in SYNC_ORDER {
+                if let Err(e) = push_table_inline(&conn, &client, table, &user_id) {
+                    log::warn!("BG push {}: {}", table, e);
+                }
+            }
+            push_project_tags_inline(&conn, &client).ok();
+            for table in SYNC_ORDER.iter().rev() {
+                delete_pending_inline(&conn, &client, table).ok();
+            }
+
+            // Pull
+            if let Err(e) = pull_changes_inline(&conn, &client, &user_id) {
+                log::warn!("BG pull error: {}", e);
+            }
+
+            // Uploads (non-fatal)
+            upload_bounce_mp3s_inline(&conn, &client, &user_id).ok();
+            upload_cover_images_inline(&conn, &client, &user_id).ok();
+        }
+    });
+
+    tx
 }
 
 /// Run the initial migration: upload all local data to Supabase.
