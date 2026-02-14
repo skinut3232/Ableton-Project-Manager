@@ -311,7 +311,10 @@ pub fn pull_table(
     }
 
     if let Some(ts) = last_pull_at {
-        query_params.push_str(&format!("&updated_at=gt.{}", ts));
+        // tags table only has created_at, not updated_at
+        if table != "tags" {
+            query_params.push_str(&format!("&updated_at=gt.{}", ts));
+        }
     }
 
     let records = api::get(client, table, &query_params)?;
