@@ -270,6 +270,17 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
             ).map_err(|e| format!("Migration v10 failed: {}", e))?;
             log::info!("Migrated database to schema version 10 (bounces.mp3_url)");
         }
+
+        // Migration v10 → v11: add cover_url column to projects
+        if version < 11 {
+            conn.execute(
+                "ALTER TABLE projects ADD COLUMN cover_url TEXT", [],
+            ).ok();
+            conn.execute_batch(
+                "INSERT INTO schema_version (version) VALUES (11);"
+            ).map_err(|e| format!("Migration v11 failed: {}", e))?;
+            log::info!("Migrated database to schema version 11 (projects.cover_url)");
+        }
     }
 
     Ok(())

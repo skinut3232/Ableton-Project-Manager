@@ -27,6 +27,7 @@ pub struct Project {
     pub cover_style_preset: String,
     pub cover_asset_id: Option<i64>,
     pub cover_updated_at: Option<String>,
+    pub cover_url: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

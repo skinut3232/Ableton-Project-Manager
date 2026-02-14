@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT INTO schema_version (version) VALUES (10);
+INSERT INTO schema_version (version) VALUES (11);
 
 -- Settings (key-value pairs)
 CREATE TABLE IF NOT EXISTS settings (
@@ -41,7 +41,8 @@ CREATE TABLE IF NOT EXISTS projects (
     cover_seed TEXT,
     cover_style_preset TEXT NOT NULL DEFAULT 'default',
     cover_asset_id INTEGER REFERENCES assets(id) ON DELETE SET NULL,
-    cover_updated_at TEXT
+    cover_updated_at TEXT,
+    cover_url TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);

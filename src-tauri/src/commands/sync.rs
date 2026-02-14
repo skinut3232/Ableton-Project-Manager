@@ -165,7 +165,10 @@ pub fn trigger_sync(
         if let Err(e) = upload_bounce_mp3s_inline(&bg_conn, &bg_client, &user_id_bg) {
             log::warn!("Bounce MP3 upload error: {}", e);
         }
-        log::info!("MP3 background upload thread finished");
+        if let Err(e) = upload_cover_images_inline(&bg_conn, &bg_client, &user_id_bg) {
+            log::warn!("Cover image upload error: {}", e);
+        }
+        log::info!("Background upload thread finished");
     });
 
     Ok(format!("Synced {} records, MP3 upload started in background", pushed))
@@ -214,7 +217,7 @@ fn run_inline_migration(
             "SELECT id, name, project_path, genre_label, musical_key, status, rating, bpm, \
              in_rotation, notes, artwork_path, current_set_path, archived, missing, progress, \
              last_worked_on, created_at, updated_at, cover_type, cover_locked, cover_seed, \
-             cover_style_preset, cover_updated_at FROM projects"
+             cover_style_preset, cover_updated_at, cover_url FROM projects"
         ).map_err(|e| e.to_string())?;
 
         let rows: Vec<(i64, serde_json::Value)> = stmt
@@ -244,6 +247,7 @@ fn run_inline_migration(
                     "cover_seed": row.get::<_, Option<String>>(20)?,
                     "cover_style_preset": row.get::<_, String>(21)?,
                     "cover_updated_at": row.get::<_, Option<String>>(22)?,
+                    "cover_url": row.get::<_, Option<String>>(23)?,
                 })))
             })
             .map_err(|e| e.to_string())?
@@ -564,6 +568,94 @@ fn upload_bounce_mp3s_inline(
 
         std::fs::remove_file(&temp_mp3).ok();
         log::info!("Uploaded MP3 for bounce {} → {}", local_id, public_url);
+    }
+
+    Ok(())
+}
+
+/// Upload cover images (PNG thumbnails) for projects that have artwork but no cover_url yet.
+fn upload_cover_images_inline(
+    conn: &rusqlite::Connection,
+    client: &crate::supabase::SupabaseClient,
+    user_id: &str,
+) -> Result<(), String> {
+    let mut stmt = conn.prepare(
+        "SELECT id, artwork_path, remote_id FROM projects \
+         WHERE remote_id IS NOT NULL \
+           AND cover_url IS NULL \
+           AND cover_type != 'none' \
+           AND artwork_path IS NOT NULL \
+           AND artwork_path != ''"
+    ).map_err(|e| e.to_string())?;
+
+    let projects: Vec<(i64, String, i64)> = stmt.query_map([], |row| {
+        Ok((
+            row.get::<_, i64>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, i64>(2)?,
+        ))
+    })
+    .map_err(|e| e.to_string())?
+    .filter_map(|r| r.ok())
+    .collect();
+    drop(stmt);
+
+    if projects.is_empty() {
+        return Ok(());
+    }
+
+    log::info!("Found {} projects needing cover upload", projects.len());
+
+    for (local_id, artwork_path, remote_id) in &projects {
+        let path = std::path::Path::new(artwork_path.as_str());
+        if !path.exists() {
+            log::debug!("Skipping project {} — artwork not found: {}", local_id, artwork_path);
+            continue;
+        }
+
+        let image_data = match std::fs::read(path) {
+            Ok(data) => data,
+            Err(e) => {
+                log::warn!("Failed to read artwork for project {}: {}", local_id, e);
+                continue;
+            }
+        };
+
+        // Determine content type from extension
+        let ext = path.extension()
+            .and_then(|e| e.to_str())
+            .unwrap_or("png")
+            .to_lowercase();
+        let content_type = match ext.as_str() {
+            "jpg" | "jpeg" => "image/jpeg",
+            "webp" => "image/webp",
+            _ => "image/png",
+        };
+
+        let storage_path = format!("{}/{}/thumbnail.{}", user_id, remote_id, ext);
+
+        let public_url = match crate::supabase::upload::upload_file(
+            client, "covers", &storage_path, image_data, content_type,
+        ) {
+            Ok(url) => url,
+            Err(e) => {
+                log::warn!("Cover upload failed for project {}: {}", local_id, e);
+                continue;
+            }
+        };
+
+        // Update local SQLite
+        conn.execute(
+            "UPDATE projects SET cover_url = ?1 WHERE id = ?2",
+            params![public_url, local_id],
+        ).ok();
+
+        // Update remote Supabase record
+        if let Err(e) = api::update(client, "projects", *remote_id, &json!({"cover_url": &public_url})) {
+            log::warn!("Failed to patch remote project {} with cover_url: {}", remote_id, e);
+        }
+
+        log::info!("Uploaded cover for project {} → {}", local_id, public_url);
     }
 
     Ok(())

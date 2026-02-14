@@ -250,7 +250,7 @@ fn build_project_payload(conn: &Connection, local_id: i64, user_id: &str) -> Res
         "SELECT name, project_path, genre_label, musical_key, status, rating, bpm, \
          in_rotation, notes, artwork_path, current_set_path, archived, missing, progress, \
          last_worked_on, created_at, updated_at, cover_type, cover_locked, cover_seed, \
-         cover_style_preset, cover_updated_at FROM projects WHERE id = ?1",
+         cover_style_preset, cover_updated_at, cover_url FROM projects WHERE id = ?1",
         params![local_id],
         |row| {
             Ok(json!({
@@ -277,6 +277,7 @@ fn build_project_payload(conn: &Connection, local_id: i64, user_id: &str) -> Res
                 "cover_seed": row.get::<_, Option<String>>(19)?,
                 "cover_style_preset": row.get::<_, String>(20)?,
                 "cover_updated_at": row.get::<_, Option<String>>(21)?,
+                "cover_url": row.get::<_, Option<String>>(22)?,
             }))
         },
     ).map_err(|e| format!("Failed to read project {}: {}", local_id, e))?;
@@ -843,7 +844,7 @@ fn update_local_from_remote(
                 "UPDATE projects SET name = ?1, genre_label = ?2, musical_key = ?3, status = ?4, \
                  rating = ?5, bpm = ?6, in_rotation = ?7, notes = ?8, progress = ?9, \
                  cover_type = ?10, cover_locked = ?11, cover_seed = ?12, cover_style_preset = ?13, \
-                 sync_status = 'synced' WHERE id = ?14",
+                 cover_url = ?14, sync_status = 'synced' WHERE id = ?15",
                 params![
                     record.get("name").and_then(|v| v.as_str()).unwrap_or(""),
                     record.get("genre_label").and_then(|v| v.as_str()).unwrap_or(""),
@@ -858,6 +859,7 @@ fn update_local_from_remote(
                     record.get("cover_locked").and_then(|v| v.as_bool()).unwrap_or(false) as i64,
                     record.get("cover_seed").and_then(|v| v.as_str()),
                     record.get("cover_style_preset").and_then(|v| v.as_str()).unwrap_or("default"),
+                    record.get("cover_url").and_then(|v| v.as_str()),
                     local_id,
                 ],
             ).map_err(|e| e.to_string())?;
@@ -942,8 +944,8 @@ fn insert_local_from_remote(
             conn.execute(
                 "INSERT INTO projects (name, project_path, genre_label, musical_key, status, \
                  rating, bpm, in_rotation, notes, progress, cover_type, cover_locked, \
-                 cover_seed, cover_style_preset, remote_id, sync_status) \
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, 'synced')",
+                 cover_seed, cover_style_preset, cover_url, remote_id, sync_status) \
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, 'synced')",
                 params![
                     record.get("name").and_then(|v| v.as_str()).unwrap_or(""),
                     record.get("project_path").and_then(|v| v.as_str()).unwrap_or(""),
@@ -959,6 +961,7 @@ fn insert_local_from_remote(
                     record.get("cover_locked").and_then(|v| v.as_bool()).unwrap_or(false) as i64,
                     record.get("cover_seed").and_then(|v| v.as_str()),
                     record.get("cover_style_preset").and_then(|v| v.as_str()).unwrap_or("default"),
+                    record.get("cover_url").and_then(|v| v.as_str()),
                     remote_id,
                 ],
             ).map_err(|e| e.to_string())?;

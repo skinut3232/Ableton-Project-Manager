@@ -112,7 +112,8 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
         "SELECT p.id, p.name, p.project_path, p.genre_label, p.musical_key, p.status, p.rating, p.bpm, \
          p.in_rotation, p.notes, p.artwork_path, p.current_set_path, p.archived, p.missing, p.progress, \
          p.last_worked_on, p.created_at, p.updated_at, \
-         p.cover_type, p.cover_locked, p.cover_seed, p.cover_style_preset, p.cover_asset_id, p.cover_updated_at \
+         p.cover_type, p.cover_locked, p.cover_seed, p.cover_style_preset, p.cover_asset_id, p.cover_updated_at, \
+         p.cover_url \
          FROM projects p"
     );
     let mut conditions: Vec<String> = Vec::new();
@@ -255,6 +256,7 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
                 cover_style_preset: row.get(21)?,
                 cover_asset_id: row.get(22)?,
                 cover_updated_at: row.get(23)?,
+                cover_url: row.get(24)?,
             })
         })
         .map_err(|e| e.to_string())?
@@ -275,7 +277,8 @@ pub fn get_project_by_id(conn: &Connection, id: i64) -> Result<Project, String> 
         "SELECT id, name, project_path, genre_label, musical_key, status, rating, bpm, \
          in_rotation, notes, artwork_path, current_set_path, archived, missing, progress, \
          last_worked_on, created_at, updated_at, \
-         cover_type, cover_locked, cover_seed, cover_style_preset, cover_asset_id, cover_updated_at \
+         cover_type, cover_locked, cover_seed, cover_style_preset, cover_asset_id, cover_updated_at, \
+         cover_url \
          FROM projects WHERE id = ?1",
         params![id],
         |row| {
@@ -305,6 +308,7 @@ pub fn get_project_by_id(conn: &Connection, id: i64) -> Result<Project, String> 
                 cover_style_preset: row.get(21)?,
                 cover_asset_id: row.get(22)?,
                 cover_updated_at: row.get(23)?,
+                cover_url: row.get(24)?,
             })
         },
     ).map_err(|e| format!("Project not found: {}", e))?;
@@ -1359,7 +1363,7 @@ pub fn set_cover(
     conn.execute(
         "UPDATE projects SET cover_type = ?1, artwork_path = ?2, cover_seed = ?3, \
          cover_style_preset = COALESCE(?4, cover_style_preset), cover_asset_id = ?5, \
-         cover_updated_at = datetime('now'), updated_at = datetime('now') WHERE id = ?6",
+         cover_updated_at = datetime('now'), cover_url = NULL, updated_at = datetime('now') WHERE id = ?6",
         params![cover_type, artwork_path, cover_seed, cover_style_preset, cover_asset_id, project_id],
     )
     .map_err(|e| e.to_string())?;
