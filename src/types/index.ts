@@ -214,3 +214,19 @@ export interface ProjectAsset {
   created_at: string;
   updated_at: string;
 }
+
+// ── Cloud Sync types ──
+
+export interface AuthStatus {
+  logged_in: boolean;
+  email: string | null;
+  user_id: string | null;
+  configured: boolean;
+}
+
+export interface SyncStatus {
+  enabled: boolean;
+  pending_push: number;
+  last_push_at: string | null;
+  last_pull_at: string | null;
+}

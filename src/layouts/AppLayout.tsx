@@ -6,11 +6,20 @@ import { useLibraryStore } from '../stores/libraryStore';
 import { useSpotifyAuthStatus } from '../hooks/useSpotify';
 import { useSpotifyPlayer } from '../hooks/useSpotifyPlayer';
 import { useSpotifyPlayerStore } from '../stores/spotifyPlayerStore';
+import { SyncIndicator } from '../components/ui/SyncIndicator';
+import { useRestoreSession } from '../hooks/useAuth';
 
 export function AppLayout() {
   const currentBounce = useAudioStore((s) => s.currentBounce);
   const navigate = useNavigate();
   const setSearchQuery = useLibraryStore((s) => s.setSearchQuery);
+
+  // Restore Supabase session on mount
+  const restoreSession = useRestoreSession();
+  useEffect(() => {
+    restoreSession.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Spotify auth status + SDK init
   const { data: authStatus } = useSpotifyAuthStatus();
@@ -103,7 +112,8 @@ export function AppLayout() {
             <span>&#9881;</span> Settings
           </NavLink>
         </div>
-        <div className="p-3 border-t border-neutral-700">
+        <div className="p-3 border-t border-neutral-700 space-y-1">
+          <SyncIndicator />
           <p className="text-[10px] text-neutral-600">v0.1.0</p>
         </div>
       </nav>

@@ -23,6 +23,50 @@
 use rusqlite::{params, Connection};
 use crate::db::models::*;
 
+// ============================================================================
+// SYNC TRACKING
+// ============================================================================
+// mark_dirty() sets sync_status = 'pending_push' on a record after a local write.
+// The sync engine picks up these records and pushes them to Supabase.
+// This is additive — existing behavior is completely unchanged.
+// ============================================================================
+
+/// Mark a record as needing sync after a local write.
+/// Safe to call even if sync columns don't exist yet (returns Ok).
+pub fn mark_dirty(conn: &Connection, table: &str, id: i64) {
+    let now = chrono::Utc::now().to_rfc3339();
+    conn.execute(
+        &format!(
+            "UPDATE {} SET sync_status = 'pending_push', sync_updated_at = ?1 WHERE id = ?2",
+            table
+        ),
+        params![now, id],
+    ).ok(); // Silently ignore if sync columns don't exist
+}
+
+/// Mark a project_tags junction entry as needing sync.
+pub fn mark_project_tags_dirty(conn: &Connection, project_id: i64, tag_id: i64) {
+    let now = chrono::Utc::now().to_rfc3339();
+    conn.execute(
+        "UPDATE project_tags SET sync_status = 'pending_push', sync_updated_at = ?1 \
+         WHERE project_id = ?2 AND tag_id = ?3",
+        params![now, project_id, tag_id],
+    ).ok();
+}
+
+/// Mark a record for deletion from the remote. The sync engine will DELETE
+/// from Supabase, then remove the local row.
+pub fn mark_pending_delete(conn: &Connection, table: &str, id: i64) {
+    let now = chrono::Utc::now().to_rfc3339();
+    conn.execute(
+        &format!(
+            "UPDATE {} SET sync_status = 'pending_delete', sync_updated_at = ?1 WHERE id = ?2",
+            table
+        ),
+        params![now, id],
+    ).ok();
+}
+
 pub fn get_all_settings(conn: &Connection) -> Result<Vec<Setting>, String> {
     let mut stmt = conn.prepare("SELECT key, value FROM settings")
         .map_err(|e| e.to_string())?;
@@ -53,6 +97,7 @@ pub fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<(), Stri
         params![key, value],
     )
     .map_err(|e| e.to_string())?;
+    // Settings don't have an id column — sync handled separately
     Ok(())
 }
 
@@ -326,6 +371,7 @@ fn update_project_inner(conn: &Connection, id: i64, name: &Option<String>, statu
         conn.execute("UPDATE projects SET progress = ?1, updated_at = datetime('now') WHERE id = ?2", params![p, id])
             .map_err(|e| e.to_string())?;
     }
+    mark_dirty(conn, "projects", id);
     Ok(())
 }
 
@@ -384,6 +430,7 @@ pub fn create_tag(conn: &Connection, name: &str) -> Result<Tag, String> {
             name: row.get(1)?,
         })
     }).map_err(|e| e.to_string())?;
+    mark_dirty(conn, "tags", tag.id);
     Ok(tag)
 }
 
@@ -392,6 +439,8 @@ fn add_tag_to_project_inner(conn: &Connection, project_id: i64, tag_id: i64) -> 
         "INSERT OR IGNORE INTO project_tags (project_id, tag_id) VALUES (?1, ?2)",
         params![project_id, tag_id],
     ).map_err(|e| e.to_string())?;
+    mark_project_tags_dirty(conn, project_id, tag_id);
+    mark_dirty(conn, "projects", project_id);
     Ok(())
 }
 
@@ -402,10 +451,13 @@ pub fn add_tag_to_project(conn: &Connection, project_id: i64, tag_id: i64) -> Re
 }
 
 fn remove_tag_from_project_inner(conn: &Connection, project_id: i64, tag_id: i64) -> Result<(), String> {
+    // Note: can't mark_pending_delete on junction since row will be deleted.
+    // Sync engine handles tag removal by diffing the full tag list for a project.
     conn.execute(
         "DELETE FROM project_tags WHERE project_id = ?1 AND tag_id = ?2",
         params![project_id, tag_id],
     ).map_err(|e| e.to_string())?;
+    mark_dirty(conn, "projects", project_id);
     Ok(())
 }
 
@@ -546,6 +598,7 @@ pub fn set_current_set(conn: &Connection, project_id: i64, set_path: &str) -> Re
         "UPDATE projects SET current_set_path = ?1, updated_at = datetime('now') WHERE id = ?2",
         params![set_path, project_id],
     ).map_err(|e| e.to_string())?;
+    mark_dirty(conn, "projects", project_id);
     Ok(())
 }
 
@@ -554,6 +607,7 @@ pub fn set_artwork_path(conn: &Connection, project_id: i64, artwork_path: &str) 
         "UPDATE projects SET artwork_path = ?1, updated_at = datetime('now') WHERE id = ?2",
         params![artwork_path, project_id],
     ).map_err(|e| e.to_string())?;
+    mark_dirty(conn, "projects", project_id);
     Ok(())
 }
 
@@ -576,6 +630,7 @@ pub fn start_session(conn: &Connection, project_id: i64) -> Result<Session, Stri
     ).map_err(|e| e.to_string())?;
 
     let id = conn.last_insert_rowid();
+    mark_dirty(conn, "sessions", id);
     conn.query_row(
         "SELECT id, project_id, started_at, ended_at, duration_seconds, note FROM sessions WHERE id = ?1",
         params![id],
@@ -611,6 +666,9 @@ pub fn stop_session(conn: &Connection, session_id: i64, note: &str) -> Result<Se
         "UPDATE projects SET last_worked_on = datetime('now'), updated_at = datetime('now') WHERE id = ?1",
         params![project_id],
     ).map_err(|e| e.to_string())?;
+
+    mark_dirty(conn, "sessions", session_id);
+    mark_dirty(conn, "projects", project_id);
 
     conn.query_row(
         "SELECT id, project_id, started_at, ended_at, duration_seconds, note FROM sessions WHERE id = ?1",
@@ -743,7 +801,7 @@ pub fn create_spotify_reference(
     )
     .map_err(|e| e.to_string())?;
 
-    conn.query_row(
+    let ref_row = conn.query_row(
         "SELECT id, project_id, spotify_id, spotify_type, name, artist_name, album_name, \
          album_art_url, duration_ms, spotify_url, notes, created_at, updated_at \
          FROM spotify_references WHERE project_id = ?1 AND spotify_id = ?2",
@@ -766,7 +824,9 @@ pub fn create_spotify_reference(
             })
         },
     )
-    .map_err(|e| e.to_string())
+    .map_err(|e| e.to_string())?;
+    mark_dirty(conn, "spotify_references", ref_row.id);
+    Ok(ref_row)
 }
 
 pub fn update_spotify_reference_notes(conn: &Connection, id: i64, notes: &str) -> Result<SpotifyReference, String> {
@@ -775,6 +835,7 @@ pub fn update_spotify_reference_notes(conn: &Connection, id: i64, notes: &str) -
         params![notes, id],
     )
     .map_err(|e| e.to_string())?;
+    mark_dirty(conn, "spotify_references", id);
 
     conn.query_row(
         "SELECT id, project_id, spotify_id, spotify_type, name, artist_name, album_name, \
@@ -803,6 +864,7 @@ pub fn update_spotify_reference_notes(conn: &Connection, id: i64, notes: &str) -
 }
 
 pub fn delete_spotify_reference(conn: &Connection, id: i64) -> Result<(), String> {
+    mark_pending_delete(conn, "spotify_references", id);
     conn.execute("DELETE FROM spotify_references WHERE id = ?1", params![id])
         .map_err(|e| e.to_string())?;
     Ok(())
@@ -850,6 +912,7 @@ pub fn create_marker(
     )
     .map_err(|e| e.to_string())?;
     let id = conn.last_insert_rowid();
+    mark_dirty(conn, "markers", id);
     conn.query_row(
         "SELECT id, project_id, bounce_id, timestamp_seconds, type, text, created_at, updated_at FROM markers WHERE id = ?1",
         params![id],
@@ -897,6 +960,7 @@ pub fn update_marker(
         )
         .map_err(|e| e.to_string())?;
     }
+    mark_dirty(conn, "markers", id);
     conn.query_row(
         "SELECT id, project_id, bounce_id, timestamp_seconds, type, text, created_at, updated_at FROM markers WHERE id = ?1",
         params![id],
@@ -917,6 +981,7 @@ pub fn update_marker(
 }
 
 pub fn delete_marker(conn: &Connection, id: i64) -> Result<(), String> {
+    mark_pending_delete(conn, "markers", id);
     conn.execute("DELETE FROM markers WHERE id = ?1", params![id])
         .map_err(|e| e.to_string())?;
     Ok(())
@@ -967,6 +1032,7 @@ pub fn create_task(
     )
     .map_err(|e| e.to_string())?;
     let id = conn.last_insert_rowid();
+    mark_dirty(conn, "tasks", id);
     conn.query_row(
         "SELECT id, project_id, title, done, category, linked_marker_id, linked_timestamp_seconds, \
          created_at, updated_at FROM tasks WHERE id = ?1",
@@ -1032,6 +1098,7 @@ pub fn update_task(
         )
         .map_err(|e| e.to_string())?;
     }
+    mark_dirty(conn, "tasks", id);
     conn.query_row(
         "SELECT id, project_id, title, done, category, linked_marker_id, linked_timestamp_seconds, \
          created_at, updated_at FROM tasks WHERE id = ?1",
@@ -1054,6 +1121,7 @@ pub fn update_task(
 }
 
 pub fn delete_task(conn: &Connection, id: i64) -> Result<(), String> {
+    mark_pending_delete(conn, "tasks", id);
     conn.execute("DELETE FROM tasks WHERE id = ?1", params![id])
         .map_err(|e| e.to_string())?;
     Ok(())
@@ -1099,6 +1167,7 @@ pub fn create_reference(
     )
     .map_err(|e| e.to_string())?;
     let id = conn.last_insert_rowid();
+    mark_dirty(conn, "project_references", id);
     conn.query_row(
         "SELECT id, project_id, url, title, notes, created_at, updated_at FROM project_references WHERE id = ?1",
         params![id],
@@ -1145,6 +1214,7 @@ pub fn update_reference(
         )
         .map_err(|e| e.to_string())?;
     }
+    mark_dirty(conn, "project_references", id);
     conn.query_row(
         "SELECT id, project_id, url, title, notes, created_at, updated_at FROM project_references WHERE id = ?1",
         params![id],
@@ -1164,6 +1234,7 @@ pub fn update_reference(
 }
 
 pub fn delete_reference(conn: &Connection, id: i64) -> Result<(), String> {
+    mark_pending_delete(conn, "project_references", id);
     conn.execute("DELETE FROM project_references WHERE id = ?1", params![id])
         .map_err(|e| e.to_string())?;
     Ok(())
@@ -1210,6 +1281,7 @@ pub fn create_asset(
     )
     .map_err(|e| e.to_string())?;
     let id = conn.last_insert_rowid();
+    mark_dirty(conn, "assets", id);
     conn.query_row(
         "SELECT id, project_id, original_filename, stored_path, asset_type, tags, created_at, updated_at FROM assets WHERE id = ?1",
         params![id],
@@ -1241,6 +1313,7 @@ pub fn update_asset(
         )
         .map_err(|e| e.to_string())?;
     }
+    mark_dirty(conn, "assets", id);
     conn.query_row(
         "SELECT id, project_id, original_filename, stored_path, asset_type, tags, created_at, updated_at FROM assets WHERE id = ?1",
         params![id],
@@ -1266,6 +1339,7 @@ pub fn delete_asset(conn: &Connection, id: i64) -> Result<Option<String>, String
         .query_row("SELECT stored_path FROM assets WHERE id = ?1", params![id], |row| row.get(0))
         .optional()
         .map_err(|e| e.to_string())?;
+    mark_pending_delete(conn, "assets", id);
     conn.execute("DELETE FROM assets WHERE id = ?1", params![id])
         .map_err(|e| e.to_string())?;
     Ok(stored_path)
@@ -1289,6 +1363,7 @@ pub fn set_cover(
         params![cover_type, artwork_path, cover_seed, cover_style_preset, cover_asset_id, project_id],
     )
     .map_err(|e| e.to_string())?;
+    mark_dirty(conn, "projects", project_id);
     Ok(())
 }
 
@@ -1298,6 +1373,7 @@ pub fn set_cover_locked(conn: &Connection, project_id: i64, locked: bool) -> Res
         params![locked as i64, project_id],
     )
     .map_err(|e| e.to_string())?;
+    mark_dirty(conn, "projects", project_id);
     Ok(())
 }
 
@@ -1347,7 +1423,7 @@ pub fn add_mood_board_pin(conn: &Connection, project_id: i64, asset_id: i64) -> 
     .map_err(|e| e.to_string())?;
 
     // Return the pin (may already exist due to OR IGNORE)
-    conn.query_row(
+    let pin = conn.query_row(
         "SELECT mb.id, mb.project_id, mb.asset_id, mb.sort_order, mb.created_at, \
          a.stored_path, a.original_filename \
          FROM mood_board mb JOIN assets a ON mb.asset_id = a.id \
@@ -1365,10 +1441,13 @@ pub fn add_mood_board_pin(conn: &Connection, project_id: i64, asset_id: i64) -> 
             })
         },
     )
-    .map_err(|e| e.to_string())
+    .map_err(|e| e.to_string())?;
+    mark_dirty(conn, "mood_board", pin.id);
+    Ok(pin)
 }
 
 pub fn remove_mood_board_pin(conn: &Connection, pin_id: i64) -> Result<(), String> {
+    mark_pending_delete(conn, "mood_board", pin_id);
     conn.execute("DELETE FROM mood_board WHERE id = ?1", params![pin_id])
         .map_err(|e| e.to_string())?;
     Ok(())
@@ -1417,6 +1496,7 @@ fn create_note_inner(conn: &Connection, project_id: i64, content: &str) -> Resul
     )
     .map_err(|e| e.to_string())?;
     let id = conn.last_insert_rowid();
+    mark_dirty(conn, "project_notes", id);
 
     conn.query_row(
         "SELECT id, project_id, content, created_at, updated_at FROM project_notes WHERE id = ?1",
@@ -1446,6 +1526,7 @@ fn update_note_inner(conn: &Connection, id: i64, content: &str) -> Result<Projec
         params![content, id],
     )
     .map_err(|e| e.to_string())?;
+    mark_dirty(conn, "project_notes", id);
 
     conn.query_row(
         "SELECT id, project_id, content, created_at, updated_at FROM project_notes WHERE id = ?1",
@@ -1475,6 +1556,7 @@ fn delete_note_inner(conn: &Connection, id: i64) -> Result<i64, String> {
         .query_row("SELECT project_id FROM project_notes WHERE id = ?1", params![id], |row| row.get(0))
         .map_err(|e| format!("Note not found: {}", e))?;
 
+    mark_pending_delete(conn, "project_notes", id);
     conn.execute("DELETE FROM project_notes WHERE id = ?1", params![id])
         .map_err(|e| e.to_string())?;
 

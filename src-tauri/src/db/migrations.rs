@@ -254,8 +254,68 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
             ).map_err(|e| format!("Migration v8 failed: {}", e))?;
             log::info!("Migrated database to schema version 8 (spotify_references)");
         }
+
+        // Migration v8 → v9: add sync tracking columns + sync_meta table
+        if version < 9 {
+            migrate_v8_to_v9(conn)?;
+        }
     }
 
+    Ok(())
+}
+
+fn migrate_v8_to_v9(conn: &Connection) -> Result<(), String> {
+    // Create sync_meta table for storing sync-related key-value pairs
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS sync_meta (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL DEFAULT ''
+        );"
+    ).map_err(|e| format!("Migration v9 failed (sync_meta): {}", e))?;
+
+    // Add sync tracking columns to all syncable tables.
+    // Each ALTER TABLE is wrapped in .ok() to handle partial migrations gracefully.
+    let syncable_tables = [
+        "projects",
+        "tags",
+        "bounces",
+        "ableton_sets",
+        "sessions",
+        "markers",
+        "tasks",
+        "project_notes",
+        "project_references",
+        "spotify_references",
+        "assets",
+        "mood_board",
+    ];
+
+    for table in &syncable_tables {
+        conn.execute(
+            &format!("ALTER TABLE {} ADD COLUMN remote_id INTEGER", table), [],
+        ).ok();
+        conn.execute(
+            &format!("ALTER TABLE {} ADD COLUMN sync_status TEXT NOT NULL DEFAULT 'unsynced'", table), [],
+        ).ok();
+        conn.execute(
+            &format!("ALTER TABLE {} ADD COLUMN sync_updated_at TEXT", table), [],
+        ).ok();
+    }
+
+    // Also add sync columns to project_tags (junction table with composite PK)
+    conn.execute(
+        "ALTER TABLE project_tags ADD COLUMN sync_status TEXT NOT NULL DEFAULT 'unsynced'", [],
+    ).ok();
+    conn.execute(
+        "ALTER TABLE project_tags ADD COLUMN sync_updated_at TEXT", [],
+    ).ok();
+
+    // Bump version
+    conn.execute_batch(
+        "INSERT INTO schema_version (version) VALUES (9);"
+    ).map_err(|e| format!("Migration v9 failed (version bump): {}", e))?;
+
+    log::info!("Migrated database to schema version 9 (sync tracking columns)");
     Ok(())
 }
 

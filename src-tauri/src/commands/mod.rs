@@ -16,3 +16,5 @@ pub mod notes;
 pub mod spotify;
 pub mod share;
 pub mod soundcloud;
+pub mod auth;
+pub mod sync;

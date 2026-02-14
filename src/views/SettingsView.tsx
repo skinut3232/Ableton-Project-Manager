@@ -7,6 +7,7 @@ import { Select } from '../components/ui/Select';
 import { useSettings, useUpdateSettings, getSettingValue } from '../hooks/useSettings';
 import { useRefreshLibrary, useDiscoverProjects, useImportProjects } from '../hooks/useProjects';
 import { useSoundCloudAuthStatus, useSoundCloudLogout } from '../hooks/useSoundCloud';
+import { CloudSyncSection } from '../components/settings/CloudSyncSection';
 import type { DiscoveredProject } from '../types';
 
 export function SettingsView() {
@@ -180,6 +181,11 @@ export function SettingsView() {
         <div className="border-t border-neutral-700 pt-6">
           <h3 className="text-sm font-medium text-neutral-300 mb-3">SoundCloud</h3>
           <SoundCloudSection scPublicUpload={scPublicUpload} setScPublicUpload={setScPublicUpload} />
+        </div>
+
+        {/* Cloud Sync */}
+        <div className="border-t border-neutral-700 pt-6">
+          <CloudSyncSection />
         </div>
 
         {/* Save Button */}

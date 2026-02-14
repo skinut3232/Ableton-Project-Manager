@@ -6,10 +6,12 @@ mod cover_gen;
 mod spotify;
 mod soundcloud;
 mod mp3;
+mod supabase;
 
 use db::DbState;
 use spotify::{SpotifyState, SpotifyInner};
 use soundcloud::{SoundCloudState, SoundCloudInner};
+use supabase::{SupabaseState, SupabaseClient, SyncTrigger};
 use std::sync::Mutex;
 use tauri::Manager;
 
@@ -38,6 +40,8 @@ pub fn run() {
                 user_auth: None,
                 pkce_pending: None,
             })));
+            app.manage(SupabaseState(Mutex::new(SupabaseClient::new())));
+            app.manage(SyncTrigger(Mutex::new(None)));
 
             // Show window after setup (prevents position flash with window-state plugin)
             if let Some(window) = app.get_webview_window("main") {
@@ -116,6 +120,13 @@ pub fn run() {
             commands::soundcloud::sc_wait_for_callback,
             commands::soundcloud::sc_upload_bounce,
             commands::soundcloud::sc_logout,
+            commands::auth::supabase_sign_up,
+            commands::auth::supabase_sign_in,
+            commands::auth::supabase_sign_out,
+            commands::auth::supabase_get_auth_status,
+            commands::auth::supabase_restore_session,
+            commands::sync::get_sync_status,
+            commands::sync::trigger_sync,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
