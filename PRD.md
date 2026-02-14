@@ -31,6 +31,11 @@
 | **Waveform** | wavesurfer.js 7 | Canvas waveform rendering, region/marker plugins, zoom |
 | **MP3 encoding** | mp3lame-encoder 0.2 | Pure Rust LAME wrapper, no native dependencies |
 | **Tauri plugins** | dialog, opener, window-state, log | File pickers, OS integration, window position persistence, rotating logs |
+| **Cloud sync** | Supabase (Postgres + Storage + Auth) | User auth, project data sync, MP3/cover uploads |
+| **Mobile app** | Expo SDK 54, React Native 0.81 | Companion app for browsing, editing, and playback on the go |
+| **Mobile state** | Zustand 5 + TanStack React Query 5 | Same state management pattern as desktop |
+| **Mobile audio** | expo-av | Background audio playback with seeking |
+| **Mobile auth** | @supabase/supabase-js | Shared Supabase auth with desktop |
 
 ---
 
@@ -149,7 +154,41 @@ Spotify (port 17483) and SoundCloud (port 17484) use distinct localhost ports fo
 | Private/public toggle | Done | Configurable in Settings, defaults to private |
 | Auth management | Done | Login status + logout in Settings |
 
-### 4.6 Additional Features (Beyond Spec)
+### 4.6 Supabase Cloud Sync (Beyond Spec - Complete)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Supabase auth | Done | Email/password login, session persistence with refresh tokens |
+| Push sync engine | Done | Pushes dirty local records to Supabase in FK dependency order |
+| Pull sync engine | Done | Pulls remote changes, last-write-wins conflict resolution |
+| Initial migration | Done | Bulk uploads all local data to Supabase on first sync |
+| WAV→MP3 bounce upload | Done | Converts latest bounce per project to 320kbps MP3, uploads to Supabase Storage `bounces` bucket |
+| Cover image upload | Done | Uploads artwork PNGs to Supabase Storage `covers` bucket, stores public URL |
+| Sync tracking columns | Done | `remote_id`, `sync_status`, `sync_updated_at` on all syncable tables |
+| Manual sync trigger | Done | Tauri command `trigger_sync` with background thread for MP3/cover uploads |
+
+### 4.7 Mobile Companion App (Beyond Spec - Complete)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Expo SDK 54 scaffold | Done | React Native 0.81, TypeScript, Expo Go compatible |
+| Supabase auth | Done | Login screen, session persistence, shared auth with desktop |
+| Library browsing | Done | Project list with search, status/tag filters, sort options |
+| Project detail | Done | Metadata editing (status, rating, BPM, key, genre, progress, in-rotation) |
+| Tag editing | Done | Add/remove tags with autocomplete |
+| Notes | Done | View, create, edit, delete project notes |
+| Tasks | Done | View, create, toggle, delete tasks with categories |
+| Markers | Done | View markers list |
+| References | Done | View URL references |
+| Spotify references | Done | View saved Spotify tracks/albums |
+| Bounces list | Done | View bounces with MP3 playback |
+| Audio playback | Done | Expo-av background audio, play/pause, seek via progress bar, skip forward/back |
+| Now Playing screen | Done | Large cover art, seekable progress bar (responder system), transport controls |
+| MiniPlayer | Done | Persistent bottom bar with play/pause, navigates to Now Playing |
+| Cover images | Done | Renders from Supabase `cover_url`, HSL color fallback when null |
+| Pull-to-refresh | Done | Refetch data from Supabase |
+
+### 4.8 Additional Features (Beyond Spec)
 
 | Feature | Status | Description |
 |---------|--------|-------------|
@@ -217,7 +256,7 @@ These are explicitly listed as future ideas in the spec documents, not current c
 - Multiple style preset packs for procedural covers
 - AI-driven cover suggestions
 - Cover art export to release platforms
-- Cloud sync / collaboration
+- Real-time background sync (thread exists, needs wiring to auto-trigger on local writes)
 - Bidirectional Obsidian sync
 - macOS support
 
@@ -225,24 +264,24 @@ These are explicitly listed as future ideas in the spec documents, not current c
 
 ## 6. Database Schema
 
-14 tables + 1 FTS5 virtual table at schema version 8. Full DDL in `src-tauri/src/db/schema.sql`.
+17 tables + 1 FTS5 virtual table at schema version 11. Full DDL in `src-tauri/src/db/schema.sql`.
 
 ```
-projects (29 cols)          ─┬─ ableton_sets
-  Core: name, path, status,  ├─ bounces
+projects (30+ cols)         ─┬─ ableton_sets
+  Core: name, path, status,  ├─ bounces (mp3_url for sync)
   rating, bpm, key, genre,   ├─ sessions
   progress, notes, artwork    ├─ markers ──── tasks (linked)
   Cover: type, locked, seed,  ├─ project_references
-  style_preset, asset_id      ├─ assets ──── mood_board (pinned)
-                              ├─ project_notes
-                              ├─ spotify_references
-                              └─ project_tags ──── tags
+  style_preset, asset_id,     ├─ assets ──── mood_board (pinned)
+  cover_url                   ├─ project_notes
+  Sync: remote_id,            ├─ spotify_references
+  sync_status, sync_updated   └─ project_tags ──── tags
 
 settings (key-value)          schema_version
-projects_fts (FTS5 standalone, manually synced)
+sync_meta (key-value)         projects_fts (FTS5 standalone, manually synced)
 ```
 
-Migrations are sequential (v1 through v8) with safety checks for partial migrations (column/table existence verified before ALTER/CREATE). WAL journal mode enabled for better concurrency.
+Migrations are sequential (v1 through v11) with safety checks for partial migrations (column/table existence verified before ALTER/CREATE). WAL journal mode enabled for better concurrency. Sync tracking columns (`remote_id`, `sync_status`, `sync_updated_at`) added to all syncable tables in migration v9.
 
 ---
 
@@ -281,17 +320,23 @@ External API calls (Spotify, SoundCloud) follow the same pattern but also involv
 
 | Area | Files | Lines (approx) |
 |------|-------|----------------|
-| React components | 51 | 5,100 |
-| React hooks | 15 | 1,000 |
-| Zustand stores | 4 | 380 |
-| Views + layouts | 4 | 750 |
-| Types + constants | 2 | 320 |
-| Rust commands | 19 | 940 |
-| Rust DB queries | 1 | 1,450 |
+| React components (desktop) | 51 | 5,100 |
+| React hooks (desktop) | 15 | 1,000 |
+| Zustand stores (desktop) | 4 | 380 |
+| Views + layouts (desktop) | 4 | 750 |
+| Types + constants (desktop) | 2 | 320 |
+| Rust commands | 21 | 1,550 |
+| Rust DB queries | 1 | 1,570 |
 | Rust scanner | 3 | 690 |
 | Rust cover gen | 1 | 790 |
 | Rust OAuth (Spotify + SC) | 2 | 1,110 |
+| Rust Supabase (sync, auth, API, upload) | 5 | 1,400 |
 | Rust MP3 + artwork | 2 | 250 |
-| SQL schema | 1 | 200 |
-| Config (Tauri, Vite, TS) | 5 | 100 |
-| **Total** | **~110** | **~13,000** |
+| SQL schema + migrations | 2 | 600 |
+| Mobile screens | 5 | 900 |
+| Mobile components | 16 | 1,900 |
+| Mobile hooks | 10 | 500 |
+| Mobile stores + lib | 7 | 550 |
+| Mobile navigation + providers | 4 | 250 |
+| Config (Tauri, Vite, TS, Expo) | 8 | 150 |
+| **Total** | **~163** | **~26,000** |
