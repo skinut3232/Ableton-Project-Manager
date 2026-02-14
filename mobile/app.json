@@ -29,6 +29,12 @@
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a1681096-68ca-4aa2-a39f-183bb850560a"
+      }
+    },
+    "owner": "skinut3232"
   }
 }

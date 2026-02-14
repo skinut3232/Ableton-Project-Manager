@@ -8,9 +8,11 @@
 
 **The problem:** Musicians accumulate dozens to hundreds of Ableton Live projects across folders and subfolders. There's no fast way to browse, search, preview, and jump back into a project. Ableton's built-in browser doesn't provide metadata editing, tagging, rating, or audio preview of exports.
 
-**The solution:** A lightweight desktop app that scans a root project folder, indexes everything into a searchable library with rich metadata, plays back WAV bounces instantly, and opens projects in Ableton with one click. All data stays local (SQLite + filesystem). The app never modifies `.als` files or project folders.
+**The solution:** A lightweight desktop app that scans a root project folder, indexes everything into a searchable library with rich metadata, plays back WAV bounces instantly, and opens projects in Ableton with one click. All data stays local (SQLite + filesystem). The app never modifies `.als` files or project folders. An optional cloud sync layer (Supabase) enables a companion Android app for mobile browsing, editing, and playback.
 
 **Target user:** Solo music producers managing ~50-500 Ableton Live projects on Windows.
+
+**Current release:** v0.1.0 — [GitHub Release](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v0.1.0)
 
 ---
 
@@ -203,9 +205,29 @@ Spotify (port 17483) and SoundCloud (port 17484) use distinct localhost ports fo
 
 ---
 
-## 5. What Still Needs to Be Done
+## 5. Distribution
 
-### 5.1 Obsidian Integration (Entire Addendum - Not Started)
+### v0.1.0 — Initial Release (2026-02-14)
+
+| Platform | Artifact | Install Method |
+|----------|----------|----------------|
+| **Windows Desktop** | `Ableton.Project.Library_0.1.0_x64-setup.exe` (NSIS installer) | Download from [GitHub Releases](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v0.1.0), run installer |
+| **Android Mobile** | `ableton-project-library.apk` (EAS Build, Expo SDK 54) | Download APK from GitHub Releases, sideload (Settings → Install unknown apps) |
+
+**Build pipeline:**
+- Desktop: `npx tauri build` → NSIS installer in `src-tauri/target/release/bundle/nsis/`
+- Mobile: `eas build --platform android --profile production` → APK built in Expo cloud
+- Releases: `gh release create` with both artifacts attached
+
+**Signing:**
+- Desktop: Unsigned (Windows SmartScreen may warn on first run)
+- Android: Keystore managed by EAS (stored on Expo servers)
+
+---
+
+## 6. What Still Needs to Be Done
+
+### 6.1 Obsidian Integration (Entire Addendum - Not Started)
 
 The Obsidian Integration addendum specifies a one-way export system where the app writes per-project markdown notes into an Obsidian vault. **Zero code exists for this feature.**
 
@@ -219,7 +241,7 @@ The Obsidian Integration addendum specifies a one-way export system where the ap
 | Daily Notes integration (append session entries to today's note) | Low | Medium |
 | Dataview dashboard starter templates | Low | Low |
 
-### 5.2 Planned Features Not Yet Implemented
+### 6.2 Planned Features Not Yet Implemented
 
 | Feature | Source | Priority | Notes |
 |---------|--------|----------|-------|
@@ -230,7 +252,7 @@ The Obsidian Integration addendum specifies a one-way export system where the ap
 | Asset "Reveal in Explorer" action | Timeline Addendum | Low | AssetCard currently has delete/pin/set-as-cover but no reveal |
 | Cover source badge on library cards | Cover Addendum | Low | Small icon overlay indicating generated vs. uploaded vs. moodboard |
 
-### 5.3 Technical Debt
+### 6.3 Technical Debt
 
 | Item | Impact | Effort |
 |------|--------|--------|
@@ -243,7 +265,7 @@ The Obsidian Integration addendum specifies a one-way export system where the ap
 | **Spotify callback timeout** | Low | Low — Spotify's TCP listener has no timeout (SoundCloud's was fixed to 2 min); could freeze app if user abandons login |
 | **No README.md** | Low | Low — `DEVELOPER_GUIDE.md` exists but no standard README |
 
-### 5.4 Future / Stretch Goals (From Spec Documents)
+### 6.4 Future / Stretch Goals (From Spec Documents)
 
 These are explicitly listed as future ideas in the spec documents, not current commitments:
 
@@ -256,13 +278,12 @@ These are explicitly listed as future ideas in the spec documents, not current c
 - Multiple style preset packs for procedural covers
 - AI-driven cover suggestions
 - Cover art export to release platforms
-- Real-time background sync (thread exists, needs wiring to auto-trigger on local writes)
 - Bidirectional Obsidian sync
 - macOS support
 
 ---
 
-## 6. Database Schema
+## 7. Database Schema
 
 17 tables + 1 FTS5 virtual table at schema version 11. Full DDL in `src-tauri/src/db/schema.sql`.
 
@@ -285,7 +306,7 @@ Migrations are sequential (v1 through v11) with safety checks for partial migrat
 
 ---
 
-## 7. Application Routes
+## 8. Application Routes
 
 | Route | View | Purpose |
 |-------|------|---------|
@@ -295,7 +316,7 @@ Migrations are sequential (v1 through v11) with safety checks for partial migrat
 
 ---
 
-## 8. Data Flow
+## 9. Data Flow
 
 ```
 User action (click, type, shortcut)
@@ -316,7 +337,7 @@ External API calls (Spotify, SoundCloud) follow the same pattern but also involv
 
 ---
 
-## 9. File Counts
+## 10. File Counts
 
 | Area | Files | Lines (approx) |
 |------|-------|----------------|
