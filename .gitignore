@@ -20,6 +20,9 @@ Desktop.ini
 # Word temp files
 ~$*.docx
 
+# Secrets
+Supabase-Database-Password.txt
+
 # Build output
 *.exe
 *.msi
