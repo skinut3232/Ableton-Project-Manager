@@ -5,7 +5,7 @@ use std::path::Path;
 
 use mp3lame_encoder::{Builder, FlushNoGap, InterleavedPcm, MonoPcm};
 
-/// Convert a WAV file to MP3 at 192kbps using LAME encoder.
+/// Convert a WAV file to MP3 at 320kbps using LAME encoder.
 pub fn convert_wav_to_mp3(wav_path: &Path, output_path: &Path) -> Result<(), String> {
     let mut file = File::open(wav_path).map_err(|e| format!("Failed to open WAV: {}", e))?;
 
@@ -106,7 +106,7 @@ pub fn convert_wav_to_mp3(wav_path: &Path, output_path: &Path) -> Result<(), Str
         .set_num_channels(channels as u8)
         .map_err(|e| format!("Failed to set channels: {:?}", e))?;
     encoder
-        .set_brate(mp3lame_encoder::Birtate::Kbps192)
+        .set_brate(mp3lame_encoder::Birtate::Kbps320)
         .map_err(|e| format!("Failed to set bitrate: {:?}", e))?;
     encoder
         .set_quality(mp3lame_encoder::Quality::Best)

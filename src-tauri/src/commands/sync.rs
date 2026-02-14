@@ -1,4 +1,4 @@
-use tauri::State;
+use tauri::{State, Manager};
 use crate::db::DbState;
 use crate::supabase::{SupabaseState, SyncTrigger};
 use crate::supabase::{api, migration};
@@ -85,6 +85,7 @@ const SYNC_ORDER: &[&str] = &[
 
 #[tauri::command]
 pub fn trigger_sync(
+    app: tauri::AppHandle,
     db: State<'_, DbState>,
     supabase: State<'_, SupabaseState>,
     _sync_trigger: State<'_, SyncTrigger>,
@@ -134,7 +135,40 @@ pub fn trigger_sync(
         ).ok();
     }
 
-    Ok(format!("Synced {} records", pushed))
+    // Spawn MP3 uploads in background thread (doesn't block UI)
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let db_path = app_data_dir.join("library.db");
+    let sb_url = client.url.clone();
+    let sb_key = client.anon_key.clone();
+    let sb_token = client.access_token.clone();
+    let user_id_bg = user_id.clone();
+
+    drop(conn);
+    drop(client);
+
+    std::thread::spawn(move || {
+        let bg_conn = match rusqlite::Connection::open(&db_path) {
+            Ok(c) => c,
+            Err(e) => { log::error!("MP3 bg thread: failed to open DB: {}", e); return; }
+        };
+        bg_conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;").ok();
+
+        let bg_client = crate::supabase::SupabaseClient {
+            url: sb_url,
+            anon_key: sb_key,
+            access_token: sb_token,
+            refresh_token: None,
+            user_id: Some(user_id_bg.clone()),
+            email: None,
+        };
+
+        if let Err(e) = upload_bounce_mp3s_inline(&bg_conn, &bg_client, &user_id_bg) {
+            log::warn!("Bounce MP3 upload error: {}", e);
+        }
+        log::info!("MP3 background upload thread finished");
+    });
+
+    Ok(format!("Synced {} records, MP3 upload started in background", pushed))
 }
 
 /// Run the initial migration: upload all local data to Supabase.
@@ -436,6 +470,103 @@ fn push_project_tags_inline(
     }
 
     Ok(count)
+}
+
+/// Convert latest WAV bounce per project to MP3, upload to Supabase Storage,
+/// and store the public URL in local SQLite + remote Supabase.
+fn upload_bounce_mp3s_inline(
+    conn: &rusqlite::Connection,
+    client: &crate::supabase::SupabaseClient,
+    user_id: &str,
+) -> Result<(), String> {
+    let mut stmt = conn.prepare(
+        "SELECT b.id, b.bounce_path, b.remote_id, p.remote_id AS project_remote_id
+         FROM bounces b
+         JOIN projects p ON b.project_id = p.id
+         WHERE p.remote_id IS NOT NULL
+           AND b.mp3_url IS NULL
+           AND b.remote_id IS NOT NULL
+           AND b.modified_time = (
+               SELECT MAX(b2.modified_time) FROM bounces b2 WHERE b2.project_id = b.project_id
+           )"
+    ).map_err(|e| e.to_string())?;
+
+    let bounces: Vec<(i64, String, i64, i64)> = stmt.query_map([], |row| {
+        Ok((
+            row.get::<_, i64>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, i64>(2)?,
+            row.get::<_, i64>(3)?,
+        ))
+    })
+    .map_err(|e| e.to_string())?
+    .filter_map(|r| r.ok())
+    .collect();
+    drop(stmt);
+
+    if bounces.is_empty() {
+        return Ok(());
+    }
+
+    log::info!("Found {} bounces needing MP3 upload", bounces.len());
+
+    let temp_dir = std::env::temp_dir().join("ableton-project-library-mp3");
+    std::fs::create_dir_all(&temp_dir).ok();
+
+    for (local_id, wav_path, bounce_remote_id, project_remote_id) in &bounces {
+        let wav = std::path::Path::new(wav_path.as_str());
+        if !wav.exists() {
+            log::debug!("Skipping bounce {} — WAV not found: {}", local_id, wav_path);
+            continue;
+        }
+
+        let stem = wav.file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("bounce");
+        let mp3_filename = format!("{}.mp3", stem);
+        let temp_mp3 = temp_dir.join(&mp3_filename);
+
+        log::info!("Converting bounce {} to MP3: {}", local_id, wav_path);
+        if let Err(e) = crate::mp3::convert_wav_to_mp3(wav, &temp_mp3) {
+            log::warn!("MP3 conversion failed for bounce {}: {}", local_id, e);
+            continue;
+        }
+
+        let mp3_data = match std::fs::read(&temp_mp3) {
+            Ok(data) => data,
+            Err(e) => {
+                log::warn!("Failed to read temp MP3 for bounce {}: {}", local_id, e);
+                std::fs::remove_file(&temp_mp3).ok();
+                continue;
+            }
+        };
+
+        let storage_path = format!("{}/{}/{}", user_id, project_remote_id, mp3_filename);
+        let public_url = match crate::supabase::upload::upload_file(
+            client, "bounces", &storage_path, mp3_data, "audio/mpeg",
+        ) {
+            Ok(url) => url,
+            Err(e) => {
+                log::warn!("Upload failed for bounce {}: {}", local_id, e);
+                std::fs::remove_file(&temp_mp3).ok();
+                continue;
+            }
+        };
+
+        conn.execute(
+            "UPDATE bounces SET mp3_url = ?1 WHERE id = ?2",
+            params![public_url, local_id],
+        ).ok();
+
+        if let Err(e) = api::update(client, "bounces", *bounce_remote_id, &json!({"mp3_url": &public_url})) {
+            log::warn!("Failed to patch remote bounce {} with mp3_url: {}", bounce_remote_id, e);
+        }
+
+        std::fs::remove_file(&temp_mp3).ok();
+        log::info!("Uploaded MP3 for bounce {} → {}", local_id, public_url);
+    }
+
+    Ok(())
 }
 
 /// Delete records marked pending_delete from Supabase.

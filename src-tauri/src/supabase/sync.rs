@@ -123,6 +123,11 @@ fn push_cycle(
         log::info!("Push cycle complete: {} records pushed", pushed);
     }
 
+    // Upload MP3s for latest bounces (non-fatal — log warnings on failure)
+    if let Err(e) = upload_bounce_mp3s(&conn, supabase, &user_id) {
+        log::warn!("Bounce MP3 upload error: {}", e);
+    }
+
     Ok(())
 }
 
@@ -221,7 +226,7 @@ pub fn build_push_payload(
         "projects" => build_project_payload(conn, local_id, user_id),
         "tags" => build_tag_payload(conn, local_id, user_id),
         "bounces" => build_child_payload(conn, "bounces", local_id,
-            &["bounce_path", "modified_time", "duration_seconds"]),
+            &["bounce_path", "modified_time", "duration_seconds", "mp3_url"]),
         "ableton_sets" => build_child_payload(conn, "ableton_sets", local_id,
             &["set_path", "modified_time"]),
         "sessions" => build_child_payload(conn, "sessions", local_id,
@@ -563,6 +568,131 @@ fn delete_pending(
                 params![local_id],
             ).ok();
         }
+    }
+
+    Ok(())
+}
+
+// ============================================================================
+// BOUNCE MP3 UPLOAD
+// ============================================================================
+
+/// For each project with a remote_id, find the latest bounce (by modified_time)
+/// that has no mp3_url yet, convert WAV → MP3, upload to Supabase Storage,
+/// and store the public URL locally + remotely.
+fn upload_bounce_mp3s(
+    conn: &Connection,
+    supabase: &Arc<Mutex<SupabaseClient>>,
+    user_id: &str,
+) -> Result<(), String> {
+    // Find bounces that need MP3 conversion:
+    // - project has a remote_id (already synced)
+    // - bounce has no mp3_url yet
+    // - bounce is the latest per project (highest modified_time)
+    // - WAV file still exists on disk
+    let mut stmt = conn.prepare(
+        "SELECT b.id, b.bounce_path, b.remote_id, p.remote_id AS project_remote_id
+         FROM bounces b
+         JOIN projects p ON b.project_id = p.id
+         WHERE p.remote_id IS NOT NULL
+           AND b.mp3_url IS NULL
+           AND b.remote_id IS NOT NULL
+           AND b.modified_time = (
+               SELECT MAX(b2.modified_time) FROM bounces b2 WHERE b2.project_id = b.project_id
+           )"
+    ).map_err(|e| e.to_string())?;
+
+    let bounces: Vec<(i64, String, i64, i64)> = stmt.query_map([], |row| {
+        Ok((
+            row.get::<_, i64>(0)?,      // local bounce id
+            row.get::<_, String>(1)?,    // bounce_path (WAV)
+            row.get::<_, i64>(2)?,       // bounce remote_id
+            row.get::<_, i64>(3)?,       // project remote_id
+        ))
+    })
+    .map_err(|e| e.to_string())?
+    .filter_map(|r| r.ok())
+    .collect();
+    drop(stmt);
+
+    if bounces.is_empty() {
+        return Ok(());
+    }
+
+    log::info!("Found {} bounces needing MP3 upload", bounces.len());
+
+    // Get app data dir for temp files
+    let temp_dir = std::env::temp_dir().join("ableton-project-library-mp3");
+    std::fs::create_dir_all(&temp_dir).ok();
+
+    for (local_id, wav_path, bounce_remote_id, project_remote_id) in &bounces {
+        let wav = std::path::Path::new(wav_path);
+        if !wav.exists() {
+            log::debug!("Skipping bounce {} — WAV not found: {}", local_id, wav_path);
+            continue;
+        }
+
+        // Derive MP3 filename from WAV filename
+        let stem = wav.file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("bounce");
+        let mp3_filename = format!("{}.mp3", stem);
+        let temp_mp3 = temp_dir.join(&mp3_filename);
+
+        // Convert WAV → MP3
+        log::info!("Converting bounce {} to MP3: {}", local_id, wav_path);
+        if let Err(e) = crate::mp3::convert_wav_to_mp3(wav, &temp_mp3) {
+            log::warn!("MP3 conversion failed for bounce {}: {}", local_id, e);
+            continue;
+        }
+
+        // Read MP3 bytes
+        let mp3_data = match std::fs::read(&temp_mp3) {
+            Ok(data) => data,
+            Err(e) => {
+                log::warn!("Failed to read temp MP3 for bounce {}: {}", local_id, e);
+                std::fs::remove_file(&temp_mp3).ok();
+                continue;
+            }
+        };
+
+        // Upload to Supabase Storage: bounces/{user_id}/{project_remote_id}/{filename}.mp3
+        let storage_path = format!("{}/{}/{}", user_id, project_remote_id, mp3_filename);
+
+        let public_url = {
+            let client = supabase.lock().map_err(|e| e.to_string())?;
+            match crate::supabase::upload::upload_file(
+                &client, "bounces", &storage_path, mp3_data, "audio/mpeg",
+            ) {
+                Ok(url) => url,
+                Err(e) => {
+                    log::warn!("Upload failed for bounce {}: {}", local_id, e);
+                    std::fs::remove_file(&temp_mp3).ok();
+                    continue;
+                }
+            }
+        };
+
+        // Update local SQLite
+        conn.execute(
+            "UPDATE bounces SET mp3_url = ?1 WHERE id = ?2",
+            params![public_url, local_id],
+        ).ok();
+
+        // Update remote Supabase record
+        {
+            let client = supabase.lock().map_err(|e| e.to_string())?;
+            if let Err(e) = crate::supabase::api::update(
+                &client, "bounces", *bounce_remote_id, &json!({"mp3_url": public_url}),
+            ) {
+                log::warn!("Failed to patch remote bounce {} with mp3_url: {}", bounce_remote_id, e);
+            }
+        }
+
+        // Clean up temp file
+        std::fs::remove_file(&temp_mp3).ok();
+
+        log::info!("Uploaded MP3 for bounce {} → {}", local_id, public_url);
     }
 
     Ok(())

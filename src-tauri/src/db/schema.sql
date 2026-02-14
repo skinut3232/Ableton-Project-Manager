@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT INTO schema_version (version) VALUES (8);
+INSERT INTO schema_version (version) VALUES (10);
 
 -- Settings (key-value pairs)
 CREATE TABLE IF NOT EXISTS settings (
@@ -65,7 +65,8 @@ CREATE TABLE IF NOT EXISTS bounces (
     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     bounce_path TEXT NOT NULL UNIQUE,
     modified_time TEXT NOT NULL,
-    duration_seconds REAL
+    duration_seconds REAL,
+    mp3_url TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_bounces_project_id ON bounces(project_id);

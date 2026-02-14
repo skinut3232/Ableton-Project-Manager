@@ -259,6 +259,17 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
         if version < 9 {
             migrate_v8_to_v9(conn)?;
         }
+
+        // Migration v9 → v10: add mp3_url column to bounces
+        if version < 10 {
+            conn.execute(
+                "ALTER TABLE bounces ADD COLUMN mp3_url TEXT", [],
+            ).ok();
+            conn.execute_batch(
+                "INSERT INTO schema_version (version) VALUES (10);"
+            ).map_err(|e| format!("Migration v10 failed: {}", e))?;
+            log::info!("Migrated database to schema version 10 (bounces.mp3_url)");
+        }
     }
 
     Ok(())
