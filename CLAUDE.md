@@ -3,6 +3,9 @@
 ## Project Overview
 A Tauri v2 desktop app (Windows) for managing ~100+ Ableton Live projects. Scans a root folder for project directories (containing `.als` files), displays them in a searchable/filterable library grid, and provides metadata editing, WAV bounce playback, session tracking, and one-click Ableton launching. All data is local (SQLite + filesystem).
 
+## Obsidian Project Note
+`C:\Users\Rob\Documents\Software\Obsidian\Projects\ableton-project-managent-App.md`
+
 ## Tech Stack
 - **Backend:** Tauri v2, Rust (edition 2021), rusqlite 0.31 (bundled SQLite + FTS5), chrono, walkdir, image
 - **Frontend:** React 19, TypeScript, Vite 7, Tailwind CSS v4 (`@tailwindcss/vite`), Zustand 5, TanStack React Query 5, react-router-dom 7

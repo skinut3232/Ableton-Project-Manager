@@ -23,6 +23,11 @@ Desktop.ini
 # Secrets
 Supabase-Database-Password.txt
 
+# Site (Next.js)
+site/node_modules/
+site/.next/
+site/.env.local
+
 # Build output
 *.exe
 *.msi
