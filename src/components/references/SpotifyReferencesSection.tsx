@@ -31,19 +31,19 @@ export function SpotifyReferencesSection({ projectId }: SpotifyReferencesSection
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-neutral-300">
+        <h3 className="text-sm font-medium text-text-secondary">
           Reference Tracks ({refs.length})
         </h3>
         <div className="flex items-center gap-2">
           {authStatus?.logged_in ? (
             <>
-              <span className="text-[10px] text-neutral-500">
+              <span className="text-[10px] text-text-muted">
                 {authStatus.display_name}
               </span>
               <button
                 onClick={() => logout.mutate()}
                 disabled={logout.isPending}
-                className="rounded px-2 py-1 text-[10px] text-neutral-400 hover:text-white transition-colors"
+                className="rounded px-2 py-1 text-[10px] text-text-secondary hover:text-text-primary transition-colors"
               >
                 Logout
               </button>
@@ -92,8 +92,8 @@ export function SpotifyReferencesSection({ projectId }: SpotifyReferencesSection
 
       {refs.length === 0 && !showSearch ? (
         <div className="text-center py-8">
-          <p className="text-neutral-400 mb-1">No reference tracks yet</p>
-          <p className="text-xs text-neutral-600">
+          <p className="text-text-secondary mb-1">No reference tracks yet</p>
+          <p className="text-xs text-text-muted">
             Search Spotify to add tracks or albums as references
           </p>
         </div>

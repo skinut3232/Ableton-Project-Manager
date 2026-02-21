@@ -40,13 +40,13 @@ export function TaskAddForm({ onAdd, autoFocus }: TaskAddFormProps) {
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Add a task..."
         disabled={submitting}
-        className="flex-1 rounded border border-neutral-600 bg-neutral-800 px-3 py-1.5 text-sm text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none disabled:opacity-50"
+        className="flex-1 rounded border border-border-default bg-bg-elevated px-3 py-1.5 text-sm text-text-primary placeholder-text-muted focus:border-brand-500 focus:outline-none disabled:opacity-50"
       />
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value as TaskCategory)}
         disabled={submitting}
-        className="rounded border border-neutral-600 bg-neutral-800 px-2 py-1.5 text-xs text-white focus:border-blue-500 focus:outline-none disabled:opacity-50"
+        className="rounded border border-border-default bg-bg-elevated px-2 py-1.5 text-xs text-text-primary focus:border-brand-500 focus:outline-none disabled:opacity-50"
       >
         {TASK_CATEGORIES.map((c) => (
           <option key={c} value={c}>{c}</option>
@@ -55,7 +55,7 @@ export function TaskAddForm({ onAdd, autoFocus }: TaskAddFormProps) {
       <button
         type="submit"
         disabled={submitting}
-        className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-500 transition-colors disabled:opacity-50"
+        className="rounded bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-500 transition-colors disabled:opacity-50"
       >
         {submitting ? 'Adding...' : 'Add'}
       </button>

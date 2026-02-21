@@ -21,9 +21,9 @@ export function AudioPlayer() {
   const fileName = currentBounce.bounce_path.split(/[/\\]/).pop() || '';
 
   return (
-    <div className="border-t border-neutral-700 bg-neutral-800 px-4 py-2 flex items-center gap-4">
+    <div className="border-t border-border-default bg-bg-elevated px-4 py-2 flex items-center gap-4">
       {/* Artwork mini */}
-      <div className="h-10 w-10 rounded bg-neutral-700 overflow-hidden shrink-0">
+      <div className="h-10 w-10 rounded bg-bg-surface overflow-hidden shrink-0">
         {currentProject.artwork_path ? (
           <img
             src={convertFileSrc(currentProject.artwork_path)}
@@ -31,18 +31,18 @@ export function AudioPlayer() {
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-neutral-600 text-sm">&#9835;</div>
+          <div className="flex items-center justify-center h-full text-text-muted text-sm">&#9835;</div>
         )}
       </div>
 
       {/* Track info */}
       <div className="min-w-0 w-40">
-        <p className="text-xs font-medium text-white truncate">{fileName}</p>
-        <p className="text-[10px] text-neutral-500 truncate">{currentProject.name}</p>
+        <p className="text-xs font-medium text-text-primary truncate">{fileName}</p>
+        <p className="text-[10px] text-text-muted truncate">{currentProject.name}</p>
       </div>
 
       {/* Play/Pause */}
-      <button onClick={togglePlayPause} className="text-white hover:text-blue-400 transition-colors">
+      <button onClick={togglePlayPause} className="text-white hover:text-brand-400 transition-colors">
         {isPlaying ? (
           <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
             <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
@@ -56,9 +56,9 @@ export function AudioPlayer() {
 
       {/* Progress bar */}
       <div className="flex-1 flex items-center gap-2">
-        <span className="text-[10px] text-neutral-500 w-10 text-right">{formatTime(progress)}</span>
+        <span className="text-[10px] text-text-muted w-10 text-right">{formatTime(progress)}</span>
         <div
-          className="flex-1 h-1.5 bg-neutral-700 rounded-full cursor-pointer relative group"
+          className="flex-1 h-1.5 bg-bg-surface rounded-full cursor-pointer relative group"
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -67,18 +67,18 @@ export function AudioPlayer() {
           }}
         >
           <div
-            className="h-full bg-blue-500 rounded-full relative"
+            className="h-full bg-brand-500 rounded-full relative"
             style={{ width: `${progressPercent}%` }}
           >
             <div className="absolute right-0 top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-white shadow opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
-        <span className="text-[10px] text-neutral-500 w-10">{formatTime(duration)}</span>
+        <span className="text-[10px] text-text-muted w-10">{formatTime(duration)}</span>
       </div>
 
       {/* Volume */}
       <div className="flex items-center gap-1">
-        <svg className="h-4 w-4 text-neutral-400" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="h-4 w-4 text-text-secondary" fill="currentColor" viewBox="0 0 24 24">
           <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8.5v7a4.49 4.49 0 002.5-3.5z" />
         </svg>
         <input
@@ -88,7 +88,7 @@ export function AudioPlayer() {
           step={0.05}
           value={volume}
           onChange={(e) => setVolume(parseFloat(e.target.value))}
-          className="w-16 h-1 rounded-full appearance-none cursor-pointer bg-neutral-600
+          className="w-16 h-1 rounded-full appearance-none cursor-pointer bg-bg-surface
             [&::-webkit-slider-thumb]:appearance-none
             [&::-webkit-slider-thumb]:h-3
             [&::-webkit-slider-thumb]:w-3
@@ -100,7 +100,7 @@ export function AudioPlayer() {
       {/* Loop toggle */}
       <button
         onClick={() => setLoop(!loop)}
-        className={`transition-colors ${loop ? 'text-blue-400' : 'text-neutral-500 hover:text-white'}`}
+        className={`transition-colors ${loop ? 'text-brand-400' : 'text-text-muted hover:text-white'}`}
         title={loop ? 'Loop on' : 'Loop off'}
       >
         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -109,7 +109,7 @@ export function AudioPlayer() {
       </button>
 
       {/* Stop */}
-      <button onClick={stop} className="text-neutral-500 hover:text-white transition-colors" title="Stop">
+      <button onClick={stop} className="text-text-muted hover:text-white transition-colors" title="Stop">
         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
           <path d="M6 6h12v12H6z" />
         </svg>

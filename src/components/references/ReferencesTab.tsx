@@ -41,16 +41,16 @@ export function ReferencesTab({ projectId }: ReferencesTabProps) {
       <SpotifyReferencesSection projectId={projectId} />
 
       {/* Divider */}
-      <div className="border-t border-neutral-700" />
+      <div className="border-t border-border-default" />
 
       {/* Add button */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-neutral-300">
+        <h3 className="text-sm font-medium text-text-secondary">
           References ({refs.length})
         </h3>
         <button
           onClick={() => setShowAdd(!showAdd)}
-          className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-500 transition-colors"
+          className="rounded bg-brand-600 px-3 py-1 text-xs font-medium text-white hover:bg-brand-500 transition-colors"
         >
           {showAdd ? 'Cancel' : 'Add Reference'}
         </button>
@@ -58,30 +58,30 @@ export function ReferencesTab({ projectId }: ReferencesTabProps) {
 
       {/* Add form */}
       {showAdd && (
-        <div className="rounded-lg border border-neutral-700 bg-neutral-800/50 p-3 space-y-2">
+        <div className="rounded-lg border border-border-default bg-bg-elevated/50 p-3 space-y-2">
           <input
             value={addUrl}
             onChange={(e) => setAddUrl(e.target.value)}
             placeholder="URL (required)"
             autoFocus
-            className="w-full rounded border border-neutral-600 bg-neutral-900 px-3 py-1.5 text-sm text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded border border-border-default bg-bg-primary px-3 py-1.5 text-sm text-text-primary placeholder-text-muted focus:border-brand-500 focus:outline-none"
           />
           <input
             value={addTitle}
             onChange={(e) => setAddTitle(e.target.value)}
             placeholder="Title (optional)"
-            className="w-full rounded border border-neutral-600 bg-neutral-900 px-3 py-1.5 text-sm text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded border border-border-default bg-bg-primary px-3 py-1.5 text-sm text-text-primary placeholder-text-muted focus:border-brand-500 focus:outline-none"
           />
           <textarea
             value={addNotes}
             onChange={(e) => setAddNotes(e.target.value)}
             placeholder="Notes..."
             rows={2}
-            className="w-full rounded border border-neutral-600 bg-neutral-900 px-3 py-1.5 text-sm text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none resize-none"
+            className="w-full rounded border border-border-default bg-bg-primary px-3 py-1.5 text-sm text-text-primary placeholder-text-muted focus:border-brand-500 focus:outline-none resize-none"
           />
           <button
             onClick={handleAdd}
-            className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-500 transition-colors"
+            className="rounded bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-500 transition-colors"
           >
             Add
           </button>
@@ -91,8 +91,8 @@ export function ReferencesTab({ projectId }: ReferencesTabProps) {
       {/* List */}
       {refs.length === 0 && !showAdd ? (
         <div className="text-center py-12">
-          <p className="text-neutral-400 mb-1">No references yet</p>
-          <p className="text-xs text-neutral-600">
+          <p className="text-text-secondary mb-1">No references yet</p>
+          <p className="text-xs text-text-muted">
             Add links to inspiration, tutorials, or reference tracks
           </p>
         </div>
@@ -101,27 +101,27 @@ export function ReferencesTab({ projectId }: ReferencesTabProps) {
           {refs.map((ref) => (
             <div
               key={ref.id}
-              className="rounded-lg border border-neutral-700 bg-neutral-800/50 p-3 group"
+              className="rounded-lg border border-border-default bg-bg-elevated/50 p-3 group"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="text-sm font-medium text-text-primary truncate">
                     {ref.title || ref.url}
                   </p>
                   {ref.title && (
-                    <p className="text-[10px] text-neutral-500 truncate">{ref.url}</p>
+                    <p className="text-[10px] text-text-muted truncate">{ref.url}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => openUrl(ref.url)}
-                    className="rounded bg-neutral-700 px-2 py-1 text-[10px] text-neutral-300 hover:bg-neutral-600 transition-colors"
+                    className="rounded bg-bg-surface px-2 py-1 text-[10px] text-text-secondary hover:bg-bg-surface transition-colors"
                   >
                     Open
                   </button>
                   <button
                     onClick={() => deleteRef.mutate(ref.id)}
-                    className="text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1"
+                    className="text-text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1"
                     title="Delete"
                   >
                     <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -147,7 +147,7 @@ export function ReferencesTab({ projectId }: ReferencesTabProps) {
                   }}
                   autoFocus
                   rows={2}
-                  className="mt-2 w-full rounded border border-neutral-600 bg-neutral-900 px-2 py-1 text-xs text-neutral-300 focus:border-blue-500 focus:outline-none resize-none"
+                  className="mt-2 w-full rounded border border-border-default bg-bg-primary px-2 py-1 text-xs text-text-secondary focus:border-brand-500 focus:outline-none resize-none"
                 />
               ) : (
                 <p
@@ -155,13 +155,13 @@ export function ReferencesTab({ projectId }: ReferencesTabProps) {
                     setEditingId(ref.id);
                     setEditNotes(ref.notes);
                   }}
-                  className="mt-1 text-xs text-neutral-500 cursor-pointer hover:text-neutral-400 transition-colors"
+                  className="mt-1 text-xs text-text-muted cursor-pointer hover:text-text-secondary transition-colors"
                 >
                   {ref.notes || 'Click to add notes...'}
                 </p>
               )}
 
-              <p className="text-[10px] text-neutral-600 mt-1">
+              <p className="text-[10px] text-text-muted mt-1">
                 Added {formatTimestamp(ref.created_at)}
               </p>
             </div>

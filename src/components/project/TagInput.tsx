@@ -65,18 +65,18 @@ export function TagInput({ projectId, tags }: TagInputProps) {
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-neutral-300">Tags</label>
+      <label className="text-sm font-medium text-text-secondary">Tags</label>
       <div ref={containerRef} className="relative">
-        <div className="flex flex-wrap gap-1.5 rounded-md border border-neutral-600 bg-neutral-800 p-2 min-h-[2.5rem]">
+        <div className="flex flex-wrap gap-1.5 rounded-lg border border-border-default bg-bg-elevated p-2 min-h-[2.5rem]">
           {tags.map((tag) => (
             <span
               key={tag.id}
-              className="inline-flex items-center gap-1 rounded-full bg-neutral-700 px-2.5 py-0.5 text-xs text-neutral-300"
+              className="inline-flex items-center gap-1 rounded-full bg-bg-surface px-2.5 py-0.5 text-xs text-text-secondary"
             >
               {tag.name}
               <button
                 onClick={() => removeTag.mutate(tag.id)}
-                className="text-neutral-500 hover:text-white transition-colors"
+                className="text-text-muted hover:text-text-primary transition-colors"
               >
                 ×
               </button>
@@ -93,13 +93,13 @@ export function TagInput({ projectId, tags }: TagInputProps) {
             onFocus={() => setShowDropdown(true)}
             onKeyDown={handleKeyDown}
             placeholder={tags.length === 0 ? 'Add tags...' : ''}
-            className="flex-1 min-w-[80px] bg-transparent text-sm text-white outline-none placeholder-neutral-500"
+            className="flex-1 min-w-[80px] bg-transparent text-sm text-text-primary outline-none placeholder-text-muted"
           />
         </div>
 
         {/* Autocomplete dropdown */}
         {showDropdown && input && suggestions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-md border border-neutral-600 bg-neutral-800 py-1 shadow-lg max-h-32 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-lg border border-border-default bg-bg-elevated py-1 shadow-lg max-h-32 overflow-y-auto">
             {suggestions.slice(0, 8).map((tag) => (
               <button
                 key={tag.id}
@@ -110,7 +110,7 @@ export function TagInput({ projectId, tags }: TagInputProps) {
                     setShowDropdown(false);
                   });
                 }}
-                className="w-full px-3 py-1.5 text-sm text-left text-neutral-300 hover:bg-neutral-700"
+                className="w-full px-3 py-1.5 text-sm text-left text-text-secondary hover:bg-bg-surface"
               >
                 {tag.name}
               </button>

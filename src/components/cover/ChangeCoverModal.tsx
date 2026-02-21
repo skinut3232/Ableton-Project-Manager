@@ -141,13 +141,13 @@ export function ChangeCoverModal({ project, onClose }: ChangeCoverModalProps) {
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-xl bg-neutral-900 rounded-xl shadow-2xl border border-neutral-700 overflow-hidden"
+        className="relative w-full max-w-xl bg-bg-primary rounded-xl shadow-2xl border border-border-default overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-neutral-700">
-          <h2 className="text-sm font-semibold text-white">Change Cover</h2>
-          <button onClick={onClose} className="text-neutral-400 hover:text-white transition-colors">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border-default">
+          <h2 className="text-sm font-semibold text-text-primary">Change Cover</h2>
+          <button onClick={onClose} className="text-text-secondary hover:text-text-primary transition-colors">
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -155,15 +155,15 @@ export function ChangeCoverModal({ project, onClose }: ChangeCoverModalProps) {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-neutral-700">
+        <div className="flex border-b border-border-default">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`flex-1 px-4 py-2.5 text-xs font-medium transition-colors ${
                 activeTab === tab.key
-                  ? 'text-white border-b-2 border-blue-500'
-                  : 'text-neutral-500 hover:text-neutral-300'
+                  ? 'text-text-primary border-b-2 border-brand-500'
+                  : 'text-text-muted hover:text-text-secondary'
               }`}
             >
               {tab.label}
@@ -204,9 +204,9 @@ export function ChangeCoverModal({ project, onClose }: ChangeCoverModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-3 border-t border-neutral-700 bg-neutral-800/50">
+        <div className="flex items-center justify-between px-5 py-3 border-t border-border-default bg-bg-elevated/50">
           <div className="flex items-center gap-3">
-            <span className="text-[10px] text-neutral-500">
+            <span className="text-[10px] text-text-muted">
               Current: {COVER_TYPE_LABELS[project.cover_type] || 'None'}
             </span>
             <button
@@ -215,7 +215,7 @@ export function ChangeCoverModal({ project, onClose }: ChangeCoverModalProps) {
               className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors ${
                 project.cover_locked
                   ? 'bg-amber-600/20 text-amber-300'
-                  : 'bg-neutral-700 text-neutral-400 hover:text-neutral-200'
+                  : 'bg-bg-surface text-text-secondary hover:text-text-primary'
               }`}
             >
               <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
@@ -264,10 +264,10 @@ function GenerateTab({
             key={icon.key}
             onClick={() => onIconSelect(icon.key)}
             disabled={isShuffling}
-            className={`px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+            className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
               selectedIcon === icon.key
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200'
+                ? 'bg-brand-600 text-white shadow-sm'
+                : 'bg-bg-elevated text-text-secondary hover:bg-bg-surface hover:text-text-primary'
             } disabled:opacity-40`}
           >
             {icon.label}
@@ -290,7 +290,7 @@ function GenerateTab({
               background: `linear-gradient(135deg, hsl(${fallbackHue}, 25%, 22%) 0%, hsl(${(fallbackHue + 20) % 360}, 20%, 18%) 100%)`,
             }}
           >
-            <span className="text-4xl text-neutral-600">&#9835;</span>
+            <span className="text-4xl text-text-muted">&#9835;</span>
           </div>
         )}
       </div>
@@ -299,7 +299,7 @@ function GenerateTab({
       <button
         onClick={onShuffle}
         disabled={isShuffling}
-        className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-500 transition-colors disabled:opacity-50 flex items-center gap-2"
+        className="rounded-lg bg-brand-600 px-6 py-2 text-sm font-medium text-white hover:bg-brand-500 transition-colors disabled:opacity-50 flex items-center gap-2"
       >
         {isShuffling ? (
           <>
@@ -342,11 +342,11 @@ function MoodBoardTab({
   if (pins.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full py-12">
-        <svg className="h-12 w-12 text-neutral-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="h-12 w-12 text-text-muted mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
-        <p className="text-sm text-neutral-400">No pinned images</p>
-        <p className="text-xs text-neutral-600 mt-1">Pin images from the Assets tab to use them here</p>
+        <p className="text-sm text-text-secondary">No pinned images</p>
+        <p className="text-xs text-text-muted mt-1">Pin images from the Assets tab to use them here</p>
       </div>
     );
   }
@@ -360,8 +360,8 @@ function MoodBoardTab({
             onClick={() => onSelect(pin.asset_id === selectedAssetId ? null : pin.asset_id)}
             className={`relative rounded-lg overflow-hidden cursor-pointer border-2 transition-colors group ${
               pin.asset_id === selectedAssetId
-                ? 'border-blue-500'
-                : 'border-transparent hover:border-neutral-600'
+                ? 'border-brand-500'
+                : 'border-transparent hover:border-border-default'
             }`}
           >
             <img
@@ -374,7 +374,7 @@ function MoodBoardTab({
               className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
               title="Unpin"
             >
-              <svg className="h-3 w-3 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-3 w-3 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -385,7 +385,7 @@ function MoodBoardTab({
         <button
           onClick={onApply}
           disabled={selectedAssetId == null || isApplying}
-          className="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-500 transition-colors disabled:opacity-40"
+          className="rounded-lg bg-brand-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-brand-500 transition-colors disabled:opacity-40"
         >
           {isApplying ? 'Setting...' : 'Set as Cover'}
         </button>
@@ -420,20 +420,20 @@ function UploadTab({
               className="w-full h-full object-cover"
             />
           </div>
-          <p className="text-xs text-neutral-500 truncate max-w-full">
+          <p className="text-xs text-text-muted truncate max-w-full">
             {selectedPath.split(/[/\\]/).pop()}
           </p>
           <div className="flex gap-2">
             <button
               onClick={onApply}
               disabled={isApplying}
-              className="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-500 transition-colors disabled:opacity-50"
+              className="rounded-lg bg-brand-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-brand-500 transition-colors disabled:opacity-50"
             >
               {isApplying ? 'Uploading...' : 'Use This Image'}
             </button>
             <button
               onClick={onClear}
-              className="rounded-lg bg-neutral-700 px-4 py-1.5 text-sm font-medium text-neutral-300 hover:bg-neutral-600 transition-colors"
+              className="rounded-lg bg-bg-surface px-4 py-1.5 text-sm font-medium text-text-secondary hover:bg-bg-surface transition-colors"
             >
               Cancel
             </button>
@@ -443,13 +443,13 @@ function UploadTab({
         <>
           <div
             onClick={onBrowse}
-            className="w-full h-48 rounded-lg border-2 border-dashed border-neutral-600 hover:border-neutral-500 flex flex-col items-center justify-center cursor-pointer transition-colors"
+            className="w-full h-48 rounded-lg border-2 border-dashed border-border-default hover:border-border-default flex flex-col items-center justify-center cursor-pointer transition-colors"
           >
-            <svg className="h-10 w-10 text-neutral-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-10 w-10 text-text-muted mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
-            <p className="text-sm text-neutral-400">Click to browse</p>
-            <p className="text-xs text-neutral-600 mt-1">PNG, JPG, or WebP</p>
+            <p className="text-sm text-text-secondary">Click to browse</p>
+            <p className="text-xs text-text-muted mt-1">PNG, JPG, or WebP</p>
           </div>
         </>
       )}

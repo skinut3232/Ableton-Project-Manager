@@ -28,7 +28,7 @@ export function SyncIndicator() {
   return (
     <div className="flex items-center gap-1.5" title={title}>
       <div className={`w-2 h-2 rounded-full ${color}`} />
-      <span className="text-[10px] text-neutral-500">Sync</span>
+      <span className="text-[10px] text-text-muted">Sync</span>
     </div>
   );
 }

@@ -102,21 +102,21 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   ];
 
   return (
-    <div className="flex items-center gap-1 bg-neutral-800 border-b border-neutral-700 px-2 py-1.5 rounded-t-md flex-wrap">
+    <div className="flex items-center gap-1 bg-bg-elevated border-b border-border-default px-2 py-1.5 rounded-t-lg flex-wrap">
       {groups.map((group, gi) => (
         <div key={gi} className="flex items-center gap-0.5">
           {gi > 0 && (
-            <div className="w-px h-5 bg-neutral-600 mx-1" />
+            <div className="w-px h-5 bg-border-default mx-1" />
           )}
           {group.map((btn) => (
             <button
               key={btn.label}
               type="button"
               onClick={btn.action}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
+              className={`px-2 py-1 text-xs rounded-lg transition-colors ${
                 btn.isActive()
-                  ? 'bg-blue-600 text-white'
-                  : 'text-neutral-300 hover:bg-neutral-700 hover:text-white'
+                  ? 'bg-brand-600 text-white'
+                  : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary'
               }`}
             >
               {btn.label}

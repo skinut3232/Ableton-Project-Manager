@@ -29,11 +29,11 @@ function SpotifyProgressBar({
 
   return (
     <div className="flex items-center gap-2 mt-1.5">
-      <span className="text-[9px] text-neutral-500 w-8 text-right tabular-nums">
+      <span className="text-[9px] text-text-muted w-8 text-right tabular-nums">
         {formatDurationMs(position)}
       </span>
       <div
-        className="flex-1 h-1 bg-neutral-700 rounded cursor-pointer group"
+        className="flex-1 h-1 bg-bg-surface rounded cursor-pointer group"
         onClick={handleClick}
       >
         <div
@@ -41,7 +41,7 @@ function SpotifyProgressBar({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-[9px] text-neutral-500 w-8 tabular-nums">
+      <span className="text-[9px] text-text-muted w-8 tabular-nums">
         {formatDurationMs(duration)}
       </span>
     </div>
@@ -91,8 +91,8 @@ export function SpotifyReferenceCard({ ref_, onUpdateNotes, onDelete }: SpotifyR
 
   return (
     <div
-      className={`rounded-lg border bg-neutral-800 group ${
-        isThisPlaying ? 'border-green-500/60' : 'border-neutral-700'
+      className={`rounded-lg border bg-bg-elevated group ${
+        isThisPlaying ? 'border-green-500/60' : 'border-border-default'
       }`}
     >
       <div className="flex items-start gap-3 p-3">
@@ -104,7 +104,7 @@ export function SpotifyReferenceCard({ ref_, onUpdateNotes, onDelete }: SpotifyR
             className="h-12 w-12 rounded object-cover shrink-0"
           />
         ) : (
-          <div className="h-12 w-12 rounded bg-neutral-700 shrink-0 flex items-center justify-center text-neutral-500">
+          <div className="h-12 w-12 rounded bg-bg-surface shrink-0 flex items-center justify-center text-text-muted">
             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
             </svg>
@@ -114,17 +114,17 @@ export function SpotifyReferenceCard({ ref_, onUpdateNotes, onDelete }: SpotifyR
         {/* Info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-white truncate">{ref_.name}</p>
-            <span className="shrink-0 rounded bg-neutral-700 px-1.5 py-0.5 text-[10px] font-medium text-neutral-400">
+            <p className="text-sm font-medium text-text-primary truncate">{ref_.name}</p>
+            <span className="shrink-0 rounded bg-bg-surface px-1.5 py-0.5 text-[10px] font-medium text-text-secondary">
               {typeBadge}
             </span>
           </div>
-          <p className="text-[11px] text-neutral-400 truncate">
+          <p className="text-[11px] text-text-secondary truncate">
             {ref_.artist_name}
             {ref_.spotify_type === 'track' && ref_.album_name && ` \u00b7 ${ref_.album_name}`}
           </p>
           {ref_.duration_ms && !isThisTrack && (
-            <p className="text-[10px] text-neutral-500 mt-0.5">
+            <p className="text-[10px] text-text-muted mt-0.5">
               {formatDurationMs(ref_.duration_ms)}
             </p>
           )}
@@ -146,7 +146,7 @@ export function SpotifyReferenceCard({ ref_, onUpdateNotes, onDelete }: SpotifyR
               className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${
                 isThisPlaying
                   ? 'bg-green-600 text-white'
-                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                  : 'bg-bg-surface text-text-secondary hover:bg-bg-surface'
               }`}
               title={isThisPlaying ? 'Pause' : 'Play'}
             >
@@ -158,7 +158,7 @@ export function SpotifyReferenceCard({ ref_, onUpdateNotes, onDelete }: SpotifyR
               className={`rounded px-2 py-1 text-[10px] font-medium transition-colors ${
                 expanded
                   ? 'bg-green-600 text-white'
-                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                  : 'bg-bg-surface text-text-secondary hover:bg-bg-surface'
               }`}
               title={expanded ? 'Collapse player' : 'Play preview'}
             >
@@ -169,7 +169,7 @@ export function SpotifyReferenceCard({ ref_, onUpdateNotes, onDelete }: SpotifyR
             href={ref_.spotify_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded bg-neutral-700 px-2 py-1 text-[10px] text-neutral-300 hover:bg-neutral-600 transition-colors"
+            className="rounded bg-bg-surface px-2 py-1 text-[10px] text-text-secondary hover:bg-bg-surface transition-colors"
             title="Open in Spotify"
             onClick={(e) => {
               e.preventDefault();
@@ -180,7 +180,7 @@ export function SpotifyReferenceCard({ ref_, onUpdateNotes, onDelete }: SpotifyR
           </a>
           <button
             onClick={() => onDelete(ref_.id)}
-            className="text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1"
+            className="text-text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1"
             title="Remove"
           >
             <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -206,7 +206,7 @@ export function SpotifyReferenceCard({ ref_, onUpdateNotes, onDelete }: SpotifyR
       )}
 
       {/* Notes */}
-      <div className="border-t border-neutral-700/50 px-3 py-2">
+      <div className="border-t border-border-default/50 px-3 py-2">
         {editingNotes ? (
           <textarea
             value={notesValue}
@@ -225,7 +225,7 @@ export function SpotifyReferenceCard({ ref_, onUpdateNotes, onDelete }: SpotifyR
             }}
             autoFocus
             rows={2}
-            className="w-full rounded border border-neutral-600 bg-neutral-900 px-2 py-1 text-xs text-neutral-300 focus:border-green-500 focus:outline-none resize-none"
+            className="w-full rounded border border-border-default bg-bg-primary px-2 py-1 text-xs text-text-secondary focus:border-green-500 focus:outline-none resize-none"
           />
         ) : (
           <p
@@ -233,7 +233,7 @@ export function SpotifyReferenceCard({ ref_, onUpdateNotes, onDelete }: SpotifyR
               setNotesValue(ref_.notes);
               setEditingNotes(true);
             }}
-            className="text-xs text-neutral-500 cursor-pointer hover:text-neutral-400 transition-colors"
+            className="text-xs text-text-muted cursor-pointer hover:text-text-secondary transition-colors"
           >
             {ref_.notes || 'Click to add notes...'}
           </p>

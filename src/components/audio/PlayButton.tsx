@@ -24,7 +24,7 @@ export function PlayButton({ projectId, project, bounce }: PlayButtonProps) {
 
   if (!targetBounce) {
     return (
-      <button disabled className="rounded-full bg-neutral-700/80 p-2 text-neutral-500 cursor-not-allowed" title="No bounces available">
+      <button disabled className="rounded-full bg-bg-surface/80 p-2 text-text-muted cursor-not-allowed" title="No bounces available">
         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
           <path d="M8 5v14l11-7z" />
         </svg>
@@ -38,7 +38,7 @@ export function PlayButton({ projectId, project, bounce }: PlayButtonProps) {
         e.stopPropagation();
         play(targetBounce, project);
       }}
-      className="rounded-full bg-blue-600/90 p-2 text-white hover:bg-blue-500 transition-colors shadow-lg"
+      className="rounded-full bg-brand-600/90 p-2 text-white hover:bg-brand-500 transition-colors shadow-lg"
       title={isThisPlaying ? 'Pause' : 'Play'}
     >
       {isThisPlaying ? (

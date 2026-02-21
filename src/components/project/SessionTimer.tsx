@@ -55,12 +55,12 @@ export function SessionTimer({ projectId, projectName: _projectName }: SessionTi
   };
 
   return (
-    <div className="rounded-lg border border-neutral-700 bg-neutral-800/50 p-4">
-      <h3 className="text-sm font-medium text-neutral-300 mb-3">Session Timer</h3>
+    <div className="rounded-lg border border-border-default bg-bg-elevated/50 p-4">
+      <h3 className="text-sm font-medium text-text-secondary mb-3">Session Timer</h3>
 
       {isActiveHere ? (
         <div>
-          <div className="text-2xl font-mono text-white mb-3">{formatElapsed(elapsedSeconds)}</div>
+          <div className="text-2xl font-mono text-text-primary mb-3">{formatElapsed(elapsedSeconds)}</div>
           <Button variant="danger" size="sm" className="w-full" onClick={handleStop}>
             Stop Session
           </Button>
@@ -80,9 +80,9 @@ export function SessionTimer({ projectId, projectName: _projectName }: SessionTi
       {/* Note dialog */}
       {showNoteDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-96 rounded-lg border border-neutral-600 bg-neutral-800 p-6 shadow-xl">
-            <h3 className="text-lg font-medium text-white mb-3">Session Complete</h3>
-            <p className="text-sm text-neutral-400 mb-3">
+          <div className="w-96 rounded-lg border border-border-default bg-bg-elevated p-6 shadow-xl">
+            <h3 className="text-lg font-medium text-text-primary mb-3">Session Complete</h3>
+            <p className="text-sm text-text-secondary mb-3">
               Duration: {formatElapsed(elapsedSeconds)}
             </p>
             <textarea
@@ -90,7 +90,7 @@ export function SessionTimer({ projectId, projectName: _projectName }: SessionTi
               onChange={(e) => setSessionNote(e.target.value)}
               placeholder="Add a note about this session (optional)..."
               rows={3}
-              className="w-full rounded-md border border-neutral-600 bg-neutral-700 px-3 py-2 text-sm text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none mb-4"
+              className="w-full rounded-lg border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:border-brand-500 focus:outline-none mb-4"
             />
             <div className="flex justify-end gap-2">
               <Button variant="ghost" size="sm" onClick={() => {

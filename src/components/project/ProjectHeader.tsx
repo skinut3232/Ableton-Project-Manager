@@ -98,13 +98,13 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
                   if (e.key === 'Enter') commitName();
                   if (e.key === 'Escape') { setNameValue(project.name); setEditingName(false); }
                 }}
-                className="text-2xl font-bold text-white bg-neutral-800 border border-neutral-600 rounded px-2 py-0.5 focus:border-blue-500 focus:outline-none flex-1 min-w-0"
+                className="text-2xl font-bold text-text-primary bg-bg-elevated border border-border-default rounded-lg px-2 py-0.5 focus:border-brand-500 focus:outline-none flex-1 min-w-0"
               />
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => setNameValue(generateSongName())}
-                className="shrink-0 flex items-center gap-1 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-[10px] text-neutral-400 hover:text-white hover:border-neutral-500 transition-colors"
+                className="shrink-0 flex items-center gap-1 rounded-lg border border-border-default bg-bg-elevated px-2 py-1 text-[10px] text-text-secondary hover:text-text-primary hover:border-text-muted transition-colors"
                 title="Generate a random song name"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
@@ -115,7 +115,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
             </div>
           ) : (
             <h1
-              className="text-2xl font-bold text-white truncate cursor-pointer hover:text-neutral-300 transition-colors"
+              className="text-2xl font-bold text-text-primary truncate cursor-pointer hover:text-text-secondary transition-colors"
               onClick={() => setEditingName(true)}
               title="Click to rename"
             >
@@ -132,7 +132,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
           <select
             value={project.status}
             onChange={(e) => onUpdate('status', e.target.value)}
-            className="rounded-md border border-neutral-600 bg-neutral-800 px-2 py-1 text-sm text-white focus:border-blue-500 focus:outline-none"
+            className="rounded-lg border border-border-default bg-bg-elevated px-2 py-1 text-sm text-text-primary focus:border-brand-500 focus:outline-none"
           >
             {PROJECT_STATUSES.map((s) => (
               <option key={s} value={s}>{s}</option>
@@ -145,10 +145,10 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
             className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               project.in_rotation
                 ? 'bg-green-600/20 text-green-400 border border-green-500/30'
-                : 'bg-neutral-800 text-neutral-500 hover:text-neutral-300'
+                : 'bg-bg-elevated text-text-muted hover:text-text-secondary'
             }`}
           >
-            <span className={`h-2 w-2 rounded-full ${project.in_rotation ? 'bg-green-400' : 'bg-neutral-600'}`} />
+            <span className={`h-2 w-2 rounded-full ${project.in_rotation ? 'bg-green-400' : 'bg-text-muted'}`} />
             In Rotation
           </button>
 
@@ -157,8 +157,8 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
             onClick={() => onUpdate('archived', !project.archived)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               project.archived
-                ? 'bg-neutral-600 text-white'
-                : 'bg-neutral-800 text-neutral-500 hover:text-neutral-300'
+                ? 'bg-bg-surface text-text-primary'
+                : 'bg-bg-elevated text-text-muted hover:text-text-secondary'
             }`}
           >
             {project.archived ? 'Archived' : 'Archive'}
@@ -176,7 +176,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
 
         {/* Progress slider */}
         <div className="flex items-center gap-3 mb-3">
-          <label className="text-xs text-neutral-500 shrink-0">Done:</label>
+          <label className="text-xs text-text-muted shrink-0">Done:</label>
           <div className="flex items-center gap-3 flex-1 max-w-xs">
             <input
               type="range"
@@ -186,18 +186,18 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
               value={project.progress ?? 0}
               onChange={(e) => onUpdate('progress', parseInt(e.target.value))}
               className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer
-                bg-neutral-700
+                bg-bg-surface
                 [&::-webkit-slider-thumb]:appearance-none
                 [&::-webkit-slider-thumb]:h-4
                 [&::-webkit-slider-thumb]:w-4
                 [&::-webkit-slider-thumb]:rounded-full
-                [&::-webkit-slider-thumb]:bg-blue-500
-                [&::-webkit-slider-thumb]:hover:bg-blue-400
-                [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(59,130,246,0.5)]
+                [&::-webkit-slider-thumb]:bg-brand-500
+                [&::-webkit-slider-thumb]:hover:bg-brand-400
+                [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(139,92,246,0.5)]
                 [&::-webkit-slider-thumb]:transition-colors"
             />
             <span className={`text-sm font-medium w-10 text-right ${
-              project.progress == null ? 'text-neutral-600' : 'text-white'
+              project.progress == null ? 'text-text-muted' : 'text-text-primary'
             }`}>
               {project.progress != null ? `${project.progress}%` : '—'}
             </span>
@@ -207,21 +207,21 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
         {/* BPM, Key & Genre */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <label className="text-xs text-neutral-500">BPM:</label>
+            <label className="text-xs text-text-muted">BPM:</label>
             <input
               type="number"
               value={project.bpm ?? ''}
               onChange={(e) => onUpdate('bpm', e.target.value ? parseFloat(e.target.value) : null)}
-              className="w-16 rounded border border-neutral-600 bg-neutral-800 px-2 py-0.5 text-sm text-white focus:border-blue-500 focus:outline-none"
+              className="w-16 rounded border border-border-default bg-bg-elevated px-2 py-0.5 text-sm text-text-primary focus:border-brand-500 focus:outline-none"
               placeholder="&#8212;"
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <label className="text-xs text-neutral-500">Key:</label>
+            <label className="text-xs text-text-muted">Key:</label>
             <select
               value={project.musical_key}
               onChange={(e) => onUpdate('musicalKey', e.target.value)}
-              className="rounded border border-neutral-600 bg-neutral-800 px-2 py-0.5 text-sm text-white focus:border-blue-500 focus:outline-none"
+              className="rounded border border-border-default bg-bg-elevated px-2 py-0.5 text-sm text-text-primary focus:border-brand-500 focus:outline-none"
             >
               {MUSICAL_KEYS.map((k) => (
                 <option key={k} value={k}>{k || '—'}</option>
@@ -229,19 +229,19 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
             </select>
           </div>
           <div className="flex items-center gap-1.5">
-            <label className="text-xs text-neutral-500">Genre:</label>
+            <label className="text-xs text-text-muted">Genre:</label>
             <input
               type="text"
               value={project.genre_label}
               onChange={(e) => onUpdate('genreLabel', e.target.value)}
-              className="w-32 rounded border border-neutral-600 bg-neutral-800 px-2 py-0.5 text-sm text-white focus:border-blue-500 focus:outline-none"
+              className="w-32 rounded border border-border-default bg-bg-elevated px-2 py-0.5 text-sm text-text-primary focus:border-brand-500 focus:outline-none"
               placeholder="&#8212;"
             />
           </div>
         </div>
 
         {project.last_worked_on && (
-          <p className="text-xs text-neutral-500 mt-2">
+          <p className="text-xs text-text-muted mt-2">
             Last worked on: {formatTimestamp(project.last_worked_on)}
           </p>
         )}

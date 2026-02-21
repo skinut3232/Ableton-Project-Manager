@@ -20,8 +20,8 @@ export function CloudSyncSection() {
   if (!auth?.configured) {
     return (
       <div>
-        <h3 className="text-sm font-medium text-neutral-300 mb-3">Cloud Sync</h3>
-        <p className="text-xs text-neutral-500">
+        <h3 className="text-sm font-medium text-text-secondary mb-3">Cloud Sync</h3>
+        <p className="text-xs text-text-muted">
           Cloud sync is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY in your .env file to enable.
         </p>
       </div>
@@ -47,11 +47,11 @@ export function CloudSyncSection() {
   if (auth?.logged_in) {
     return (
       <div>
-        <h3 className="text-sm font-medium text-neutral-300 mb-3">Cloud Sync</h3>
+        <h3 className="text-sm font-medium text-text-secondary mb-3">Cloud Sync</h3>
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <span className="text-sm text-neutral-400">
-              Logged in as <span className="text-blue-400 font-medium">{auth.email}</span>
+            <span className="text-sm text-text-secondary">
+              Logged in as <span className="text-brand-400 font-medium">{auth.email}</span>
             </span>
             <Button
               variant="secondary"
@@ -64,7 +64,7 @@ export function CloudSyncSection() {
           </div>
 
           {syncStatus && (
-            <div className="text-xs text-neutral-500 space-y-1">
+            <div className="text-xs text-text-muted space-y-1">
               <p>
                 Sync: {syncStatus.enabled ? (
                   syncStatus.pending_push > 0
@@ -96,8 +96,8 @@ export function CloudSyncSection() {
 
   return (
     <div>
-      <h3 className="text-sm font-medium text-neutral-300 mb-3">Cloud Sync</h3>
-      <p className="text-xs text-neutral-500 mb-3">
+      <h3 className="text-sm font-medium text-text-secondary mb-3">Cloud Sync</h3>
+      <p className="text-xs text-text-muted mb-3">
         Sign in to enable cloud sync and access your library from the mobile app.
       </p>
 
@@ -132,7 +132,7 @@ export function CloudSyncSection() {
           </Button>
           <button
             type="button"
-            className="text-xs text-blue-400 hover:text-blue-300"
+            className="text-xs text-brand-400 hover:text-brand-300"
             onClick={() => {
               setMode(mode === 'signin' ? 'signup' : 'signin');
               setError('');

@@ -19,8 +19,8 @@ export function ProjectCard({ project, index, isFocused, onClick }: ProjectCardP
     <div
       id={`project-card-${index}`}
       onClick={onClick}
-      className={`group relative cursor-pointer rounded-lg border bg-neutral-800 p-4 transition-all hover:border-neutral-500 hover:bg-neutral-750 ${
-        isFocused ? 'border-blue-500 ring-1 ring-blue-500' : 'border-neutral-700'
+      className={`group relative cursor-pointer rounded-lg border bg-bg-elevated p-4 transition-all hover:border-text-muted hover:bg-bg-surface ${
+        isFocused ? 'border-brand-500 ring-1 ring-brand-500' : 'border-border-default'
       }`}
     >
       {/* Artwork */}
@@ -34,7 +34,7 @@ export function ProjectCard({ project, index, isFocused, onClick }: ProjectCardP
 
       {/* Title row */}
       <div className="flex items-start justify-between gap-2 mb-1">
-        <h3 className="text-sm font-medium text-white truncate flex-1">{project.name}</h3>
+        <h3 className="text-sm font-medium text-text-primary truncate flex-1">{project.name}</h3>
         {project.in_rotation && (
           <span className="shrink-0 h-2 w-2 rounded-full bg-green-400 mt-1.5" title="In Rotation" />
         )}
@@ -44,10 +44,10 @@ export function ProjectCard({ project, index, isFocused, onClick }: ProjectCardP
       <div className="flex items-center gap-2 mb-2">
         <StatusBadge status={project.status as ProjectStatus} />
         {project.bpm && (
-          <span className="text-xs text-neutral-500">{project.bpm} BPM</span>
+          <span className="text-xs text-text-muted">{project.bpm} BPM</span>
         )}
         {project.genre_label && (
-          <span className="text-xs text-neutral-500">{project.genre_label}</span>
+          <span className="text-xs text-text-muted">{project.genre_label}</span>
         )}
       </div>
 
@@ -62,19 +62,19 @@ export function ProjectCard({ project, index, isFocused, onClick }: ProjectCardP
       {project.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
           {project.tags.slice(0, 3).map((tag) => (
-            <span key={tag.id} className="rounded-full bg-neutral-700 px-2 py-0.5 text-[10px] text-neutral-400">
+            <span key={tag.id} className="rounded-full bg-bg-surface px-2 py-0.5 text-[10px] text-text-secondary">
               {tag.name}
             </span>
           ))}
           {project.tags.length > 3 && (
-            <span className="text-[10px] text-neutral-500">+{project.tags.length - 3}</span>
+            <span className="text-[10px] text-text-muted">+{project.tags.length - 3}</span>
           )}
         </div>
       )}
 
       {/* Last worked on */}
       {relativeTime && (
-        <p className="text-[10px] text-neutral-600">{relativeTime}</p>
+        <p className="text-[10px] text-text-muted">{relativeTime}</p>
       )}
     </div>
   );

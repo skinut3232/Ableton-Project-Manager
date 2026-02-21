@@ -95,7 +95,7 @@ export function SettingsView() {
   };
 
   if (isLoading) {
-    return <div className="text-neutral-400">Loading settings...</div>;
+    return <div className="text-text-secondary">Loading settings...</div>;
   }
 
   const noRootFolder = !getSettingValue(settings, 'root_folder');
@@ -106,8 +106,8 @@ export function SettingsView() {
       <h2 className="text-xl font-semibold mb-6">Settings</h2>
 
       {noRootFolder && (
-        <div className="mb-6 rounded-lg border border-blue-500/30 bg-blue-500/10 p-4">
-          <p className="text-sm text-blue-300">
+        <div className="mb-6 rounded-lg border border-brand-500/30 bg-brand-500/10 p-4">
+          <p className="text-sm text-brand-300">
             Welcome! Set your root project folder below to get started. This is the folder that contains your Ableton project directories.
           </p>
         </div>
@@ -116,30 +116,30 @@ export function SettingsView() {
       <div className="space-y-6">
         {/* Root Folder */}
         <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">Root Project Folder</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">Root Project Folder</label>
           <div className="flex gap-2">
             <input
               readOnly
               value={rootFolder}
               placeholder="Select your root project folder..."
-              className="flex-1 rounded-md border border-neutral-600 bg-neutral-800 px-3 py-2 text-sm text-white placeholder-neutral-500"
+              className="flex-1 rounded-lg border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder-text-muted"
             />
             <Button variant="secondary" onClick={pickRootFolder}>Browse</Button>
           </div>
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mt-1 text-xs text-text-muted">
             The folder containing your Ableton project directories (or genre subfolders).
           </p>
         </div>
 
         {/* Ableton Exe Path */}
         <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">Ableton Live Executable</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">Ableton Live Executable</label>
           <div className="flex gap-2">
             <input
               readOnly
               value={abletonPath}
               placeholder="Select Ableton Live .exe..."
-              className="flex-1 rounded-md border border-neutral-600 bg-neutral-800 px-3 py-2 text-sm text-white placeholder-neutral-500"
+              className="flex-1 rounded-lg border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder-text-muted"
             />
             <Button variant="secondary" onClick={pickAbletonExe}>Browse</Button>
           </div>
@@ -172,19 +172,19 @@ export function SettingsView() {
               { value: 'ableton', label: 'Open directly in Ableton Live' },
             ]}
           />
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mt-1 text-xs text-text-muted">
             What happens when you click the Random button or press Ctrl+Shift+R.
           </p>
         </div>
 
         {/* SoundCloud */}
-        <div className="border-t border-neutral-700 pt-6">
-          <h3 className="text-sm font-medium text-neutral-300 mb-3">SoundCloud</h3>
+        <div className="border-t border-border-default pt-6">
+          <h3 className="text-sm font-medium text-text-secondary mb-3">SoundCloud</h3>
           <SoundCloudSection scPublicUpload={scPublicUpload} setScPublicUpload={setScPublicUpload} />
         </div>
 
         {/* Cloud Sync */}
-        <div className="border-t border-neutral-700 pt-6">
+        <div className="border-t border-border-default pt-6">
           <CloudSyncSection />
         </div>
 
@@ -197,9 +197,9 @@ export function SettingsView() {
         </div>
 
         {/* Refresh Library */}
-        <div className="border-t border-neutral-700 pt-6">
-          <h3 className="text-sm font-medium text-neutral-300 mb-2">Refresh Library</h3>
-          <p className="text-xs text-neutral-500 mb-3">
+        <div className="border-t border-border-default pt-6">
+          <h3 className="text-sm font-medium text-text-secondary mb-2">Refresh Library</h3>
+          <p className="text-xs text-text-muted mb-3">
             Update metadata (sets, bounces, timestamps) for all existing projects. Does not add new projects.
           </p>
           <div className="flex items-center gap-3">
@@ -211,7 +211,7 @@ export function SettingsView() {
               {refreshLibrary.isPending ? 'Refreshing...' : 'Refresh Now'}
             </Button>
             {refreshLibrary.data && (
-              <span className="text-sm text-neutral-400">
+              <span className="text-sm text-text-secondary">
                 Checked {refreshLibrary.data.found} projects ({refreshLibrary.data.updated} updated
                 {refreshLibrary.data.missing > 0 && `, ${refreshLibrary.data.missing} missing`}
                 {refreshLibrary.data.errors.length > 0 && `, ${refreshLibrary.data.errors.length} errors`})
@@ -224,9 +224,9 @@ export function SettingsView() {
         </div>
 
         {/* Import Projects */}
-        <div className="border-t border-neutral-700 pt-6">
-          <h3 className="text-sm font-medium text-neutral-300 mb-2">Import Projects</h3>
-          <p className="text-xs text-neutral-500 mb-3">
+        <div className="border-t border-border-default pt-6">
+          <h3 className="text-sm font-medium text-text-secondary mb-2">Import Projects</h3>
+          <p className="text-xs text-text-muted mb-3">
             Discover Ableton project folders in your root folder that aren't in the library yet.
           </p>
           <div className="flex items-center gap-3">
@@ -246,40 +246,40 @@ export function SettingsView() {
           {discoveredList.length > 0 && (
             <div className="mt-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-neutral-300">
+                <span className="text-sm text-text-secondary">
                   {discoveredList.length} untracked project{discoveredList.length !== 1 ? 's' : ''} found
                 </span>
                 <div className="flex gap-3 text-xs">
                   <button
-                    className="text-blue-400 hover:text-blue-300"
+                    className="text-brand-400 hover:text-brand-300"
                     onClick={() => setSelectedPaths(new Set(discoveredList.map((p) => p.path)))}
                   >
                     Select All
                   </button>
                   <button
-                    className="text-blue-400 hover:text-blue-300"
+                    className="text-brand-400 hover:text-brand-300"
                     onClick={() => setSelectedPaths(new Set())}
                   >
                     Select None
                   </button>
                 </div>
               </div>
-              <div className="max-h-64 overflow-y-auto rounded-md border border-neutral-700 bg-neutral-800/50">
+              <div className="max-h-64 overflow-y-auto rounded-lg border border-border-default bg-bg-elevated/50">
                 {discoveredList.map((project) => (
                   <label
                     key={project.path}
-                    className="flex items-center gap-3 px-3 py-2 hover:bg-neutral-700/50 cursor-pointer border-b border-neutral-700/50 last:border-b-0"
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-bg-surface/50 cursor-pointer border-b border-border-default/50 last:border-b-0"
                   >
                     <input
                       type="checkbox"
                       checked={selectedPaths.has(project.path)}
                       onChange={() => togglePath(project.path)}
-                      className="rounded border-neutral-600 bg-neutral-700 text-blue-500 focus:ring-blue-500"
+                      className="rounded border-border-default bg-bg-surface text-brand-500 focus:ring-brand-500"
                     />
                     <div className="flex-1 min-w-0">
-                      <span className="text-sm text-white truncate block">{project.name}</span>
+                      <span className="text-sm text-text-primary truncate block">{project.name}</span>
                       {project.genre_label && (
-                        <span className="text-xs text-neutral-500">{project.genre_label}</span>
+                        <span className="text-xs text-text-muted">{project.genre_label}</span>
                       )}
                     </div>
                   </label>
@@ -307,7 +307,7 @@ export function SettingsView() {
 
           {/* Show message when discover returned empty */}
           {discoverProjects.isSuccess && discoveredList.length === 0 && (
-            <p className="mt-3 text-sm text-neutral-500">
+            <p className="mt-3 text-sm text-text-muted">
               No untracked projects found. All projects in your root folder are already in the library.
             </p>
           )}
@@ -331,7 +331,7 @@ function SoundCloudSection({ scPublicUpload, setScPublicUpload }: { scPublicUplo
       />
       {scAuth.data?.logged_in && (
         <div className="flex items-center gap-3">
-          <span className="text-sm text-neutral-400">
+          <span className="text-sm text-text-secondary">
             Logged in as <span className="text-orange-400 font-medium">{scAuth.data.username}</span>
           </span>
           <Button
@@ -345,7 +345,7 @@ function SoundCloudSection({ scPublicUpload, setScPublicUpload }: { scPublicUplo
         </div>
       )}
       {scAuth.data && !scAuth.data.logged_in && (
-        <p className="text-xs text-neutral-500">Not logged in. Click the SoundCloud button on a bounce to connect.</p>
+        <p className="text-xs text-text-muted">Not logged in. Click the SoundCloud button on a bounce to connect.</p>
       )}
     </div>
   );

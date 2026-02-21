@@ -78,22 +78,22 @@ export function AppLayout() {
   }, [handleKeyDown]);
 
   return (
-    <div className="flex h-screen bg-neutral-900 text-white">
+    <div className="flex h-screen bg-bg-primary text-text-primary">
       {/* Sidebar */}
-      <nav className="w-48 shrink-0 border-r border-neutral-700 bg-neutral-900 flex flex-col">
-        <div className="p-4 border-b border-neutral-700">
-          <h1 className="text-sm font-bold tracking-wide text-neutral-100">APL</h1>
-          <p className="text-[10px] text-neutral-500 mt-0.5">Ableton Project Library</p>
+      <nav className="w-48 shrink-0 border-r border-border-default bg-bg-secondary flex flex-col">
+        <div className="p-4 border-b border-border-default">
+          <h1 className="text-sm font-bold tracking-wide text-text-primary font-brand">SetCrate</h1>
+          <p className="text-[10px] text-text-muted mt-0.5">Ableton Project Library</p>
         </div>
         <div className="flex flex-col gap-1 p-2 flex-1">
           <NavLink
             to="/"
             end
             className={({ isActive }) =>
-              `flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
+              `flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
                 isActive
-                  ? 'bg-neutral-800 text-white'
-                  : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+                  ? 'bg-bg-elevated text-text-primary'
+                  : 'text-text-secondary hover:bg-bg-elevated hover:text-text-primary'
               }`
             }
           >
@@ -102,19 +102,19 @@ export function AppLayout() {
           <NavLink
             to="/settings"
             className={({ isActive }) =>
-              `flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
+              `flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
                 isActive
-                  ? 'bg-neutral-800 text-white'
-                  : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+                  ? 'bg-bg-elevated text-text-primary'
+                  : 'text-text-secondary hover:bg-bg-elevated hover:text-text-primary'
               }`
             }
           >
             <span>&#9881;</span> Settings
           </NavLink>
         </div>
-        <div className="p-3 border-t border-neutral-700 space-y-1">
+        <div className="p-3 border-t border-border-default space-y-1">
           <SyncIndicator />
-          <p className="text-[10px] text-neutral-600">v0.1.0</p>
+          <p className="text-[10px] text-text-muted">v0.1.0</p>
         </div>
       </nav>
 

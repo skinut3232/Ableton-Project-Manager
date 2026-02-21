@@ -82,7 +82,7 @@ export function RichNotesEditor({ projectId, notes, onSave }: RichNotesEditorPro
   return (
     <div className="space-y-0">
       <EditorToolbar editor={editor} />
-      <div className="rounded-b-md border border-t-0 border-neutral-600 bg-neutral-800 min-h-[350px] focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-colors">
+      <div className="rounded-b-lg border border-t-0 border-border-default bg-bg-elevated min-h-[350px] focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition-colors">
         <EditorContent editor={editor} className="px-3 py-2" />
       </div>
     </div>

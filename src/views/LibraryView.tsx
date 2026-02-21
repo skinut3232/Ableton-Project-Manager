@@ -99,7 +99,7 @@ export function LibraryView() {
 
       {refreshLibrary.isPending && !projects?.length ? (
         <div>
-          <p className="text-sm text-neutral-400 mb-4">Refreshing library...</p>
+          <p className="text-sm text-text-secondary mb-4">Refreshing library...</p>
           <LoadingSkeleton />
         </div>
       ) : isLoading ? (

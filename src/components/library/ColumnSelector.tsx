@@ -22,7 +22,7 @@ export function ColumnSelector() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="rounded-md border border-neutral-600 bg-neutral-800 px-3 py-2 text-sm text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors"
+        className="rounded-lg border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-secondary hover:bg-bg-surface hover:text-text-primary transition-colors"
         title="Choose columns"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,15 +31,15 @@ export function ColumnSelector() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-md border border-neutral-600 bg-neutral-800 py-1 shadow-lg">
-          <div className="px-3 py-1.5 text-xs font-medium text-neutral-500 uppercase tracking-wider">
+        <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-border-default bg-bg-elevated py-1 shadow-lg">
+          <div className="px-3 py-1.5 text-xs font-medium text-text-muted uppercase tracking-wider">
             Columns
           </div>
           {TABLE_COLUMNS.map((col) => (
             <label
               key={col.key}
-              className={`flex items-center gap-2 px-3 py-1.5 text-sm text-neutral-300 cursor-pointer ${
-                col.key === 'name' ? 'opacity-50 cursor-not-allowed' : 'hover:bg-neutral-700'
+              className={`flex items-center gap-2 px-3 py-1.5 text-sm text-text-secondary cursor-pointer ${
+                col.key === 'name' ? 'opacity-50 cursor-not-allowed' : 'hover:bg-bg-surface'
               }`}
             >
               <input
@@ -47,7 +47,7 @@ export function ColumnSelector() {
                 checked={visibleColumns.includes(col.key)}
                 disabled={col.key === 'name'}
                 onChange={() => toggleColumn(col.key)}
-                className="rounded border-neutral-500 bg-neutral-700 text-blue-500 focus:ring-blue-500"
+                className="rounded border-border-default bg-bg-surface text-brand-500 focus:ring-brand-500"
               />
               {col.label}
             </label>

@@ -73,12 +73,12 @@ export function AssetsTab({ projectId }: AssetsTabProps) {
       {/* Mood Board Section */}
       {moodBoardPins.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Mood Board</h3>
+          <h3 className="text-xs font-medium text-text-secondary uppercase tracking-wider">Mood Board</h3>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {moodBoardPins.map((pin) => (
               <div
                 key={pin.id}
-                className="relative shrink-0 w-24 h-24 rounded-lg overflow-hidden group border border-neutral-700"
+                className="relative shrink-0 w-24 h-24 rounded-lg overflow-hidden group border border-border-default"
               >
                 <img
                   src={convertFileSrc(pin.stored_path)}
@@ -88,13 +88,13 @@ export function AssetsTab({ projectId }: AssetsTabProps) {
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
                   <button
                     onClick={() => setCoverFromMoodboard.mutate(pin.asset_id)}
-                    className="rounded bg-blue-600 px-2 py-0.5 text-[10px] text-white hover:bg-blue-500"
+                    className="rounded bg-brand-600 px-2 py-0.5 text-[10px] text-white hover:bg-brand-500"
                   >
                     Set Cover
                   </button>
                   <button
                     onClick={() => unpinFromMoodBoard.mutate(pin.id)}
-                    className="rounded bg-neutral-700 px-2 py-0.5 text-[10px] text-neutral-300 hover:bg-neutral-600"
+                    className="rounded bg-bg-surface px-2 py-0.5 text-[10px] text-text-secondary hover:bg-bg-surface"
                   >
                     Unpin
                   </button>
@@ -114,8 +114,8 @@ export function AssetsTab({ projectId }: AssetsTabProps) {
               onClick={() => setTypeFilter(f.value)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 typeFilter === f.value
-                  ? 'bg-blue-600/20 text-blue-300'
-                  : 'bg-neutral-800 text-neutral-500 hover:text-neutral-300'
+                  ? 'bg-brand-600/20 text-brand-300'
+                  : 'bg-bg-elevated text-text-muted hover:text-text-secondary'
               }`}
             >
               {f.label}
@@ -127,12 +127,12 @@ export function AssetsTab({ projectId }: AssetsTabProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search assets..."
-            className="rounded border border-neutral-600 bg-neutral-800 px-3 py-1 text-sm text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none"
+            className="rounded border border-border-default bg-bg-elevated px-3 py-1 text-sm text-text-primary placeholder-text-muted focus:border-brand-500 focus:outline-none"
           />
           <button
             onClick={handleUpload}
             disabled={uploadAsset.isPending}
-            className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-500 transition-colors disabled:opacity-50"
+            className="rounded bg-brand-600 px-3 py-1 text-xs font-medium text-white hover:bg-brand-500 transition-colors disabled:opacity-50"
           >
             {uploadAsset.isPending ? 'Uploading...' : 'Upload Asset'}
           </button>
@@ -142,8 +142,8 @@ export function AssetsTab({ projectId }: AssetsTabProps) {
       {/* Grid */}
       {filtered.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-neutral-400 mb-1">No assets yet</p>
-          <p className="text-xs text-neutral-600">
+          <p className="text-text-secondary mb-1">No assets yet</p>
+          <p className="text-xs text-text-muted">
             Upload images, audio files, or other project assets
           </p>
         </div>

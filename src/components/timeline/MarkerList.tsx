@@ -25,7 +25,7 @@ export function MarkerList({ markers, onSeek, onSelect }: MarkerListProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-neutral-300">
+        <h3 className="text-sm font-medium text-text-secondary">
           Markers ({filtered.length})
         </h3>
         {/* Filter chips */}
@@ -36,8 +36,8 @@ export function MarkerList({ markers, onSeek, onSelect }: MarkerListProps) {
               onClick={() => setFilter(mt.value as MarkerType | 'all')}
               className={`rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors ${
                 filter === mt.value
-                  ? 'bg-blue-600/20 text-blue-300'
-                  : 'bg-neutral-800 text-neutral-500 hover:text-neutral-300'
+                  ? 'bg-brand-600/20 text-brand-300'
+                  : 'bg-bg-elevated text-text-muted hover:text-text-secondary'
               }`}
             >
               {mt.label}
@@ -47,7 +47,7 @@ export function MarkerList({ markers, onSeek, onSelect }: MarkerListProps) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-xs text-neutral-500 py-4 text-center">
+        <p className="text-xs text-text-muted py-4 text-center">
           No markers yet. Press M to add one at the current playhead.
         </p>
       ) : (
@@ -59,16 +59,16 @@ export function MarkerList({ markers, onSeek, onSelect }: MarkerListProps) {
                 onSeek(marker.timestamp_seconds);
                 onSelect(marker, e.currentTarget.getBoundingClientRect());
               }}
-              className="w-full flex items-center gap-2 rounded px-2 py-1.5 text-left hover:bg-neutral-700/50 transition-colors group"
+              className="w-full flex items-center gap-2 rounded px-2 py-1.5 text-left hover:bg-bg-surface/50 transition-colors group"
             >
               <span
                 className="h-2 w-2 rounded-full shrink-0"
                 style={{ backgroundColor: getColor(marker.type) }}
               />
-              <span className="text-[10px] text-neutral-500 font-mono w-10 shrink-0">
+              <span className="text-[10px] text-text-muted font-mono w-10 shrink-0">
                 {formatTime(marker.timestamp_seconds)}
               </span>
-              <span className="text-xs text-neutral-300 truncate flex-1">
+              <span className="text-xs text-text-secondary truncate flex-1">
                 {marker.text || `(${MARKER_TYPES.find((mt) => mt.value === marker.type)?.label})`}
               </span>
             </button>

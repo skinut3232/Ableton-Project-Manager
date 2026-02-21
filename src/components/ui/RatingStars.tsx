@@ -16,7 +16,7 @@ export function RatingStars({ rating, onChange, readonly = false, size = 'sm' }:
           disabled={readonly}
           onClick={() => onChange?.(star === rating ? 0 : star)}
           className={`${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'} transition-transform ${
-            rating && star <= rating ? 'text-yellow-400' : 'text-neutral-600'
+            rating && star <= rating ? 'text-yellow-400' : 'text-text-muted'
           }`}
         >
           ★

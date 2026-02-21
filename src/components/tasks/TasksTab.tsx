@@ -55,7 +55,7 @@ export function TasksTab({ projectId }: TasksTabProps) {
     <div className="space-y-4">
       {/* Top bar */}
       <div className="flex items-center gap-3">
-        <span className="text-xs text-neutral-500">
+        <span className="text-xs text-text-muted">
           {incompleteCount} remaining | T: add task
         </span>
       </div>
@@ -83,8 +83,8 @@ export function TasksTab({ projectId }: TasksTabProps) {
       {/* Grouped task list */}
       {Object.keys(grouped).length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-neutral-400 mb-1">No tasks yet</p>
-          <p className="text-xs text-neutral-600">
+          <p className="text-text-secondary mb-1">No tasks yet</p>
+          <p className="text-xs text-text-muted">
             Press T to add a task, or convert a marker from the Timeline tab
           </p>
         </div>
@@ -100,14 +100,14 @@ export function TasksTab({ projectId }: TasksTabProps) {
                   className="flex items-center gap-2 w-full text-left mb-1"
                 >
                   <svg
-                    className={`h-3 w-3 text-neutral-500 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                    className={`h-3 w-3 text-text-muted transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <path d="M8 5v14l11-7z" />
                   </svg>
-                  <span className="text-xs font-medium text-neutral-400">{category}</span>
-                  <span className="text-[10px] text-neutral-600">
+                  <span className="text-xs font-medium text-text-secondary">{category}</span>
+                  <span className="text-[10px] text-text-muted">
                     {incomplete > 0 ? `${incomplete} remaining` : 'all done'}
                   </span>
                 </button>

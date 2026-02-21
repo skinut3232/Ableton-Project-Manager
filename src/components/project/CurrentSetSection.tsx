@@ -27,13 +27,13 @@ export function CurrentSetSection({ project, sets }: CurrentSetSectionProps) {
   const currentFileName = project.current_set_path?.split(/[/\\]/).pop() || 'None';
 
   return (
-    <div className="rounded-lg border border-neutral-700 bg-neutral-800/50 p-4">
-      <h3 className="text-sm font-medium text-neutral-300 mb-3">Ableton Sets</h3>
+    <div className="rounded-lg border border-border-default bg-bg-elevated/50 p-4">
+      <h3 className="text-sm font-medium text-text-secondary mb-3">Ableton Sets</h3>
 
       {/* Current set */}
       <div className="mb-3">
-        <p className="text-xs text-neutral-500 mb-1">Current Set</p>
-        <p className="text-sm text-white truncate" title={project.current_set_path || ''}>
+        <p className="text-xs text-text-muted mb-1">Current Set</p>
+        <p className="text-sm text-text-primary truncate" title={project.current_set_path || ''}>
           {currentFileName}
         </p>
       </div>
@@ -44,7 +44,7 @@ export function CurrentSetSection({ project, sets }: CurrentSetSectionProps) {
           <select
             value={project.current_set_path || ''}
             onChange={(e) => handleSetChange(e.target.value)}
-            className="w-full rounded-md border border-neutral-600 bg-neutral-800 px-2 py-1.5 text-xs text-white focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-border-default bg-bg-elevated px-2 py-1.5 text-xs text-text-primary focus:border-brand-500 focus:outline-none"
           >
             {sets.map((s) => (
               <option key={s.id} value={s.set_path}>
@@ -67,7 +67,7 @@ export function CurrentSetSection({ project, sets }: CurrentSetSectionProps) {
         </Button>
       )}
 
-      <p className="text-[10px] text-neutral-600 mt-2">{sets.length} set(s) found</p>
+      <p className="text-[10px] text-text-muted mt-2">{sets.length} set(s) found</p>
     </div>
   );
 }

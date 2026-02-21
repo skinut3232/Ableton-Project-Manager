@@ -102,7 +102,7 @@ export const DEFAULT_VISIBLE_COLUMNS: TableColumnKey[] = TABLE_COLUMNS
 // ── Studio Timeline constants ──
 
 export const MARKER_TYPES: { value: MarkerType; label: string; color: string }[] = [
-  { value: 'note', label: 'Note', color: '#3b82f6' },       // blue
+  { value: 'note', label: 'Note', color: '#8B5CF6' },       // brand purple
   { value: 'mix', label: 'Mix Note', color: '#f97316' },    // orange
   { value: 'task', label: 'Task', color: '#a855f7' },       // purple
   { value: 'idea', label: 'Idea', color: '#22c55e' },       // green

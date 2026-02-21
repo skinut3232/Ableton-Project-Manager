@@ -28,9 +28,9 @@ export function TopBar({ isAdding, onAddProject, onRandomProject, projectCount }
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search projects..."
-          className="w-full rounded-md border border-neutral-600 bg-neutral-800 pl-9 pr-3 py-2 text-sm text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-lg border border-border-default bg-bg-elevated pl-9 pr-3 py-2 text-sm text-text-primary placeholder-text-muted focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
@@ -40,7 +40,7 @@ export function TopBar({ isAdding, onAddProject, onRandomProject, projectCount }
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="rounded-md border border-neutral-600 bg-neutral-800 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+          className="rounded-lg border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary focus:border-brand-500 focus:outline-none"
         >
           {SORT_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -52,13 +52,13 @@ export function TopBar({ isAdding, onAddProject, onRandomProject, projectCount }
       {viewMode === 'table' && <ColumnSelector />}
 
       {/* View toggle */}
-      <div className="flex rounded-md border border-neutral-600 overflow-hidden">
+      <div className="flex rounded-lg border border-border-default overflow-hidden">
         <button
           onClick={() => setViewMode('grid')}
           className={`px-2.5 py-2 transition-colors ${
             viewMode === 'grid'
-              ? 'bg-neutral-600 text-white'
-              : 'bg-neutral-800 text-neutral-400 hover:text-white'
+              ? 'bg-bg-surface text-text-primary'
+              : 'bg-bg-elevated text-text-secondary hover:text-text-primary'
           }`}
           title="Grid view"
         >
@@ -68,10 +68,10 @@ export function TopBar({ isAdding, onAddProject, onRandomProject, projectCount }
         </button>
         <button
           onClick={() => setViewMode('table')}
-          className={`px-2.5 py-2 transition-colors border-l border-neutral-600 ${
+          className={`px-2.5 py-2 transition-colors border-l border-border-default ${
             viewMode === 'table'
-              ? 'bg-neutral-600 text-white'
-              : 'bg-neutral-800 text-neutral-400 hover:text-white'
+              ? 'bg-bg-surface text-text-primary'
+              : 'bg-bg-elevated text-text-secondary hover:text-text-primary'
           }`}
           title="Table view"
         >

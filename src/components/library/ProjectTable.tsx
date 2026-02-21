@@ -47,19 +47,19 @@ export function ProjectTable({ projects }: ProjectTableProps) {
 
   return (
     <div
-      className="overflow-x-auto rounded-lg border border-neutral-700"
+      className="overflow-x-auto rounded-lg border border-border-default"
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
       <table className="w-full text-sm text-left">
-        <thead className="bg-neutral-800 border-b border-neutral-700 sticky top-0 z-10">
+        <thead className="bg-bg-elevated border-b border-border-default sticky top-0 z-10">
           <tr>
             <th className="w-10 px-1 py-2.5" />
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-3 py-2.5 text-xs font-medium text-neutral-400 uppercase tracking-wider whitespace-nowrap ${
-                  col.sortable ? 'cursor-pointer hover:text-white select-none' : ''
+                className={`px-3 py-2.5 text-xs font-medium text-text-secondary uppercase tracking-wider whitespace-nowrap ${
+                  col.sortable ? 'cursor-pointer hover:text-text-primary select-none' : ''
                 }`}
                 style={{ width: col.width.startsWith('minmax') ? undefined : col.width }}
                 onClick={() => handleHeaderClick(col.key)}
@@ -74,7 +74,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-800">
+        <tbody className="divide-y divide-bg-elevated">
           {projects.map((project, index) => (
             <tr
               key={project.id}
@@ -83,8 +83,8 @@ export function ProjectTable({ projects }: ProjectTableProps) {
               onMouseEnter={() => setFocusedCardIndex(index)}
               className={`cursor-pointer transition-colors ${
                 focusedCardIndex === index
-                  ? 'bg-neutral-700/50'
-                  : 'bg-neutral-900 hover:bg-neutral-800'
+                  ? 'bg-bg-surface/50'
+                  : 'bg-bg-primary hover:bg-bg-elevated'
               }`}
             >
               <td className="px-1 py-2 text-center">
@@ -121,7 +121,7 @@ function CellRenderer({ column, project }: { column: TableColumnKey; project: Pr
       return (
         <div className="flex items-center gap-2 min-w-0">
           <CoverImage project={project} size="sm" className="shrink-0 rounded" />
-          <span className="text-white font-medium truncate">{project.name}</span>
+          <span className="text-text-primary font-medium truncate">{project.name}</span>
           {project.in_rotation && (
             <span className="shrink-0 h-2 w-2 rounded-full bg-green-400" title="In Rotation" />
           )}
@@ -136,21 +136,21 @@ function CellRenderer({ column, project }: { column: TableColumnKey; project: Pr
 
     case 'bpm':
       return (
-        <span className="text-neutral-400">
+        <span className="text-text-secondary">
           {project.bpm != null ? project.bpm : '—'}
         </span>
       );
 
     case 'musical_key':
       return (
-        <span className="text-neutral-400">
+        <span className="text-text-secondary">
           {project.musical_key || '—'}
         </span>
       );
 
     case 'genre_label':
       return (
-        <span className="text-neutral-400">
+        <span className="text-text-secondary">
           {project.genre_label || '—'}
         </span>
       );
@@ -161,68 +161,68 @@ function CellRenderer({ column, project }: { column: TableColumnKey; project: Pr
           {project.tags.slice(0, 3).map((tag) => (
             <span
               key={tag.id}
-              className="rounded-full bg-neutral-700 px-2 py-0.5 text-[10px] text-neutral-400"
+              className="rounded-full bg-bg-surface px-2 py-0.5 text-[10px] text-text-secondary"
             >
               {tag.name}
             </span>
           ))}
           {project.tags.length > 3 && (
-            <span className="text-[10px] text-neutral-500">+{project.tags.length - 3}</span>
+            <span className="text-[10px] text-text-muted">+{project.tags.length - 3}</span>
           )}
         </div>
       );
 
     case 'last_worked_on':
       return (
-        <span className="text-neutral-400">{formatDate(project.last_worked_on)}</span>
+        <span className="text-text-secondary">{formatDate(project.last_worked_on)}</span>
       );
 
     case 'in_rotation':
       return (
-        <span className={project.in_rotation ? 'text-green-400' : 'text-neutral-600'}>
+        <span className={project.in_rotation ? 'text-green-400' : 'text-text-muted'}>
           {project.in_rotation ? 'Yes' : 'No'}
         </span>
       );
 
     case 'notes':
       return (
-        <span className="text-neutral-500 truncate block max-w-[200px]">
+        <span className="text-text-muted truncate block max-w-[200px]">
           —
         </span>
       );
 
     case 'created_at':
-      return <span className="text-neutral-400">{formatDate(project.created_at)}</span>;
+      return <span className="text-text-secondary">{formatDate(project.created_at)}</span>;
 
     case 'updated_at':
-      return <span className="text-neutral-400">{formatDate(project.updated_at)}</span>;
+      return <span className="text-text-secondary">{formatDate(project.updated_at)}</span>;
 
     case 'progress':
       if (project.progress == null) {
-        return <span className="text-neutral-600">—</span>;
+        return <span className="text-text-muted">—</span>;
       }
       return (
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-1.5 rounded-full bg-neutral-700 overflow-hidden">
+          <div className="flex-1 h-1.5 rounded-full bg-bg-surface overflow-hidden">
             <div
-              className="h-full rounded-full transition-all bg-gradient-to-r from-blue-500 to-emerald-400"
+              className="h-full rounded-full transition-all bg-gradient-to-r from-brand-500 to-emerald-400"
               style={{ width: `${project.progress}%` }}
             />
           </div>
-          <span className="text-xs text-neutral-400 w-8 text-right">{project.progress}%</span>
+          <span className="text-xs text-text-secondary w-8 text-right">{project.progress}%</span>
         </div>
       );
 
     case 'archived':
       return (
-        <span className={project.archived ? 'text-yellow-400' : 'text-neutral-600'}>
+        <span className={project.archived ? 'text-yellow-400' : 'text-text-muted'}>
           {project.archived ? 'Yes' : 'No'}
         </span>
       );
 
     case 'project_path':
       return (
-        <span className="text-neutral-500 truncate block max-w-[250px]" title={project.project_path}>
+        <span className="text-text-muted truncate block max-w-[250px]" title={project.project_path}>
           {project.project_path}
         </span>
       );

@@ -38,15 +38,15 @@ export function FilterBar() {
           onClick={() => toggleSmartFilter(sf.key)}
           className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
             sf.active
-              ? 'bg-blue-600 text-white'
-              : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200'
+              ? 'bg-brand-600 text-white'
+              : 'bg-bg-elevated text-text-secondary hover:bg-bg-surface hover:text-text-primary'
           }`}
         >
           {sf.label}
         </button>
       ))}
 
-      <div className="w-px h-5 bg-neutral-700" />
+      <div className="w-px h-5 bg-border-default" />
 
       {/* Status filter dropdown */}
       <FilterDropdown
@@ -66,15 +66,15 @@ export function FilterBar() {
         />
       )}
 
-      <div className="w-px h-5 bg-neutral-700" />
+      <div className="w-px h-5 bg-border-default" />
 
       {/* Show archived toggle */}
       <button
         onClick={() => setShowArchived(!showArchived)}
         className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
           showArchived
-            ? 'bg-neutral-600 text-white'
-            : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700 hover:text-neutral-300'
+            ? 'bg-bg-surface text-text-primary'
+            : 'bg-bg-elevated text-text-muted hover:bg-bg-surface hover:text-text-secondary'
         }`}
       >
         Show Archived
@@ -83,10 +83,10 @@ export function FilterBar() {
       {/* Clear all filters */}
       {hasActiveFilters && (
         <>
-          <div className="w-px h-5 bg-neutral-700" />
+          <div className="w-px h-5 bg-border-default" />
           <button
             onClick={resetFilters}
-            className="rounded-full px-3 py-1 text-xs font-medium text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors"
+            className="rounded-full px-3 py-1 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-colors"
           >
             Clear all filters
           </button>

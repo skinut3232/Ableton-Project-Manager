@@ -55,7 +55,7 @@ export function InsightsTab({ project, bounces, sessions }: InsightsTabProps) {
     <div className="space-y-6">
       {/* Momentum Widget */}
       <div>
-        <h3 className="text-sm font-medium text-neutral-300 mb-3">Momentum</h3>
+        <h3 className="text-sm font-medium text-text-secondary mb-3">Momentum</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard
             label="Days since work"
@@ -70,7 +70,7 @@ export function InsightsTab({ project, bounces, sessions }: InsightsTabProps) {
           <StatCard
             label="Bounces"
             value={String(momentum.bounceCount)}
-            color="text-blue-400"
+            color="text-brand-400"
           />
           <StatCard
             label="Total session time"
@@ -82,7 +82,7 @@ export function InsightsTab({ project, bounces, sessions }: InsightsTabProps) {
 
       {/* Health Indicators */}
       <div>
-        <h3 className="text-sm font-medium text-neutral-300 mb-3">Health</h3>
+        <h3 className="text-sm font-medium text-text-secondary mb-3">Health</h3>
         <div className="grid grid-cols-2 gap-2">
           <HealthRow label="Has bounce" ok={health.hasBounce} />
           <HealthRow label="Has markers/notes" ok={health.hasMarkersOrNotes} />
@@ -102,16 +102,16 @@ export function InsightsTab({ project, bounces, sessions }: InsightsTabProps) {
 
 function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div className="rounded-lg border border-neutral-700 bg-neutral-800/50 p-3 text-center">
+    <div className="rounded-lg border border-border-default bg-bg-elevated/50 p-3 text-center">
       <p className={`text-2xl font-mono font-bold ${color}`}>{value}</p>
-      <p className="text-[10px] text-neutral-500 mt-1">{label}</p>
+      <p className="text-[10px] text-text-muted mt-1">{label}</p>
     </div>
   );
 }
 
 function HealthRow({ label, ok }: { label: string; ok: boolean }) {
   return (
-    <div className="flex items-center gap-2 rounded px-3 py-2 bg-neutral-800/30">
+    <div className="flex items-center gap-2 rounded px-3 py-2 bg-bg-elevated/30">
       {ok ? (
         <svg className="h-4 w-4 text-green-400" fill="currentColor" viewBox="0 0 24 24">
           <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
@@ -121,7 +121,7 @@ function HealthRow({ label, ok }: { label: string; ok: boolean }) {
           <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
         </svg>
       )}
-      <span className="text-xs text-neutral-300">{label}</span>
+      <span className="text-xs text-text-secondary">{label}</span>
     </div>
   );
 }

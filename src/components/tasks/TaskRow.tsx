@@ -31,13 +31,13 @@ export function TaskRow({ task, onToggle, onUpdateTitle, onDelete }: TaskRowProp
   };
 
   return (
-    <div className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-neutral-700/30 group transition-colors">
+    <div className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-bg-surface/30 group transition-colors">
       {/* Checkbox */}
       <input
         type="checkbox"
         checked={task.done}
         onChange={(e) => onToggle(e.target.checked)}
-        className="h-4 w-4 rounded border-neutral-600 bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+        className="h-4 w-4 rounded border-border-default bg-bg-elevated text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-pointer"
       />
 
       {/* Title */}
@@ -51,13 +51,13 @@ export function TaskRow({ task, onToggle, onUpdateTitle, onDelete }: TaskRowProp
             if (e.key === 'Escape') { setTitle(task.title); setEditing(false); }
           }}
           autoFocus
-          className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-1 py-0.5 text-sm text-white focus:border-blue-500 focus:outline-none"
+          className="flex-1 bg-bg-elevated border border-border-default rounded px-1 py-0.5 text-sm text-text-primary focus:border-brand-500 focus:outline-none"
         />
       ) : (
         <span
           onClick={() => setEditing(true)}
           className={`flex-1 text-sm cursor-pointer ${
-            task.done ? 'text-neutral-500 line-through' : 'text-neutral-200'
+            task.done ? 'text-text-muted line-through' : 'text-text-primary'
           }`}
         >
           {task.title}
@@ -68,7 +68,7 @@ export function TaskRow({ task, onToggle, onUpdateTitle, onDelete }: TaskRowProp
       {task.linked_timestamp_seconds != null && (
         <button
           onClick={() => seek(task.linked_timestamp_seconds!)}
-          className="text-[10px] text-blue-400 hover:text-blue-300 font-mono transition-colors"
+          className="text-[10px] text-brand-400 hover:text-brand-300 font-mono transition-colors"
           title="Jump to timestamp"
         >
           @ {formatTime(task.linked_timestamp_seconds)}
@@ -78,7 +78,7 @@ export function TaskRow({ task, onToggle, onUpdateTitle, onDelete }: TaskRowProp
       {/* Delete */}
       <button
         onClick={onDelete}
-        className="text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+        className="text-text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
         title="Delete task"
       >
         <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">

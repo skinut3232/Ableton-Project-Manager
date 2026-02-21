@@ -65,8 +65,8 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
     const ws = WaveSurfer.create({
       container: waveformRef.current,
       waveColor: '#4b5563',
-      progressColor: '#3b82f6',
-      cursorColor: '#60a5fa',
+      progressColor: '#8B5CF6',
+      cursorColor: '#A78BFA',
       cursorWidth: 2,
       height: 128,
       barWidth: 2,
@@ -387,8 +387,8 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
     return (
       <div className="text-center py-16">
         <p className="text-4xl mb-3">&#127925;</p>
-        <p className="text-neutral-400 mb-1">No bounces found</p>
-        <p className="text-xs text-neutral-600">
+        <p className="text-text-secondary mb-1">No bounces found</p>
+        <p className="text-xs text-text-muted">
           Export a bounce from Ableton to see the waveform timeline
         </p>
       </div>
@@ -399,14 +399,14 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
     <div className="space-y-4">
       {/* Bounce selector */}
       <div className="flex items-center gap-3">
-        <label className="text-xs text-neutral-500">Bounce:</label>
+        <label className="text-xs text-text-muted">Bounce:</label>
         <select
           value={selectedBounce?.id ?? ''}
           onChange={(e) => {
             const b = bounces.find((b) => b.id === parseInt(e.target.value));
             if (b) setSelectedBounce(b);
           }}
-          className="rounded border border-neutral-600 bg-neutral-800 px-2 py-1 text-sm text-white focus:border-blue-500 focus:outline-none"
+          className="rounded-lg border border-border-default bg-bg-elevated px-2 py-1 text-sm text-text-primary focus:border-brand-500 focus:outline-none"
         >
           {bounces.map((b) => (
             <option key={b.id} value={b.id}>
@@ -418,7 +418,7 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
           onClick={handleShare}
           disabled={isSharing || !selectedBounce}
           title="Share as MP3 (copy to clipboard)"
-          className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 disabled:opacity-50 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-bg-surface text-text-secondary hover:text-text-primary disabled:opacity-50 transition-colors"
         >
           {isSharing ? (
             <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -442,7 +442,7 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
           onClick={handleSoundCloudUpload}
           disabled={isUploading || !selectedBounce || scLogin.isPending}
           title="Upload to SoundCloud (private)"
-          className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-orange-400 disabled:opacity-50 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-bg-surface text-text-secondary hover:text-orange-400 disabled:opacity-50 transition-colors"
         >
           {isUploading ? (
             <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -474,7 +474,7 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
             {scError}
           </span>
         )}
-        <span className="text-[10px] text-neutral-600">
+        <span className="text-[10px] text-text-muted">
           Double-click or M: add marker | N/P: next/prev | Scroll: zoom
         </span>
       </div>
@@ -482,7 +482,7 @@ export function TimelineTab({ project, bounces }: TimelineTabProps) {
       {/* Waveform */}
       <div
         ref={waveformRef}
-        className="rounded-lg border border-neutral-700 bg-neutral-900/50 overflow-hidden"
+        className="rounded-lg border border-border-default bg-bg-primary/50 overflow-hidden"
       />
 
       {/* Marker List */}

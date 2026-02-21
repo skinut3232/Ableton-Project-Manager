@@ -59,13 +59,13 @@ export function ProjectDetailView() {
   }, [detail, location.state, play]);
 
   if (isLoading) {
-    return <div className="text-neutral-400">Loading project...</div>;
+    return <div className="text-text-secondary">Loading project...</div>;
   }
 
   if (error || !detail) {
     return (
       <div className="text-center py-16">
-        <p className="text-neutral-400 mb-4">Project not found</p>
+        <p className="text-text-secondary mb-4">Project not found</p>
         <Button variant="secondary" onClick={() => navigate('/')}>Back to Library</Button>
       </div>
     );
@@ -78,7 +78,7 @@ export function ProjectDetailView() {
       {/* Back button */}
       <button
         onClick={() => navigate('/')}
-        className="text-sm text-neutral-400 hover:text-white transition-colors"
+        className="text-sm text-text-secondary hover:text-text-primary transition-colors"
       >
         &larr; Back to Library
       </button>
@@ -99,7 +99,7 @@ export function ProjectDetailView() {
       <TagInput projectId={project.id} tags={project.tags} />
 
       {/* Tab bar */}
-      <div className="border-b border-neutral-700">
+      <div className="border-b border-border-default">
         <nav className="flex gap-1">
           {TABS.map((tab) => (
             <button
@@ -107,8 +107,8 @@ export function ProjectDetailView() {
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
                 activeTab === tab.key
-                  ? 'border-blue-500 text-blue-400'
-                  : 'border-transparent text-neutral-400 hover:text-neutral-200'
+                  ? 'border-brand-500 text-brand-400'
+                  : 'border-transparent text-text-secondary hover:text-text-primary'
               }`}
             >
               {tab.label}

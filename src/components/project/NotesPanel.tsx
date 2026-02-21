@@ -40,7 +40,7 @@ export function NotesPanel({ projectId }: NotesPanelProps) {
   };
 
   if (isLoading) {
-    return <div className="text-neutral-500 text-sm py-8 text-center">Loading notes...</div>;
+    return <div className="text-text-muted text-sm py-8 text-center">Loading notes...</div>;
   }
 
   return (
@@ -49,7 +49,7 @@ export function NotesPanel({ projectId }: NotesPanelProps) {
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-2 mb-3 pr-1">
         {notes.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-neutral-500 text-sm">No notes yet. Type below to add one.</p>
+            <p className="text-text-muted text-sm">No notes yet. Type below to add one.</p>
           </div>
         ) : (
           notes.map((note) => (
@@ -64,7 +64,7 @@ export function NotesPanel({ projectId }: NotesPanelProps) {
       </div>
 
       {/* Input bar */}
-      <div className="border-t border-neutral-700 pt-3">
+      <div className="border-t border-border-default pt-3">
         <textarea
           ref={inputRef}
           value={input}
@@ -72,7 +72,7 @@ export function NotesPanel({ projectId }: NotesPanelProps) {
           onKeyDown={handleKeyDown}
           placeholder="Add a note... (Enter to save, Shift+Enter for newline)"
           rows={1}
-          className="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-white placeholder-neutral-500 resize-none focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full rounded-lg border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder-text-muted resize-none focus:outline-none focus:border-brand-500 transition-colors"
         />
       </div>
     </div>
@@ -127,7 +127,7 @@ function NoteBubble({ note, onUpdate, onDelete }: NoteBubbleProps) {
 
   return (
     <div
-      className="group relative rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2"
+      className="group relative rounded-lg border border-border-default bg-bg-elevated px-3 py-2"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -135,7 +135,7 @@ function NoteBubble({ note, onUpdate, onDelete }: NoteBubbleProps) {
       {isHovered && !isEditing && (
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="absolute top-1.5 right-1.5 p-0.5 rounded text-neutral-500 hover:text-red-400 hover:bg-neutral-700 transition-colors"
+          className="absolute top-1.5 right-1.5 p-0.5 rounded text-text-muted hover:text-red-400 hover:bg-bg-surface transition-colors"
           title="Delete note"
         >
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,13 +159,13 @@ function NoteBubble({ note, onUpdate, onDelete }: NoteBubbleProps) {
           onClick={() => { setIsEditing(true); setEditContent(note.content); }}
           className="cursor-pointer"
         >
-          <p className="text-sm text-neutral-200 whitespace-pre-wrap pr-5">{note.content}</p>
+          <p className="text-sm text-text-primary whitespace-pre-wrap pr-5">{note.content}</p>
         </div>
       )}
 
       {/* Timestamp */}
       <div className="flex items-center gap-1 mt-1">
-        <span className="text-[10px] text-neutral-600">
+        <span className="text-[10px] text-text-muted">
           {timestamp}
           {wasEdited && ' (edited)'}
         </span>

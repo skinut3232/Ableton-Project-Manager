@@ -62,25 +62,25 @@ export function MarkerPopover({
   return (
     <div
       ref={popoverRef}
-      className="fixed z-50 w-72 rounded-lg border border-neutral-600 bg-neutral-800 shadow-xl p-3 space-y-3"
+      className="fixed z-50 w-72 rounded-lg border border-border-default bg-bg-elevated shadow-xl p-3 space-y-3"
       style={{
         left: Math.min(position.x, window.innerWidth - 300),
         top: Math.min(position.y, window.innerHeight - 300),
       }}
     >
       {marker && (
-        <p className="text-[10px] text-neutral-500">
+        <p className="text-[10px] text-text-muted">
           @ {formatTime(marker.timestamp_seconds)}
         </p>
       )}
 
       {/* Type selector */}
       <div>
-        <label className="text-[10px] text-neutral-500 block mb-1">Type</label>
+        <label className="text-[10px] text-text-muted block mb-1">Type</label>
         <select
           value={markerType}
           onChange={(e) => setMarkerType(e.target.value as MarkerType)}
-          className="w-full rounded border border-neutral-600 bg-neutral-900 px-2 py-1 text-sm text-white focus:border-blue-500 focus:outline-none"
+          className="w-full rounded border border-border-default bg-bg-primary px-2 py-1 text-sm text-text-primary focus:border-brand-500 focus:outline-none"
         >
           {MARKER_TYPES.map((mt) => (
             <option key={mt.value} value={mt.value}>
@@ -92,14 +92,14 @@ export function MarkerPopover({
 
       {/* Text */}
       <div>
-        <label className="text-[10px] text-neutral-500 block mb-1">Note</label>
+        <label className="text-[10px] text-text-muted block mb-1">Note</label>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={3}
           placeholder="Add a note..."
           autoFocus
-          className="w-full rounded border border-neutral-600 bg-neutral-900 px-2 py-1 text-sm text-white placeholder-neutral-500 focus:border-blue-500 focus:outline-none resize-none"
+          className="w-full rounded border border-border-default bg-bg-primary px-2 py-1 text-sm text-text-primary placeholder-text-muted focus:border-brand-500 focus:outline-none resize-none"
         />
       </div>
 
@@ -108,13 +108,13 @@ export function MarkerPopover({
         <div className="flex gap-2">
           <button
             onClick={() => onSave({ markerType, text })}
-            className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-500 transition-colors"
+            className="rounded bg-brand-600 px-3 py-1 text-xs font-medium text-white hover:bg-brand-500 transition-colors"
           >
             Save
           </button>
           <button
             onClick={onCancel}
-            className="rounded bg-neutral-700 px-3 py-1 text-xs text-neutral-300 hover:bg-neutral-600 transition-colors"
+            className="rounded bg-bg-surface px-3 py-1 text-xs text-text-secondary hover:bg-bg-surface transition-colors"
           >
             Cancel
           </button>
