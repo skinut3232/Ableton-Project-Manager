@@ -4,14 +4,18 @@
   --color-background: #0A0A0F;
   --color-surface: #141420;
   --color-border: #1E1E2E;
-  --color-body: #B0B0C0;
-  --color-heading: #FFFFFF;
+  --color-body: #A1A1AA;
+  --color-heading: #FAFAFA;
   --color-accent: #8B5CF6;
   --color-accent-hover: #A78BFA;
   --color-accent-glow: rgba(139, 92, 246, 0.12);
-  --color-success: #10B981;
-  --color-muted: #6B6B80;
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-error: #F87171;
+  --color-info: #60A5FA;
+  --color-muted: #52525B;
   --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
 }
 
 body {

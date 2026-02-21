@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <rect width="400" height="120" rx="8" fill="#0F0F14"/>
+  <g transform="translate(22, 16)">
+    <rect x="0" y="8" width="76" height="72" rx="8" fill="#FAFAFA"/>
+    <rect x="22" y="0" width="32" height="14" rx="7" fill="#0F0F14"/>
+    <rect x="10" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.6"/>
+    <rect x="20" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.45"/>
+    <rect x="30" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.7"/>
+    <rect x="40" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.5"/>
+    <rect x="50" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.35"/>
+    <rect x="60" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.25"/>
+  </g>
+  <text x="118" y="62" font-family="'SF Mono', 'JetBrains Mono', 'Fira Code', monospace" font-size="40" font-weight="600" fill="#FAFAFA" letter-spacing="-0.5">set<tspan font-weight="700">crate</tspan></text>
+  <text x="120" y="86" font-family="'SF Mono', 'JetBrains Mono', monospace" font-size="10" font-weight="400" fill="#52525B" letter-spacing="2.5">ORGANIZE YOUR SOUND</text>
+</svg>

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SetCrate — Brand Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple-50: #F5F3FF;
+    --purple-100: #EDE9FE;
+    --purple-200: #DDD6FE;
+    --purple-300: #C4B5FD;
+    --purple-400: #A78BFA;
+    --purple-500: #8B5CF6;
+    --purple-600: #7C3AED;
+    --purple-700: #6D28D9;
+    --purple-800: #5B21B6;
+    --purple-900: #4C1D95;
+
+    --bg-primary: #0F0F14;
+    --bg-secondary: #16161E;
+    --bg-elevated: #1C1C28;
+    --bg-surface: #22222F;
+
+    --text-primary: #FAFAFA;
+    --text-secondary: #A1A1AA;
+    --text-muted: #52525B;
+
+    --success: #34D399;
+    --warning: #FBBF24;
+    --error: #F87171;
+    --info: #60A5FA;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  /* ---- HERO ---- */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--purple-400);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .hero h1 span { color: var(--purple-300); }
+  .hero p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    max-width: 600px;
+    font-weight: 400;
+  }
+  .hero-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 24px;
+    letter-spacing: 1px;
+  }
+
+  /* ---- SECTIONS ---- */
+  .section {
+    padding: 64px 0;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+  }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--purple-500);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .section-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    max-width: 640px;
+    font-weight: 400;
+  }
+
+  /* ---- LOGO GRID ---- */
+  .logo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .logo-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    position: relative;
+    border: 1px solid rgba(139, 92, 246, 0.08);
+  }
+  .logo-card.light {
+    background: #FAFAFA;
+  }
+  .logo-card-label {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .logo-card.light .logo-card-label { color: #A1A1AA; }
+
+  .logo-card svg { max-width: 100%; height: auto; }
+  .logo-card.stacked { grid-column: span 1; }
+  .logo-card.full { grid-column: span 2; }
+
+  /* ---- COLOR PALETTE ---- */
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .color-swatch {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .color-swatch-block {
+    height: 80px;
+  }
+  .color-swatch-info {
+    padding: 10px 12px;
+    background: var(--bg-secondary);
+  }
+  .color-swatch-name {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .color-swatch-hex {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  .color-row-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    margin-top: 32px;
+  }
+
+  .neutral-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .semantic-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  /* ---- TYPOGRAPHY ---- */
+  .type-specimen {
+    margin-bottom: 36px;
+    padding: 32px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.08);
+  }
+  .type-specimen-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--purple-400);
+    margin-bottom: 16px;
+  }
+  .type-specimen .display {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 4px;
+  }
+  .type-specimen .heading {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+  .type-specimen .subheading {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .type-specimen .body-text {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .type-specimen .caption {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .type-scale {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 0;
+    margin-top: 12px;
+  }
+  .type-scale-row {
+    display: contents;
+  }
+  .type-scale-row .label {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+  }
+  .type-scale-row .value {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+  }
+
+  /* ---- SPACING ---- */
+  .spacing-demo {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .spacing-item {
+    text-align: center;
+  }
+  .spacing-box {
+    background: var(--purple-500);
+    opacity: 0.3;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .spacing-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+  .spacing-value {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  /* ---- CLEAR SPACE ---- */
+  .clearspace-demo {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid rgba(139, 92, 246, 0.08);
+  }
+  .clearspace-inner {
+    border: 1.5px dashed rgba(139, 92, 246, 0.4);
+    padding: 32px 48px;
+    border-radius: 8px;
+    position: relative;
+  }
+  .clearspace-label {
+    position: absolute;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--purple-400);
+  }
+  .clearspace-label.top { top: -20px; left: 50%; transform: translateX(-50%); }
+  .clearspace-label.left { left: -56px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+  .clearspace-label.right { right: -56px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+  .clearspace-label.bottom { bottom: -20px; left: 50%; transform: translateX(-50%); }
+
+  /* ---- USAGE DOS/DONTS ---- */
+  .usage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .usage-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(139, 92, 246, 0.08);
+  }
+  .usage-card-visual {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .usage-card-info {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+  .usage-card-badge {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .usage-card-badge.do { background: rgba(52, 211, 153, 0.15); color: var(--success); }
+  .usage-card-badge.dont { background: rgba(248, 113, 113, 0.15); color: var(--error); }
+  .usage-card-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  /* ---- VOICE ---- */
+  .voice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  .voice-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 28px;
+    border: 1px solid rgba(139, 92, 246, 0.08);
+  }
+  .voice-card h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--purple-300);
+  }
+  .voice-card p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    line-height: 1.7;
+  }
+
+  /* ---- FOOTER ---- */
+  .footer {
+    padding: 48px 0;
+    text-align: center;
+  }
+  .footer p {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Brand Guidelines</div>
+    <h1>set<span>crate</span></h1>
+    <p>A comprehensive guide for maintaining consistency across all SetCrate brand touchpoints — from the app to the website to social media.</p>
+    <div class="hero-date">Version 1.0 — February 2026</div>
+  </div>
+
+  <!-- ====== LOGO ====== -->
+  <div class="section">
+    <div class="section-label">01 — Logo</div>
+    <div class="section-title">Logo System</div>
+    <div class="section-desc">The SetCrate logo consists of a solid crate icon mark and a monospace wordmark. Use the primary horizontal lockup whenever possible. Switch to the stacked, icon-only, or wordmark-only versions when space requires it.</div>
+
+    <div class="logo-grid">
+      <!-- Primary Dark -->
+      <div class="logo-card full">
+        <svg viewBox="0 0 400 120" width="360" height="108">
+          <defs><linearGradient id="lp1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8B5CF6"/><stop offset="100%" style="stop-color:#6D28D9"/></linearGradient></defs>
+          <g transform="translate(22, 16)"><rect x="0" y="8" width="76" height="72" rx="8" fill="url(#lp1)"/><rect x="22" y="0" width="32" height="14" rx="7" fill="#0F0F14"/><rect x="10" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.6"/><rect x="20" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.45"/><rect x="30" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.7"/><rect x="40" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.5"/><rect x="50" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.35"/><rect x="60" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.25"/></g>
+          <text x="118" y="62" font-family="'JetBrains Mono', monospace" font-size="40" font-weight="600" fill="#FAFAFA" letter-spacing="-0.5">set<tspan fill="#C4B5FD" font-weight="700">crate</tspan></text>
+          <text x="120" y="86" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="400" fill="#52525B" letter-spacing="2.5">ORGANIZE YOUR SOUND</text>
+        </svg>
+        <div class="logo-card-label">Primary — Dark Background</div>
+      </div>
+
+      <!-- Primary Light -->
+      <div class="logo-card full light">
+        <svg viewBox="0 0 400 120" width="360" height="108">
+          <defs><linearGradient id="lp2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8B5CF6"/><stop offset="100%" style="stop-color:#6D28D9"/></linearGradient></defs>
+          <g transform="translate(22, 16)"><rect x="0" y="8" width="76" height="72" rx="8" fill="url(#lp2)"/><rect x="22" y="0" width="32" height="14" rx="7" fill="#FAFAFA"/><rect x="10" y="18" width="4.5" height="52" rx="2" fill="#FAFAFA" opacity="0.6"/><rect x="20" y="18" width="4.5" height="52" rx="2" fill="#FAFAFA" opacity="0.45"/><rect x="30" y="18" width="4.5" height="52" rx="2" fill="#FAFAFA" opacity="0.7"/><rect x="40" y="18" width="4.5" height="52" rx="2" fill="#FAFAFA" opacity="0.5"/><rect x="50" y="18" width="4.5" height="52" rx="2" fill="#FAFAFA" opacity="0.35"/><rect x="60" y="18" width="4.5" height="52" rx="2" fill="#FAFAFA" opacity="0.25"/></g>
+          <text x="118" y="62" font-family="'JetBrains Mono', monospace" font-size="40" font-weight="600" fill="#18181B" letter-spacing="-0.5">set<tspan fill="#7C3AED" font-weight="700">crate</tspan></text>
+          <text x="120" y="86" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="400" fill="#A1A1AA" letter-spacing="2.5">ORGANIZE YOUR SOUND</text>
+        </svg>
+        <div class="logo-card-label">Primary — Light Background</div>
+      </div>
+
+      <!-- Icon Only -->
+      <div class="logo-card">
+        <svg viewBox="0 0 120 120" width="90" height="90">
+          <defs><linearGradient id="lp3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8B5CF6"/><stop offset="100%" style="stop-color:#6D28D9"/></linearGradient></defs>
+          <rect x="10" y="14" width="100" height="96" rx="12" fill="url(#lp3)"/>
+          <rect x="32" y="2" width="44" height="20" rx="10" fill="#0F0F14"/>
+          <rect x="22" y="28" width="6" height="70" rx="3" fill="#0F0F14" opacity="0.6"/>
+          <rect x="35" y="28" width="6" height="70" rx="3" fill="#0F0F14" opacity="0.45"/>
+          <rect x="48" y="28" width="6" height="70" rx="3" fill="#0F0F14" opacity="0.7"/>
+          <rect x="61" y="28" width="6" height="70" rx="3" fill="#0F0F14" opacity="0.5"/>
+          <rect x="74" y="28" width="6" height="70" rx="3" fill="#0F0F14" opacity="0.35"/>
+          <rect x="87" y="28" width="6" height="70" rx="3" fill="#0F0F14" opacity="0.25"/>
+        </svg>
+        <div class="logo-card-label">Icon Only</div>
+      </div>
+
+      <!-- Wordmark Only -->
+      <div class="logo-card">
+        <svg viewBox="0 0 260 50" width="240" height="46">
+          <text x="10" y="34" font-family="'JetBrains Mono', monospace" font-size="34" font-weight="600" fill="#FAFAFA" letter-spacing="-0.5">set<tspan fill="#C4B5FD" font-weight="700">crate</tspan></text>
+        </svg>
+        <div class="logo-card-label">Wordmark Only</div>
+      </div>
+
+      <!-- Stacked -->
+      <div class="logo-card">
+        <svg viewBox="0 0 200 180" width="150" height="135">
+          <defs><linearGradient id="lp5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8B5CF6"/><stop offset="100%" style="stop-color:#6D28D9"/></linearGradient></defs>
+          <g transform="translate(50, 10)"><rect x="0" y="8" width="100" height="90" rx="12" fill="url(#lp5)"/><rect x="28" y="0" width="44" height="16" rx="8" fill="#0F0F14"/><rect x="12" y="22" width="6" height="64" rx="3" fill="#0F0F14" opacity="0.6"/><rect x="25" y="22" width="6" height="64" rx="3" fill="#0F0F14" opacity="0.45"/><rect x="38" y="22" width="6" height="64" rx="3" fill="#0F0F14" opacity="0.7"/><rect x="51" y="22" width="6" height="64" rx="3" fill="#0F0F14" opacity="0.5"/><rect x="64" y="22" width="6" height="64" rx="3" fill="#0F0F14" opacity="0.35"/><rect x="77" y="22" width="6" height="64" rx="3" fill="#0F0F14" opacity="0.25"/></g>
+          <text x="100" y="138" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="28" font-weight="600" fill="#FAFAFA" letter-spacing="-0.5">set<tspan fill="#C4B5FD" font-weight="700">crate</tspan></text>
+          <text x="100" y="158" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="400" fill="#52525B" letter-spacing="2.5">ORGANIZE YOUR SOUND</text>
+        </svg>
+        <div class="logo-card-label">Stacked</div>
+      </div>
+
+      <!-- Monochrome -->
+      <div class="logo-card">
+        <svg viewBox="0 0 400 120" width="280" height="84">
+          <g transform="translate(22, 16)"><rect x="0" y="8" width="76" height="72" rx="8" fill="#FAFAFA"/><rect x="22" y="0" width="32" height="14" rx="7" fill="#0F0F14"/><rect x="10" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.6"/><rect x="20" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.45"/><rect x="30" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.7"/><rect x="40" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.5"/><rect x="50" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.35"/><rect x="60" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.25"/></g>
+          <text x="118" y="62" font-family="'JetBrains Mono', monospace" font-size="40" font-weight="600" fill="#FAFAFA" letter-spacing="-0.5">set<tspan font-weight="700">crate</tspan></text>
+          <text x="120" y="86" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="400" fill="#52525B" letter-spacing="2.5">ORGANIZE YOUR SOUND</text>
+        </svg>
+        <div class="logo-card-label">Monochrome White</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== CLEAR SPACE ====== -->
+  <div class="section">
+    <div class="section-label">02 — Clear Space</div>
+    <div class="section-title">Minimum Clear Space</div>
+    <div class="section-desc">Maintain a clear zone around the logo equal to the height of the crate handle (the "H" unit). Never place text, graphics, or other logos within this boundary.</div>
+
+    <div class="clearspace-demo">
+      <div class="clearspace-inner">
+        <span class="clearspace-label top">1× H</span>
+        <span class="clearspace-label bottom">1× H</span>
+        <span class="clearspace-label left">1× H</span>
+        <span class="clearspace-label right">1× H</span>
+        <svg viewBox="0 0 400 120" width="320" height="96">
+          <defs><linearGradient id="lpc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8B5CF6"/><stop offset="100%" style="stop-color:#6D28D9"/></linearGradient></defs>
+          <g transform="translate(22, 16)"><rect x="0" y="8" width="76" height="72" rx="8" fill="url(#lpc)"/><rect x="22" y="0" width="32" height="14" rx="7" fill="#0F0F14"/><rect x="10" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.6"/><rect x="20" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.45"/><rect x="30" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.7"/><rect x="40" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.5"/><rect x="50" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.35"/><rect x="60" y="18" width="4.5" height="52" rx="2" fill="#0F0F14" opacity="0.25"/></g>
+          <text x="118" y="62" font-family="'JetBrains Mono', monospace" font-size="40" font-weight="600" fill="#FAFAFA" letter-spacing="-0.5">set<tspan fill="#C4B5FD" font-weight="700">crate</tspan></text>
+          <text x="120" y="86" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="400" fill="#52525B" letter-spacing="2.5">ORGANIZE YOUR SOUND</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== COLORS ====== -->
+  <div class="section">
+    <div class="section-label">03 — Color</div>
+    <div class="section-title">Color Palette</div>
+    <div class="section-desc">SetCrate's palette is built on deep, dark surfaces with purple accents. The brand purple gradient runs from #8B5CF6 to #6D28D9. Use it for primary actions, the logo, and key highlights.</div>
+
+    <div class="color-row-label">Brand Purple</div>
+    <div class="color-grid">
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #F5F3FF;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name" style="color:#18181B;">Purple 50</div><div class="color-swatch-hex">#F5F3FF</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #DDD6FE;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name" style="color:#18181B;">Purple 200</div><div class="color-swatch-hex">#DDD6FE</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #A78BFA;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">Purple 400</div><div class="color-swatch-hex">#A78BFA</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #8B5CF6;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">Purple 500 ★</div><div class="color-swatch-hex">#8B5CF6</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #6D28D9;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">Purple 700 ★</div><div class="color-swatch-hex">#6D28D9</div></div>
+      </div>
+    </div>
+
+    <div class="color-row-label">Surfaces &amp; Backgrounds</div>
+    <div class="neutral-grid">
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #0F0F14;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">BG Primary</div><div class="color-swatch-hex">#0F0F14</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #16161E;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">BG Secondary</div><div class="color-swatch-hex">#16161E</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #1C1C28;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">BG Elevated</div><div class="color-swatch-hex">#1C1C28</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #22222F;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">BG Surface</div><div class="color-swatch-hex">#22222F</div></div>
+      </div>
+    </div>
+
+    <div class="color-row-label">Text</div>
+    <div class="neutral-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #FAFAFA;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name" style="color:#18181B;">Primary</div><div class="color-swatch-hex">#FAFAFA</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #A1A1AA;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">Secondary</div><div class="color-swatch-hex">#A1A1AA</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #52525B;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">Muted</div><div class="color-swatch-hex">#52525B</div></div>
+      </div>
+    </div>
+
+    <div class="color-row-label">Semantic</div>
+    <div class="semantic-grid">
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #34D399;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">Success</div><div class="color-swatch-hex">#34D399</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #FBBF24;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">Warning</div><div class="color-swatch-hex">#FBBF24</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #F87171;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">Error</div><div class="color-swatch-hex">#F87171</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-swatch-block" style="background: #60A5FA;"></div>
+        <div class="color-swatch-info"><div class="color-swatch-name">Info</div><div class="color-swatch-hex">#60A5FA</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TYPOGRAPHY ====== -->
+  <div class="section">
+    <div class="section-label">04 — Typography</div>
+    <div class="section-title">Type System</div>
+    <div class="section-desc">SetCrate uses JetBrains Mono as its sole typeface. A monospace font reinforces the technical, production-tool nature of the brand while feeling clean and contemporary.</div>
+
+    <div class="type-specimen">
+      <div class="type-specimen-label">JetBrains Mono — Type Scale</div>
+      <div class="display">Organize Your Sound</div>
+      <div class="heading">Session management, reimagined</div>
+      <div class="subheading">Built for producers who ship</div>
+      <div class="body-text">SetCrate keeps your music projects organized across desktop and mobile. Tag, search, and sync your sessions without leaving your creative flow.</div>
+      <div class="caption">setcrate.app — v1.0</div>
+
+      <div class="type-scale">
+        <div class="type-scale-row"><div class="label">Display</div><div class="value">48px / 800 weight / -2px tracking</div></div>
+        <div class="type-scale-row"><div class="label">Heading</div><div class="value">28px / 700 weight / -1px tracking</div></div>
+        <div class="type-scale-row"><div class="label">Subhead</div><div class="value">18px / 600 weight / 0 tracking</div></div>
+        <div class="type-scale-row"><div class="label">Body</div><div class="value">14px / 400 weight / 0 tracking</div></div>
+        <div class="type-scale-row"><div class="label">Caption</div><div class="value">11px / 400 weight / +2px tracking / UPPERCASE</div></div>
+        <div class="type-scale-row"><div class="label">Micro</div><div class="value">10px / 400 weight / +2.5px tracking / UPPERCASE</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SPACING ====== -->
+  <div class="section">
+    <div class="section-label">05 — Spacing</div>
+    <div class="section-title">Spacing Scale</div>
+    <div class="section-desc">Use a base-4 spacing scale throughout UI and marketing materials. This creates rhythmic consistency across all surfaces.</div>
+
+    <div class="spacing-demo">
+      <div class="spacing-item"><div class="spacing-box" style="width:16px; height:16px;"></div><div class="spacing-value">4px</div><div class="spacing-label">xs</div></div>
+      <div class="spacing-item"><div class="spacing-box" style="width:24px; height:24px;"></div><div class="spacing-value">8px</div><div class="spacing-label">sm</div></div>
+      <div class="spacing-item"><div class="spacing-box" style="width:36px; height:36px;"></div><div class="spacing-value">12px</div><div class="spacing-label">md</div></div>
+      <div class="spacing-item"><div class="spacing-box" style="width:48px; height:48px;"></div><div class="spacing-value">16px</div><div class="spacing-label">base</div></div>
+      <div class="spacing-item"><div class="spacing-box" style="width:64px; height:64px;"></div><div class="spacing-value">24px</div><div class="spacing-label">lg</div></div>
+      <div class="spacing-item"><div class="spacing-box" style="width:80px; height:80px;"></div><div class="spacing-value">32px</div><div class="spacing-label">xl</div></div>
+      <div class="spacing-item"><div class="spacing-box" style="width:100px; height:100px;"></div><div class="spacing-value">48px</div><div class="spacing-label">2xl</div></div>
+      <div class="spacing-item"><div class="spacing-box" style="width:120px; height:120px;"></div><div class="spacing-value">64px</div><div class="spacing-label">3xl</div></div>
+    </div>
+  </div>
+
+  <!-- ====== USAGE ====== -->
+  <div class="section">
+    <div class="section-label">06 — Usage</div>
+    <div class="section-title">Logo Dos &amp; Don'ts</div>
+    <div class="section-desc">Protect the integrity of the SetCrate brand by following these guidelines when using the logo.</div>
+
+    <div class="usage-grid">
+      <div class="usage-card">
+        <div class="usage-card-visual" style="background: #0F0F14;">
+          <svg viewBox="0 0 200 60" width="180" height="54">
+            <defs><linearGradient id="ud1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8B5CF6"/><stop offset="100%" style="stop-color:#6D28D9"/></linearGradient></defs>
+            <g transform="translate(8,6)"><rect x="0" y="4" width="40" height="38" rx="5" fill="url(#ud1)"/><rect x="12" y="0" width="16" height="7" rx="3.5" fill="#0F0F14"/><rect x="5" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.6"/><rect x="10" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.45"/><rect x="15" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.7"/><rect x="20" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.5"/><rect x="25" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.35"/><rect x="30" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.25"/></g>
+            <text x="58" y="32" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="600" fill="#FAFAFA">set<tspan fill="#C4B5FD" font-weight="700">crate</tspan></text>
+          </svg>
+        </div>
+        <div class="usage-card-info">
+          <div class="usage-card-badge do">✓ Do</div>
+          <div class="usage-card-text">Use the logo on dark backgrounds with sufficient contrast</div>
+        </div>
+      </div>
+
+      <div class="usage-card">
+        <div class="usage-card-visual" style="background: linear-gradient(135deg, #ff6b6b, #ffa36b);">
+          <svg viewBox="0 0 200 60" width="180" height="54" opacity="0.7">
+            <defs><linearGradient id="ud2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8B5CF6"/><stop offset="100%" style="stop-color:#6D28D9"/></linearGradient></defs>
+            <g transform="translate(8,6)"><rect x="0" y="4" width="40" height="38" rx="5" fill="url(#ud2)"/><rect x="12" y="0" width="16" height="7" rx="3.5" fill="#ff8e6b"/><rect x="5" y="10" width="2.5" height="26" rx="1" fill="#ff8e6b" opacity="0.6"/><rect x="10" y="10" width="2.5" height="26" rx="1" fill="#ff8e6b" opacity="0.45"/><rect x="15" y="10" width="2.5" height="26" rx="1" fill="#ff8e6b" opacity="0.7"/><rect x="20" y="10" width="2.5" height="26" rx="1" fill="#ff8e6b" opacity="0.5"/><rect x="25" y="10" width="2.5" height="26" rx="1" fill="#ff8e6b" opacity="0.35"/><rect x="30" y="10" width="2.5" height="26" rx="1" fill="#ff8e6b" opacity="0.25"/></g>
+            <text x="58" y="32" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="600" fill="#FAFAFA">set<tspan fill="#C4B5FD" font-weight="700">crate</tspan></text>
+          </svg>
+        </div>
+        <div class="usage-card-info">
+          <div class="usage-card-badge dont">✗ Don't</div>
+          <div class="usage-card-text">Place the logo on busy or clashing color backgrounds</div>
+        </div>
+      </div>
+
+      <div class="usage-card">
+        <div class="usage-card-visual" style="background: #FAFAFA;">
+          <svg viewBox="0 0 200 60" width="180" height="54">
+            <defs><linearGradient id="ud3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8B5CF6"/><stop offset="100%" style="stop-color:#6D28D9"/></linearGradient></defs>
+            <g transform="translate(8,6)"><rect x="0" y="4" width="40" height="38" rx="5" fill="url(#ud3)"/><rect x="12" y="0" width="16" height="7" rx="3.5" fill="#FAFAFA"/><rect x="5" y="10" width="2.5" height="26" rx="1" fill="#FAFAFA" opacity="0.6"/><rect x="10" y="10" width="2.5" height="26" rx="1" fill="#FAFAFA" opacity="0.45"/><rect x="15" y="10" width="2.5" height="26" rx="1" fill="#FAFAFA" opacity="0.7"/><rect x="20" y="10" width="2.5" height="26" rx="1" fill="#FAFAFA" opacity="0.5"/><rect x="25" y="10" width="2.5" height="26" rx="1" fill="#FAFAFA" opacity="0.35"/><rect x="30" y="10" width="2.5" height="26" rx="1" fill="#FAFAFA" opacity="0.25"/></g>
+            <text x="58" y="32" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="600" fill="#18181B">set<tspan fill="#7C3AED" font-weight="700">crate</tspan></text>
+          </svg>
+        </div>
+        <div class="usage-card-info">
+          <div class="usage-card-badge do">✓ Do</div>
+          <div class="usage-card-text">Use the light variant on white/light backgrounds</div>
+        </div>
+      </div>
+
+      <div class="usage-card">
+        <div class="usage-card-visual" style="background: #0F0F14;">
+          <svg viewBox="0 0 200 60" width="180" height="54" style="transform: skewX(-15deg);">
+            <defs><linearGradient id="ud4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8B5CF6"/><stop offset="100%" style="stop-color:#6D28D9"/></linearGradient></defs>
+            <g transform="translate(8,6)"><rect x="0" y="4" width="40" height="38" rx="5" fill="url(#ud4)"/><rect x="12" y="0" width="16" height="7" rx="3.5" fill="#0F0F14"/><rect x="5" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.6"/><rect x="10" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.45"/><rect x="15" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.7"/><rect x="20" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.5"/><rect x="25" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.35"/><rect x="30" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.25"/></g>
+            <text x="58" y="32" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="600" fill="#FAFAFA">set<tspan fill="#C4B5FD" font-weight="700">crate</tspan></text>
+          </svg>
+        </div>
+        <div class="usage-card-info">
+          <div class="usage-card-badge dont">✗ Don't</div>
+          <div class="usage-card-text">Stretch, skew, rotate, or distort the logo in any way</div>
+        </div>
+      </div>
+
+      <div class="usage-card">
+        <div class="logo-card full" style="min-height:auto;">
+        <div class="usage-card-visual" style="background: #0F0F14;">
+          <svg viewBox="0 0 200 60" width="180" height="54">
+            <defs><linearGradient id="ud5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8B5CF6"/><stop offset="100%" style="stop-color:#6D28D9"/></linearGradient></defs>
+            <g transform="translate(8,6)"><rect x="0" y="4" width="40" height="38" rx="5" fill="url(#ud5)"/><rect x="12" y="0" width="16" height="7" rx="3.5" fill="#0F0F14"/><rect x="5" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.6"/><rect x="10" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.45"/><rect x="15" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.7"/><rect x="20" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.5"/><rect x="25" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.35"/><rect x="30" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.25"/></g>
+            <text x="58" y="32" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="600" fill="#FAFAFA">set<tspan fill="#C4B5FD" font-weight="700">crate</tspan></text>
+          </svg>
+        </div>
+        </div>
+        <div class="usage-card-info">
+          <div class="usage-card-badge do">✓ Do</div>
+          <div class="usage-card-text">Keep the icon and wordmark locked together at the correct proportion</div>
+        </div>
+      </div>
+
+      <div class="usage-card">
+        <div class="usage-card-visual" style="background: #0F0F14;">
+          <svg viewBox="0 0 200 60" width="180" height="54">
+            <g transform="translate(8,6)"><rect x="0" y="4" width="40" height="38" rx="5" fill="#22AA44"/><rect x="12" y="0" width="16" height="7" rx="3.5" fill="#0F0F14"/><rect x="5" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.6"/><rect x="10" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.45"/><rect x="15" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.7"/><rect x="20" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.5"/><rect x="25" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.35"/><rect x="30" y="10" width="2.5" height="26" rx="1" fill="#0F0F14" opacity="0.25"/></g>
+            <text x="58" y="32" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="600" fill="#FAFAFA">set<tspan fill="#22AA44" font-weight="700">crate</tspan></text>
+          </svg>
+        </div>
+        <div class="usage-card-info">
+          <div class="usage-card-badge dont">✗ Don't</div>
+          <div class="usage-card-text">Change the brand colors — always use the purple gradient or monochrome</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== VOICE ====== -->
+  <div class="section">
+    <div class="section-label">07 — Voice &amp; Tone</div>
+    <div class="section-title">Brand Voice</div>
+    <div class="section-desc">SetCrate speaks like a fellow producer — knowledgeable but never condescending, focused but never boring. The brand voice sits at the intersection of technical precision and creative energy.</div>
+
+    <div class="voice-grid">
+      <div class="voice-card">
+        <h4>Technical</h4>
+        <p>We understand the tools. We speak the language of DAWs, sessions, and signal flow. No fluff, no marketing-speak. If it's a feature, we say what it does.</p>
+      </div>
+      <div class="voice-card">
+        <h4>Direct</h4>
+        <p>Short sentences. Active voice. We respect our users' time. If something takes three clicks, we say so. If it's free, we say that too.</p>
+      </div>
+      <div class="voice-card">
+        <h4>Encouraging</h4>
+        <p>We're here to help people make more music. The tone is always forward-looking — focused on what you can create, not what you're missing.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== GRADIENT ====== -->
+  <div class="section">
+    <div class="section-label">08 — Gradient</div>
+    <div class="section-title">Brand Gradient</div>
+    <div class="section-desc">The primary brand gradient flows from Purple 500 to Purple 700 at a 135° angle. Use it for the logo icon, primary CTAs, and hero accents. Never use it for large background fills.</div>
+
+    <div style="height: 120px; border-radius: 12px; background: linear-gradient(135deg, #8B5CF6, #6D28D9); margin-bottom: 20px; display: flex; align-items: flex-end; padding: 16px;">
+      <span style="font-size: 11px; letter-spacing: 2px; color: rgba(255,255,255,0.7);">135° — #8B5CF6 → #6D28D9</span>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+      <div style="height: 64px; border-radius: 8px; background: linear-gradient(135deg, #8B5CF6, #6D28D9); display: flex; align-items: flex-end; padding: 10px;">
+        <span style="font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.6);">PRIMARY</span>
+      </div>
+      <div style="height: 64px; border-radius: 8px; background: linear-gradient(135deg, #A78BFA, #7C3AED); display: flex; align-items: flex-end; padding: 10px;">
+        <span style="font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.6);">LIGHT ALT</span>
+      </div>
+      <div style="height: 64px; border-radius: 8px; background: linear-gradient(135deg, #7C3AED, #4C1D95); display: flex; align-items: flex-end; padding: 10px;">
+        <span style="font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.6);">DARK ALT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== BORDER RADIUS ====== -->
+  <div class="section">
+    <div class="section-label">09 — Shape</div>
+    <div class="section-title">Border Radius Scale</div>
+    <div class="section-desc">SetCrate uses rounded corners throughout. Use these values consistently for cards, buttons, inputs, and containers.</div>
+
+    <div style="display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap;">
+      <div style="text-align: center;">
+        <div style="width: 48px; height: 48px; background: var(--bg-elevated); border: 1.5px solid var(--purple-500); border-radius: 4px; margin-bottom: 8px;"></div>
+        <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">4px</div>
+        <div style="font-size: 9px; color: var(--text-muted); letter-spacing: 1px;">INPUTS</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="width: 64px; height: 64px; background: var(--bg-elevated); border: 1.5px solid var(--purple-500); border-radius: 8px; margin-bottom: 8px;"></div>
+        <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">8px</div>
+        <div style="font-size: 9px; color: var(--text-muted); letter-spacing: 1px;">BUTTONS</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="width: 80px; height: 80px; background: var(--bg-elevated); border: 1.5px solid var(--purple-500); border-radius: 12px; margin-bottom: 8px;"></div>
+        <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">12px</div>
+        <div style="font-size: 9px; color: var(--text-muted); letter-spacing: 1px;">CARDS</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="width: 96px; height: 96px; background: var(--bg-elevated); border: 1.5px solid var(--purple-500); border-radius: 20px; margin-bottom: 8px;"></div>
+        <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">20px</div>
+        <div style="font-size: 9px; color: var(--text-muted); letter-spacing: 1px;">APP ICON</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>setcrate.app — Brand Guide v1.0 — February 2026</p>
+    <p style="margin-top: 8px; color: #3F3F46;">Confidential. For internal and partner use only.</p>
+  </div>
+
+</div>
+</body>
+</html>

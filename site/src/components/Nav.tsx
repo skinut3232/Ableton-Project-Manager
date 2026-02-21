@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Button from "./ui/Button";
+import SetCrateLogo from "./SetCrateLogo";
 import { HERO } from "@/lib/constants";
 
 interface NavProps {
@@ -30,7 +31,9 @@ export default function Nav({ onCtaClick }: NavProps) {
       }`}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <span className="text-xl font-bold text-heading">SetCrate</span>
+        <a href="#hero" aria-label="SetCrate home">
+          <SetCrateLogo variant="full" height={36} />
+        </a>
         <Button onClick={onCtaClick} className="text-sm">
           <span className="hidden sm:inline">{HERO.cta}</span>
           <span className="sm:hidden">14-Day Trial</span>

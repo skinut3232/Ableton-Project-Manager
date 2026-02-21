@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Button from "./ui/Button";
 import Container from "./ui/Container";
+import SetCrateLogo from "./SetCrateLogo";
 import ScreenshotPlaceholder from "./ui/ScreenshotPlaceholder";
 import { HERO } from "@/lib/constants";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
@@ -26,6 +27,10 @@ export default function Hero({ onCtaClick }: HeroProps) {
           animate="visible"
           className="mx-auto max-w-3xl text-center"
         >
+          <motion.div variants={fadeInUp} className="flex justify-center mb-6">
+            <SetCrateLogo variant="icon" height={72} />
+          </motion.div>
+
           <motion.h1
             variants={fadeInUp}
             className="text-4xl font-extrabold leading-tight text-heading sm:text-5xl lg:text-6xl"

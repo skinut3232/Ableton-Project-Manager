@@ -1,11 +1,12 @@
 import Container from "./ui/Container";
+import SetCrateLogo from "./SetCrateLogo";
 
 export default function Footer() {
   return (
     <footer className="border-t border-border py-12">
       <Container>
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
-          <span className="text-lg font-bold text-heading">SetCrate</span>
+          <SetCrateLogo variant="full" height={32} tagline />
 
           {/* Social icons placeholder */}
           <div className="flex gap-4">
