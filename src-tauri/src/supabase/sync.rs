@@ -313,7 +313,9 @@ pub fn pull_table(
     if let Some(ts) = last_pull_at {
         // tags table only has created_at, not updated_at
         if table != "tags" {
-            query_params.push_str(&format!("&updated_at=gt.{}", ts));
+            // URL-encode '+' to '%2B' so it isn't misread as a space in query params
+            let encoded_ts = ts.replace('+', "%2B");
+            query_params.push_str(&format!("&updated_at=gt.{}", encoded_ts));
         }
     }
 

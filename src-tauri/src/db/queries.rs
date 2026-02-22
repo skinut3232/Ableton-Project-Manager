@@ -34,7 +34,7 @@ use crate::db::models::*;
 /// Mark a record as needing sync after a local write.
 /// Safe to call even if sync columns don't exist yet (returns Ok).
 pub fn mark_dirty(conn: &Connection, table: &str, id: i64) {
-    let now = chrono::Utc::now().to_rfc3339();
+    let now = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
     conn.execute(
         &format!(
             "UPDATE {} SET sync_status = 'pending_push', sync_updated_at = ?1 WHERE id = ?2",
@@ -46,7 +46,7 @@ pub fn mark_dirty(conn: &Connection, table: &str, id: i64) {
 
 /// Mark a project_tags junction entry as needing sync.
 pub fn mark_project_tags_dirty(conn: &Connection, project_id: i64, tag_id: i64) {
-    let now = chrono::Utc::now().to_rfc3339();
+    let now = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
     conn.execute(
         "UPDATE project_tags SET sync_status = 'pending_push', sync_updated_at = ?1 \
          WHERE project_id = ?2 AND tag_id = ?3",
@@ -57,7 +57,7 @@ pub fn mark_project_tags_dirty(conn: &Connection, project_id: i64, tag_id: i64) 
 /// Mark a record for deletion from the remote. The sync engine will DELETE
 /// from Supabase, then remove the local row.
 pub fn mark_pending_delete(conn: &Connection, table: &str, id: i64) {
-    let now = chrono::Utc::now().to_rfc3339();
+    let now = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
     conn.execute(
         &format!(
             "UPDATE {} SET sync_status = 'pending_delete', sync_updated_at = ?1 WHERE id = ?2",

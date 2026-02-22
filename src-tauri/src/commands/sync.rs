@@ -128,7 +128,7 @@ pub fn trigger_sync(
 
     // Update last_push_at
     if pushed > 0 {
-        let now = chrono::Utc::now().to_rfc3339();
+        let now = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
         conn.execute(
             "INSERT INTO sync_meta (key, value) VALUES ('last_push_at', ?1) \
              ON CONFLICT(key) DO UPDATE SET value = ?1",
@@ -197,7 +197,7 @@ fn pull_changes_inline(
         pulled += count;
     }
 
-    let now = chrono::Utc::now().to_rfc3339();
+    let now = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
     conn.execute(
         "INSERT INTO sync_meta (key, value) VALUES ('last_pull_at', ?1) \
          ON CONFLICT(key) DO UPDATE SET value = ?1",

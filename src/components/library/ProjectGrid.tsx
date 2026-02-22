@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useLibraryStore } from '../../stores/libraryStore';
 import { ProjectCard } from './ProjectCard';
+import { ContextMenu } from '../ui/ContextMenu';
+import { useProjectContextMenu } from '../../hooks/useProjectContextMenu';
 import type { Project } from '../../types';
 import { useEffect, useCallback } from 'react';
 
@@ -12,6 +14,7 @@ export function ProjectGrid({ projects }: ProjectGridProps) {
   const navigate = useNavigate();
   const focusedIndex = useLibraryStore((s) => s.focusedCardIndex);
   const setFocusedIndex = useLibraryStore((s) => s.setFocusedCardIndex);
+  const { menuState, menuItems, handleContextMenu, closeMenu } = useProjectContextMenu();
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
@@ -66,8 +69,12 @@ export function ProjectGrid({ projects }: ProjectGridProps) {
           index={index}
           isFocused={index === focusedIndex}
           onClick={() => navigate(`/project/${project.id}`)}
+          onContextMenu={(e) => handleContextMenu(e, project)}
         />
       ))}
+      {menuState && (
+        <ContextMenu x={menuState.x} y={menuState.y} items={menuItems} onClose={closeMenu} />
+      )}
     </div>
   );
 }

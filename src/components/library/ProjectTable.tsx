@@ -5,6 +5,8 @@ import { StatusBadge } from '../ui/StatusBadge';
 import { RatingStars } from '../ui/RatingStars';
 import { PlayButton } from '../audio/PlayButton';
 import { CoverImage } from '../ui/CoverImage';
+import { ContextMenu } from '../ui/ContextMenu';
+import { useProjectContextMenu } from '../../hooks/useProjectContextMenu';
 import { parseTimestamp } from '../../lib/utils';
 import type { Project, ProjectStatus } from '../../types';
 
@@ -20,6 +22,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
   const setTableSort = useLibraryStore((s) => s.setTableSort);
   const focusedCardIndex = useLibraryStore((s) => s.focusedCardIndex);
   const setFocusedCardIndex = useLibraryStore((s) => s.setFocusedCardIndex);
+  const { menuState, menuItems, handleContextMenu, closeMenu } = useProjectContextMenu();
 
   const columns = TABLE_COLUMNS.filter((c) => visibleColumns.includes(c.key));
 
@@ -51,7 +54,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      <table className="w-full text-sm text-left">
+      <table className="w-full text-sm text-left table-fixed">
         <thead className="bg-bg-elevated border-b border-border-default sticky top-0 z-10">
           <tr>
             <th className="w-10 px-1 py-2.5" />
@@ -59,12 +62,12 @@ export function ProjectTable({ projects }: ProjectTableProps) {
               <th
                 key={col.key}
                 className={`px-3 py-2.5 text-xs font-medium text-text-secondary uppercase tracking-wider whitespace-nowrap ${
-                  col.sortable ? 'cursor-pointer hover:text-text-primary select-none' : ''
-                }`}
-                style={{ width: col.width.startsWith('minmax') ? undefined : col.width }}
+                  col.center ? 'text-center' : ''
+                } ${col.sortable ? 'cursor-pointer hover:text-text-primary select-none' : ''}`}
+                style={{ width: col.width }}
                 onClick={() => handleHeaderClick(col.key)}
               >
-                <span className="inline-flex items-center gap-1">
+                <span className={`inline-flex items-center gap-1 ${col.center ? 'justify-center w-full' : ''}`}>
                   {col.label}
                   {col.sortable && sortBy === col.key && (
                     <SortIndicator dir={tableSortDir} />
@@ -80,6 +83,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
               key={project.id}
               id={`project-card-${index}`}
               onClick={() => navigate(`/project/${project.id}`)}
+              onContextMenu={(e) => handleContextMenu(e, project)}
               onMouseEnter={() => setFocusedCardIndex(index)}
               className={`cursor-pointer transition-colors ${
                 focusedCardIndex === index
@@ -91,7 +95,10 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                 <PlayButton projectId={project.id} project={project} />
               </td>
               {columns.map((col) => (
-                <td key={col.key} className="px-3 py-2 whitespace-nowrap">
+                <td
+                  key={col.key}
+                  className={`px-3 py-2 whitespace-nowrap overflow-hidden text-ellipsis ${col.center ? 'text-center' : ''}`}
+                >
                   <CellRenderer column={col.key} project={project} />
                 </td>
               ))}
@@ -99,6 +106,9 @@ export function ProjectTable({ projects }: ProjectTableProps) {
           ))}
         </tbody>
       </table>
+      {menuState && (
+        <ContextMenu x={menuState.x} y={menuState.y} items={menuItems} onClose={closeMenu} />
+      )}
     </div>
   );
 }

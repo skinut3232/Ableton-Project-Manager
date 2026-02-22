@@ -1,4 +1,4 @@
-# Ableton Project Library - Product Requirements Document
+# SetCrate (Ableton Project Library) - Product Requirements Document
 
 ---
 
@@ -25,7 +25,8 @@
 | **Database** | SQLite (rusqlite 0.31, bundled + FTS5) | Zero-config, embedded, full-text search, single-file database |
 | **Frontend** | React 19 + TypeScript 5.8 | Component model, type safety, large ecosystem |
 | **Bundler** | Vite 7 | Fast HMR, native ESM, Tailwind plugin support |
-| **CSS** | Tailwind CSS v4 | Utility-first, dark theme, fast iteration |
+| **CSS** | Tailwind CSS v4 | Utility-first, dark theme with brand design tokens (`@theme`), fast iteration |
+| **Brand font** | JetBrains Mono (`@fontsource/jetbrains-mono`) | Used for logo/branding only; system font for content |
 | **State** | Zustand 5 | Minimal boilerplate, persists to localStorage, no context providers |
 | **Data fetching** | TanStack React Query 5 | Cache management, automatic invalidation, loading/error states |
 | **Routing** | react-router-dom 7 | Standard SPA routing, 3 routes |
@@ -190,7 +191,21 @@ Spotify (port 17483) and SoundCloud (port 17484) use distinct localhost ports fo
 | Cover images | Done | Renders from Supabase `cover_url`, HSL color fallback when null |
 | Pull-to-refresh | Done | Refetch data from Supabase |
 
-### 4.8 Additional Features (Beyond Spec)
+### 4.8 SetCrate Brand Alignment (Beyond Spec - Complete)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Brand design tokens | Done | Tailwind v4 `@theme` block with purple accent scale (50-900), blue-tinted dark surface layers, semantic text/border tokens |
+| JetBrains Mono logo font | Done | `@fontsource/jetbrains-mono` installed, scoped to `font-brand` utility for sidebar logo only |
+| Purple accent system | Done | All interactive elements (buttons, focus rings, active tabs, progress bars, filter pills) use `brand-*` purple instead of default blue |
+| Dark surface hierarchy | Done | Four-layer surface system: `bg-primary` (#0F0F14), `bg-secondary` (#16161E), `bg-elevated` (#1C1C28), `bg-surface` (#22222F) |
+| Text token system | Done | `text-primary` (#FAFAFA), `text-secondary` (#A1A1AA), `text-muted` (#52525B) replace hardcoded neutral grays |
+| WaveSurfer brand colors | Done | Waveform progress → `#8B5CF6`, cursor → `#A78BFA` |
+| TipTap brand colors | Done | Caret, checkboxes, blockquote border → brand purple |
+| App rename | Done | Title changed to "SetCrate", sidebar branding updated |
+| Consistent border radius | Done | Containers/modals/inputs upgraded from `rounded-md` to `rounded-lg` |
+
+### 4.9 Additional Features (Beyond Spec)
 
 | Feature | Status | Description |
 |---------|--------|-------------|

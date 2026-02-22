@@ -10,15 +10,17 @@ interface ProjectCardProps {
   index: number;
   isFocused: boolean;
   onClick: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
-export function ProjectCard({ project, index, isFocused, onClick }: ProjectCardProps) {
+export function ProjectCard({ project, index, isFocused, onClick, onContextMenu }: ProjectCardProps) {
   const relativeTime = project.last_worked_on ? getRelativeTime(project.last_worked_on) : '';
 
   return (
     <div
       id={`project-card-${index}`}
       onClick={onClick}
+      onContextMenu={onContextMenu}
       className={`group relative cursor-pointer rounded-lg border bg-bg-elevated p-4 transition-all hover:border-text-muted hover:bg-bg-surface ${
         isFocused ? 'border-brand-500 ring-1 ring-brand-500' : 'border-border-default'
       }`}

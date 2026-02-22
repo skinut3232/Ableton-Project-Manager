@@ -75,24 +75,25 @@ export interface TableColumnDef {
   defaultVisible: boolean;
   sortable: boolean;
   width: string;
+  center?: boolean;
 }
 
 export const TABLE_COLUMNS: TableColumnDef[] = [
-  { key: 'name', label: 'Name', defaultVisible: true, sortable: true, width: 'minmax(200px, 2fr)' },
-  { key: 'status', label: 'Status', defaultVisible: true, sortable: true, width: '100px' },
-  { key: 'rating', label: 'Rating', defaultVisible: true, sortable: true, width: '110px' },
-  { key: 'bpm', label: 'BPM', defaultVisible: true, sortable: true, width: '70px' },
-  { key: 'musical_key', label: 'Key', defaultVisible: true, sortable: true, width: '80px' },
-  { key: 'genre_label', label: 'Genre', defaultVisible: true, sortable: true, width: '120px' },
-  { key: 'tags', label: 'Tags', defaultVisible: true, sortable: false, width: 'minmax(100px, 1fr)' },
-  { key: 'last_worked_on', label: 'Last Worked', defaultVisible: true, sortable: true, width: '120px' },
-  { key: 'progress', label: '% Done', defaultVisible: true, sortable: true, width: '120px' },
-  { key: 'in_rotation', label: 'In Rotation', defaultVisible: false, sortable: true, width: '90px' },
-  { key: 'notes', label: 'Notes', defaultVisible: false, sortable: false, width: 'minmax(100px, 1fr)' },
-  { key: 'created_at', label: 'Created', defaultVisible: false, sortable: true, width: '120px' },
-  { key: 'updated_at', label: 'Updated', defaultVisible: false, sortable: true, width: '120px' },
-  { key: 'archived', label: 'Archived', defaultVisible: false, sortable: false, width: '80px' },
-  { key: 'project_path', label: 'Path', defaultVisible: false, sortable: false, width: 'minmax(150px, 1fr)' },
+  { key: 'name', label: 'Name', defaultVisible: true, sortable: true, width: '28%' },
+  { key: 'status', label: 'Status', defaultVisible: true, sortable: true, width: '90px', center: true },
+  { key: 'rating', label: 'Rating', defaultVisible: true, sortable: true, width: '100px', center: true },
+  { key: 'bpm', label: 'BPM', defaultVisible: true, sortable: true, width: '65px', center: true },
+  { key: 'musical_key', label: 'Key', defaultVisible: true, sortable: true, width: '65px', center: true },
+  { key: 'genre_label', label: 'Genre', defaultVisible: true, sortable: true, width: '110px', center: true },
+  { key: 'tags', label: 'Tags', defaultVisible: true, sortable: false, width: '15%' },
+  { key: 'last_worked_on', label: 'Last Worked', defaultVisible: true, sortable: true, width: '105px', center: true },
+  { key: 'progress', label: '% Done', defaultVisible: true, sortable: true, width: '110px', center: true },
+  { key: 'in_rotation', label: 'In Rotation', defaultVisible: false, sortable: true, width: '90px', center: true },
+  { key: 'notes', label: 'Notes', defaultVisible: false, sortable: false, width: '15%' },
+  { key: 'created_at', label: 'Created', defaultVisible: false, sortable: true, width: '105px', center: true },
+  { key: 'updated_at', label: 'Updated', defaultVisible: false, sortable: true, width: '105px', center: true },
+  { key: 'archived', label: 'Archived', defaultVisible: false, sortable: false, width: '80px', center: true },
+  { key: 'project_path', label: 'Path', defaultVisible: false, sortable: false, width: '20%' },
 ];
 
 export const DEFAULT_VISIBLE_COLUMNS: TableColumnKey[] = TABLE_COLUMNS
