@@ -51,7 +51,7 @@ export function MarkerList({ markers, onSeek, onSelect }: MarkerListProps) {
           No markers yet. Press M to add one at the current playhead.
         </p>
       ) : (
-        <div className="max-h-48 overflow-y-auto space-y-1">
+        <div className="max-h-80 overflow-y-auto space-y-1">
           {filtered.map((marker) => (
             <button
               key={marker.id}
@@ -59,16 +59,16 @@ export function MarkerList({ markers, onSeek, onSelect }: MarkerListProps) {
                 onSeek(marker.timestamp_seconds);
                 onSelect(marker, e.currentTarget.getBoundingClientRect());
               }}
-              className="w-full flex items-center gap-2 rounded px-2 py-1.5 text-left hover:bg-bg-surface/50 transition-colors group"
+              className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-bg-surface/50 transition-colors group"
             >
               <span
-                className="h-2 w-2 rounded-full shrink-0"
+                className="h-3 w-3 rounded-full shrink-0"
                 style={{ backgroundColor: getColor(marker.type) }}
               />
-              <span className="text-[10px] text-text-muted font-mono w-10 shrink-0">
+              <span className="text-xs text-text-muted font-mono w-12 shrink-0">
                 {formatTime(marker.timestamp_seconds)}
               </span>
-              <span className="text-xs text-text-secondary truncate flex-1">
+              <span className="text-sm text-text-primary flex-1">
                 {marker.text || `(${MARKER_TYPES.find((mt) => mt.value === marker.type)?.label})`}
               </span>
             </button>
