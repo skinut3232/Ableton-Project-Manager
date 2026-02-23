@@ -90,7 +90,7 @@ export function ProjectDetailView() {
             updateProject.mutate({ id: project.id, [field]: value });
           }} />
         </div>
-        <div className="w-56 shrink-0">
+        <div className="w-72 shrink-0">
           <CurrentSetSection project={project} sets={sets} />
         </div>
       </div>

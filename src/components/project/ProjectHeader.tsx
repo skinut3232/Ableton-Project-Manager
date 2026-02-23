@@ -1,5 +1,4 @@
 import { RatingStars } from '../ui/RatingStars';
-import { Button } from '../ui/Button';
 import { CoverImage } from '../ui/CoverImage';
 import { CoverLightbox } from '../cover/CoverLightbox';
 import { ChangeCoverModal } from '../cover/ChangeCoverModal';
@@ -40,15 +39,6 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
       onUpdate('name', trimmed);
     } else {
       setNameValue(project.name);
-    }
-  };
-
-  const handleOpenAbleton = async () => {
-    if (!project.current_set_path) return;
-    try {
-      await tauriInvoke('open_in_ableton', { setPath: project.current_set_path });
-    } catch (err) {
-      alert(String(err));
     }
   };
 
@@ -122,9 +112,6 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
               {project.name}
             </h1>
           )}
-          <Button variant="primary" size="sm" onClick={handleOpenAbleton} disabled={!project.current_set_path}>
-            Open in Ableton
-          </Button>
         </div>
 
         <div className="flex items-center gap-3 mb-3">

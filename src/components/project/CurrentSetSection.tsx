@@ -1,6 +1,5 @@
 import { tauriInvoke } from '../../hooks/useTauriInvoke';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button } from '../ui/Button';
 import type { Project, AbletonSet } from '../../types';
 
 interface CurrentSetSectionProps {
@@ -27,12 +26,24 @@ export function CurrentSetSection({ project, sets }: CurrentSetSectionProps) {
   const currentFileName = project.current_set_path?.split(/[/\\]/).pop() || 'None';
 
   return (
-    <div className="rounded-lg border border-border-default bg-bg-elevated/50 p-4">
-      <h3 className="text-sm font-medium text-text-secondary mb-3">Ableton Sets</h3>
+    <div className="rounded-lg border border-border-default bg-bg-elevated/50 p-5">
+      {/* Open in Ableton — hero action */}
+      {project.current_set_path && (
+        <button
+          onClick={() => handleOpenAbleton(project.current_set_path!)}
+          className="w-full flex items-center justify-center gap-3 rounded-lg bg-brand-600 hover:bg-brand-500 active:bg-brand-700 text-white font-semibold py-3.5 px-5 text-base transition-colors shadow-lg shadow-brand-600/25 mb-5"
+        >
+          {/* Ableton-style triangle play icon */}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 shrink-0">
+            <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+          </svg>
+          Open in Ableton
+        </button>
+      )}
 
-      {/* Current set */}
+      {/* Current set info */}
       <div className="mb-3">
-        <p className="text-xs text-text-muted mb-1">Current Set</p>
+        <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Current Set</h3>
         <p className="text-sm text-text-primary truncate" title={project.current_set_path || ''}>
           {currentFileName}
         </p>
@@ -44,7 +55,7 @@ export function CurrentSetSection({ project, sets }: CurrentSetSectionProps) {
           <select
             value={project.current_set_path || ''}
             onChange={(e) => handleSetChange(e.target.value)}
-            className="w-full rounded-lg border border-border-default bg-bg-elevated px-2 py-1.5 text-xs text-text-primary focus:border-brand-500 focus:outline-none"
+            className="w-full rounded-lg border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary focus:border-brand-500 focus:outline-none"
           >
             {sets.map((s) => (
               <option key={s.id} value={s.set_path}>
@@ -55,19 +66,7 @@ export function CurrentSetSection({ project, sets }: CurrentSetSectionProps) {
         </div>
       )}
 
-      {/* Open button */}
-      {project.current_set_path && (
-        <Button
-          variant="primary"
-          size="sm"
-          className="w-full"
-          onClick={() => handleOpenAbleton(project.current_set_path!)}
-        >
-          Open in Ableton
-        </Button>
-      )}
-
-      <p className="text-[10px] text-text-muted mt-2">{sets.length} set(s) found</p>
+      <p className="text-[10px] text-text-muted">{sets.length} set(s) found</p>
     </div>
   );
 }
