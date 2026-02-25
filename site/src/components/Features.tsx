@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import Container from "./ui/Container";
 import SectionHeading from "./ui/SectionHeading";
@@ -30,7 +31,19 @@ export default function Features() {
                 }`}
               >
                 <div className="w-full lg:w-1/2">
-                  <ScreenshotPlaceholder label={feature.screenshotLabel} />
+                  {feature.screenshot ? (
+                    <div className="overflow-hidden rounded-xl border border-border shadow-[0_0_30px_var(--color-accent-glow)]">
+                      <Image
+                        src={feature.screenshot}
+                        alt={feature.screenshotLabel}
+                        width={800}
+                        height={450}
+                        className="h-auto w-full"
+                      />
+                    </div>
+                  ) : (
+                    <ScreenshotPlaceholder label={feature.screenshotLabel} />
+                  )}
                 </div>
                 <div className="w-full lg:w-1/2">
                   <h3 className="text-2xl font-bold text-heading sm:text-3xl">

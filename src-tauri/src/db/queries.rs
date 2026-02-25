@@ -180,6 +180,21 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
         }
     }
 
+    // Genre filter
+    if let Some(ref genres) = filters.genres {
+        if !genres.is_empty() {
+            let placeholders: Vec<String> = genres.iter().map(|_| {
+                let p = format!("?{}", param_idx);
+                param_idx += 1;
+                p
+            }).collect();
+            conditions.push(format!("p.genre_label IN ({})", placeholders.join(",")));
+            for g in genres {
+                param_values.push(Box::new(g.clone()));
+            }
+        }
+    }
+
     // FTS5 search
     if let Some(ref query) = filters.search_query {
         if !query.trim().is_empty() {
@@ -419,6 +434,19 @@ pub fn get_all_tags(conn: &Connection) -> Result<Vec<Tag>, String> {
         .filter_map(|r| r.ok())
         .collect();
     Ok(tags)
+}
+
+/// Returns all distinct non-empty genre labels across projects, sorted alphabetically.
+pub fn get_all_genres(conn: &Connection) -> Result<Vec<String>, String> {
+    let mut stmt = conn.prepare(
+        "SELECT DISTINCT genre_label FROM projects WHERE genre_label != '' ORDER BY genre_label"
+    ).map_err(|e| e.to_string())?;
+    let genres = stmt
+        .query_map([], |row| row.get::<_, String>(0))
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(genres)
 }
 
 pub fn create_tag(conn: &Connection, name: &str) -> Result<Tag, String> {

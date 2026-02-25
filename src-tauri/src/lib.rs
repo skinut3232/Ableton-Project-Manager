@@ -60,6 +60,7 @@ pub fn run() {
             commands::projects::get_projects,
             commands::projects::get_project_detail,
             commands::projects::update_project,
+            commands::projects::get_all_genres,
             commands::tags::get_all_tags,
             commands::tags::create_tag,
             commands::tags::add_tag_to_project,

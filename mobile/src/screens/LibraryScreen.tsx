@@ -138,6 +138,7 @@ export function LibraryScreen() {
         />
       ) : viewMode === 'grid' ? (
         <FlatList
+          key="grid"
           data={projects}
           renderItem={renderGridItem}
           keyExtractor={(item) => item.id.toString()}
@@ -153,9 +154,11 @@ export function LibraryScreen() {
         />
       ) : (
         <FlatList
+          key="list"
           data={projects}
           renderItem={renderListItem}
           keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
@@ -228,5 +231,8 @@ const styles = StyleSheet.create({
   },
   gridContent: {
     padding: spacing.sm,
+  },
+  listContent: {
+    paddingBottom: spacing.lg,
   },
 });

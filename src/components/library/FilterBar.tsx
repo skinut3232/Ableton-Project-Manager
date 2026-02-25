@@ -13,6 +13,8 @@ export function FilterBar() {
   const setStatusFilters = useLibraryStore((s) => s.setStatusFilters);
   const tagFilters = useLibraryStore((s) => s.tagFilters);
   const setTagFilters = useLibraryStore((s) => s.setTagFilters);
+  const genreFilters = useLibraryStore((s) => s.genreFilters);
+  const setGenreFilters = useLibraryStore((s) => s.setGenreFilters);
   const showArchived = useLibraryStore((s) => s.showArchived);
   const setShowArchived = useLibraryStore((s) => s.setShowArchived);
   const resetFilters = useLibraryStore((s) => s.resetFilters);
@@ -21,12 +23,18 @@ export function FilterBar() {
     searchQuery.trim() !== '' ||
     statusFilters.length > 0 ||
     tagFilters.length > 0 ||
+    genreFilters.length > 0 ||
     smartFilters.some((f) => f.active) ||
     showArchived;
 
   const { data: allTags } = useQuery({
     queryKey: ['tags'],
     queryFn: () => tauriInvoke<Tag[]>('get_all_tags'),
+  });
+
+  const { data: allGenres } = useQuery({
+    queryKey: ['genres'],
+    queryFn: () => tauriInvoke<string[]>('get_all_genres'),
   });
 
   return (
@@ -63,6 +71,16 @@ export function FilterBar() {
           options={allTags.map((t) => ({ value: String(t.id), label: t.name }))}
           selected={tagFilters.map(String)}
           onChange={(vals) => setTagFilters(vals.map(Number))}
+        />
+      )}
+
+      {/* Genre filter dropdown */}
+      {allGenres && allGenres.length > 0 && (
+        <FilterDropdown
+          label="Genre"
+          options={allGenres.map((g) => ({ value: g, label: g }))}
+          selected={genreFilters}
+          onChange={setGenreFilters}
         />
       )}
 

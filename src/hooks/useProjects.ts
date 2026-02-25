@@ -10,6 +10,7 @@ export function useProjects() {
   const showArchived = useLibraryStore(s => s.showArchived);
   const statusFilters = useLibraryStore(s => s.statusFilters);
   const tagFilters = useLibraryStore(s => s.tagFilters);
+  const genreFilters = useLibraryStore(s => s.genreFilters);
   const smartFilters = useLibraryStore(s => s.smartFilters);
   const tableSortDir = useLibraryStore(s => s.tableSortDir);
 
@@ -22,6 +23,7 @@ export function useProjects() {
     if (searchQuery.trim()) f.search_query = searchQuery.trim();
     if (statusFilters.length > 0) f.statuses = statusFilters;
     if (tagFilters.length > 0) f.tag_ids = tagFilters;
+    if (genreFilters.length > 0) f.genres = genreFilters;
 
     for (const sf of smartFilters) {
       if (!sf.active) continue;
@@ -34,7 +36,7 @@ export function useProjects() {
       }
     }
     return f;
-  }, [searchQuery, sortBy, tableSortDir, showArchived, statusFilters, tagFilters, smartFilters]);
+  }, [searchQuery, sortBy, tableSortDir, showArchived, statusFilters, tagFilters, genreFilters, smartFilters]);
 
   return useQuery({
     queryKey: ['projects', filters],

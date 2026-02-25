@@ -33,3 +33,9 @@ pub fn update_project(
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     queries::update_project(&conn, id, name, status, rating, bpm, in_rotation, notes, genre_label, musical_key, archived, progress)
 }
+
+#[tauri::command]
+pub fn get_all_genres(state: State<DbState>) -> Result<Vec<String>, String> {
+    let conn = state.0.lock().map_err(|e| e.to_string())?;
+    queries::get_all_genres(&conn)
+}

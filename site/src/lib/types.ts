@@ -8,6 +8,7 @@ export interface Feature {
   headline: string;
   body: string;
   screenshotLabel: string;
+  screenshot?: string;
 }
 
 export interface PricingCard {

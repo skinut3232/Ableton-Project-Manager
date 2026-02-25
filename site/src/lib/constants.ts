@@ -50,21 +50,31 @@ export const FEATURES: Feature[] = [
     headline: "One home for every session.",
     body: "Group your Live Sets into projects. Tag them by genre, mood, stage, client — whatever makes sense to you. Filter and find any session in seconds, not minutes.",
     screenshotLabel: "Project list view with tags and filters",
+    screenshot: "/screenshots/Project_List.jpg",
   },
   {
     headline: "Know exactly where every session stands.",
     body: "SetCrate manages all the .als files in your project, tracks your work sessions, and keeps a full history of your bounces. No more guessing which file is current or when you last worked on a track.",
     screenshotLabel: "Project detail showing sets, sessions, and bounces",
+    screenshot: "/screenshots/Project_Detail.jpg",
+  },
+  {
+    headline: "One click back into the DAW.",
+    body: "Found what you're looking for? Open any project directly in Ableton Live from SetCrate. No digging through folders, no hunting for the right .als file — just click and create.",
+    screenshotLabel: "Open in Ableton button on project detail",
+    screenshot: "/screenshots/Open_in_ableton.jpg",
   },
   {
     headline: "Capture what the DAW can't.",
     body: "Attach notes to any session — what you were going for, what needs work, which plugins to try next. Snap photos of your hardware setup, mic placement, or that napkin sketch of your arrangement. It's all right there when you come back.",
     screenshotLabel: "Session detail view with notes and a photo",
+    screenshot: "/screenshots/Session_Detail.jpg",
   },
   {
     headline: "Your studio in your pocket.",
     body: "Sync your projects, notes, and session logs to your phone. Review your work on the couch, capture ideas on the go, and walk into your next session ready to work.",
     screenshotLabel: "Mobile app showing synced project on phone",
+    screenshot: "/screenshots/mobile_sync.jpg",
   },
 ];
 

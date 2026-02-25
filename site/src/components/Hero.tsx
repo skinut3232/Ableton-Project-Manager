@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Button from "./ui/Button";
 import Container from "./ui/Container";
 import SetCrateLogo from "./SetCrateLogo";
-import ScreenshotPlaceholder from "./ui/ScreenshotPlaceholder";
+import HeroVideo from "./HeroVideo";
 import { HERO } from "@/lib/constants";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 
@@ -59,7 +59,7 @@ export default function Hero({ onCtaClick }: HeroProps) {
           transition={{ duration: 0.7, delay: 0.5 }}
           className="mt-16"
         >
-          <ScreenshotPlaceholder label="Product demo video — autoplaying, looped, muted" />
+          <HeroVideo />
         </motion.div>
 
         <motion.p

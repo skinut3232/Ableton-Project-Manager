@@ -86,6 +86,7 @@ export interface DiscoveredProject {
 export interface ProjectFilters {
   statuses?: string[];
   tag_ids?: number[];
+  genres?: string[];
   in_rotation?: boolean;
   min_rating?: number;
   updated_since_days?: number;

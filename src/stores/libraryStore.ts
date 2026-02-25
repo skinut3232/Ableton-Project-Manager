@@ -15,6 +15,7 @@ interface LibraryState {
   showArchived: boolean;
   statusFilters: string[];
   tagFilters: number[];
+  genreFilters: string[];
   smartFilters: SmartFilter[];
   focusedCardIndex: number;
   viewMode: 'grid' | 'table';
@@ -26,6 +27,7 @@ interface LibraryState {
   setShowArchived: (show: boolean) => void;
   setStatusFilters: (statuses: string[]) => void;
   setTagFilters: (tags: number[]) => void;
+  setGenreFilters: (genres: string[]) => void;
   toggleSmartFilter: (key: string) => void;
   setFocusedCardIndex: (index: number) => void;
   setViewMode: (mode: 'grid' | 'table') => void;
@@ -44,6 +46,7 @@ export const useLibraryStore = create<LibraryState>()(
       showArchived: false,
       statusFilters: [],
       tagFilters: [],
+      genreFilters: [],
       smartFilters: [
         { key: 'in_rotation', label: 'In Rotation', active: false },
         { key: 'top_rated', label: 'Top Rated', active: false },
@@ -61,6 +64,7 @@ export const useLibraryStore = create<LibraryState>()(
       setShowArchived: (show) => set({ showArchived: show }),
       setStatusFilters: (statuses) => set({ statusFilters: statuses }),
       setTagFilters: (tags) => set({ tagFilters: tags }),
+      setGenreFilters: (genres) => set({ genreFilters: genres }),
       toggleSmartFilter: (key) =>
         set((state) => ({
           smartFilters: state.smartFilters.map((f) =>
@@ -89,6 +93,7 @@ export const useLibraryStore = create<LibraryState>()(
           showArchived: false,
           statusFilters: [],
           tagFilters: [],
+          genreFilters: [],
           smartFilters: [
             { key: 'in_rotation', label: 'In Rotation', active: false },
             { key: 'top_rated', label: 'Top Rated', active: false },
@@ -115,6 +120,9 @@ export const useLibraryStore = create<LibraryState>()(
         }
         if (state.tagFilters.length > 0) {
           filters.tag_ids = state.tagFilters;
+        }
+        if (state.genreFilters.length > 0) {
+          filters.genres = state.genreFilters;
         }
 
         // Apply smart filters
@@ -149,6 +157,7 @@ export const useLibraryStore = create<LibraryState>()(
         showArchived: state.showArchived,
         statusFilters: state.statusFilters,
         tagFilters: state.tagFilters,
+        genreFilters: state.genreFilters,
         smartFilters: state.smartFilters,
         viewMode: state.viewMode,
         visibleColumns: state.visibleColumns,

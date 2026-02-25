@@ -195,6 +195,7 @@ pub struct SpotifySearchResult {
 pub struct ProjectFilters {
     pub statuses: Option<Vec<String>>,
     pub tag_ids: Option<Vec<i64>>,
+    pub genres: Option<Vec<String>>,
     pub in_rotation: Option<bool>,
     pub min_rating: Option<i64>,
     pub updated_since_days: Option<i64>,
