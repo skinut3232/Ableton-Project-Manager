@@ -26,11 +26,14 @@ export default function Footer() {
 
         <div className="mt-8 flex flex-col items-center gap-2 text-sm text-muted sm:flex-row sm:justify-between">
           <div className="flex flex-wrap justify-center gap-4">
-            <a href="#" className="transition-colors hover:text-body">
+            <a href="/privacy" className="transition-colors hover:text-body">
               Privacy Policy
             </a>
-            <a href="#" className="transition-colors hover:text-body">
+            <a href="/terms" className="transition-colors hover:text-body">
               Terms of Service
+            </a>
+            <a href="/refund" className="transition-colors hover:text-body">
+              Refund Policy
             </a>
             <a
               href="mailto:support@setcrate.app"
