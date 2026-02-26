@@ -1,5 +1,5 @@
 -- ============================================================================
--- Supabase Schema for Ableton Project Library (Mobile Sync)
+-- Supabase Schema for SetCrate (Mobile Sync)
 -- Translates SQLite schema v8 to Postgres with user_id scoping
 -- ============================================================================
 

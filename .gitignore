@@ -28,6 +28,15 @@ site/node_modules/
 site/.next/
 site/.env.local
 
+# Development artifacts
+videos/
+*.mkv
+*.stackdump
+nul
+
+# Screenshots (use site/public/screenshots/ only)
+app_screenshots/
+
 # Build output
 *.exe
 *.msi

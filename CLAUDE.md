@@ -172,5 +172,5 @@ cargo check
 - NSIS installer: `src-tauri/target/release/bundle/nsis/SetCrate_0.1.0_x64-setup.exe`
 
 ## Spec Documents
-- `Ableton_Project_Library_App_Plan_v1.docx` — Original app plan
-- `Ableton_Project_Library_Build_Spec_v1.docx` — Detailed build specification
+- `docs/Ableton_Project_Library_App_Plan_v1.docx` — Original app plan
+- `docs/Ableton_Project_Library_Build_Spec_v1.docx` — Detailed build specification

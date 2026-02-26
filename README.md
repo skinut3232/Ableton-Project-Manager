@@ -2,67 +2,100 @@
 
 A local-first desktop app for managing your Ableton Live projects — scan, search, tag, play bounces, and get back to making music.
 
-## What It Does
+**Website:** [setcrate.app](https://setcrate.app)
 
-- **Scans your projects folder** and automatically discovers every Ableton project, its `.als` files, and WAV bounces
-- **Search and filter instantly** with full-text search, smart filter presets, and 11 sort options
-- **Play bounces without leaving the app** — global audio player with seeking that persists across views
-- **Open any project in Ableton** with one click
-- **Sync to your phone** — browse your library, edit metadata, and listen to bounces from anywhere
+![Library View](site/public/screenshots/Project_List.jpg)
 
 ## Features
 
-### Library
-Responsive grid or table view with full-text search across project names and tags. Smart filter presets let you quickly find works-in-progress, recent projects, or archived material. Sort by name, date modified, rating, BPM, key, and more.
+- **Automatic project scanning** — point SetCrate at your Ableton projects folder and it discovers every project, its `.als` set files, and WAV bounces automatically. Supports nested genre folders.
+- **Search and filter** — full-text search across project names, tags, genres, and notes. Smart filter presets (In Rotation, Top Rated, Last 7 Days, Near Done) plus status and tag dropdowns. 11 sort options including BPM, key, rating, and last worked on.
+- **Project detail view** — edit status, genre, BPM, key, rating, and notes. Manage tags with autocomplete. Six tabs: Timeline (waveform + markers), Notes, Tasks, References, Assets, and Insights.
+- **Audio playback** — global player bar persists across views with seeking, volume, and loop controls. Waveform visualization with draggable markers on the Timeline tab.
+- **Cover art** — every project gets a cover. Choose from 9 procedurally generated gradient styles, upload your own image, or pick from a mood board. Covers are deterministic — same project always produces the same art.
+- **Work sessions** — built-in timer tracks time spent on each project with note capture. Crash recovery picks up incomplete sessions if the app closes unexpectedly.
+- **Integrations** — link Spotify tracks as references with embedded playback. Upload bounces to SoundCloud. One-click open in Ableton Live.
+- **Mobile companion** — optional cloud sync via Supabase. Browse your library, edit metadata, and play bounces from your phone.
 
-### Project Detail
-Edit metadata like status, genre, BPM, key, rating, and notes. Manage tags with autocomplete. View all `.als` set files and bounces in one place. Add tasks, markers on a waveform timeline, and reference links.
-
-### Audio Playback
-Global audio player bar stays active as you navigate. Seek, loop, and play any WAV bounce. Waveform visualization powered by WaveSurfer.js with draggable markers.
-
-### Cover Art
-Every project gets a cover. Choose from 9 procedurally generated gradient styles, upload your own image, or build a mood board from reference images. Covers are deterministic — same seed always produces the same art.
-
-### Work Sessions
-Built-in session timer tracks time spent on each project. Add notes when you stop. Crash recovery picks up incomplete sessions if the app closes unexpectedly.
-
-### Integrations
-Link Spotify tracks as references with embedded playback. Upload bounces directly to SoundCloud. One-click open in Ableton Live or your bounces folder.
-
-### Cloud Sync & Mobile
-Optional Supabase cloud sync keeps your desktop and mobile libraries in sync. The Android companion app lets you browse projects, edit metadata, and play bounces on the go — with WAV-to-MP3 conversion for efficient streaming.
+![Project Detail](site/public/screenshots/Project_Detail.jpg)
 
 ## Download
 
 ### Windows (Desktop)
+
 **[Download SetCrate v0.1.0 Installer (.exe)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v0.1.0/Ableton.Project.Library_0.1.0_x64-setup.exe)**
 
 > Windows may show a SmartScreen warning since the app isn't code-signed yet. Click **"More info"** then **"Run anyway"** to proceed.
 
 ### Android (Mobile Companion)
+
 **[Download SetCrate Mobile v0.1.0 (.apk)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v0.1.0/ableton-project-library.apk)**
 
 > You'll need to enable "Install from unknown sources" in your Android settings to sideload the APK.
 
 All releases: [github.com/skinut3232/Ableton-Project-Manager/releases](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v0.1.0)
 
+### System Requirements
+
+- **Desktop:** Windows 10 or 11 (macOS and Linux are not currently supported)
+- **Mobile:** Android 8.0+
+
 ## Getting Started
 
-1. **Install** the app using the Windows installer above
-2. **Set your projects folder** — open Settings and point it to your Ableton projects root directory
-3. **Set your Ableton path** — browse to your `Ableton Live` executable so one-click launch works
-4. **Scan** — hit the scan button and your library populates automatically
-5. **(Optional) Cloud sync** — sign up in Settings to sync your library to the mobile companion app
+1. **Install** — run the Windows installer linked above
+2. **Set your projects folder** — open Settings and browse to your Ableton projects root directory (e.g. `D:\Music\Ableton Projects`)
+3. **Set your Ableton path** — browse to your Ableton Live executable so one-click launch works
+4. **Scan** — click the scan button (or press `Ctrl+R`) and your library populates automatically
+5. **Start browsing** — click any project card to open the detail view, or use the search bar to find something specific
+
+### Optional Setup
+
+- **Spotify integration** — requires a [Spotify Developer](https://developer.spotify.com/dashboard) app. Add your Client ID and Secret to a `.env` file before building from source. Enables track search and reference playback (Premium required for full playback).
+- **SoundCloud upload** — requires a [SoundCloud Developer](https://soundcloud.com/you/apps) app. Add credentials to `.env`. Enables direct WAV upload from the Timeline tab.
+- **Cloud sync + mobile** — requires a [Supabase](https://supabase.com) project. Configure the connection in Settings to sync your library to the mobile companion app.
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+F` or `/` | Focus search bar |
+| `Space` | Play / pause audio (when not typing) |
+| `Escape` | Clear search / close modal / navigate home |
+| `Ctrl+R` | Rescan library |
+| `Ctrl+Shift+R` | Open a random project |
+| Arrow keys | Navigate the project grid |
+| `M` | Add marker (on Timeline tab) |
+| `N` / `P` | Next / previous marker |
+
+## Building from Source
+
+### Prerequisites
+
+- [Rust](https://rustup.rs/) (stable, MSVC toolchain)
+- [Node.js](https://nodejs.org/) v20+
+- [VS 2022 Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) with the "Desktop development with C++" workload
+
+### Build
+
+```bash
+# Install frontend dependencies
+npm install
+
+# Development mode (hot-reload frontend + auto-recompile Rust)
+npx tauri dev
+
+# Production build (creates NSIS installer)
+npx tauri build
+```
+
+> **Git Bash users:** the MSVC `link.exe` linker gets shadowed by `/usr/bin/link.exe`. You must prepend the MSVC bin path to `$PATH` before running any Rust/Tauri commands. See [CLAUDE.md](CLAUDE.md) for the exact exports. Alternatively, use a **Developer Command Prompt for VS 2022** which sets these automatically.
 
 ## Tech Stack
 
-Tauri v2 + Rust + React 19 + TypeScript + SQLite (FTS5) + Tailwind CSS v4 + Expo (React Native)
+Tauri v2 + Rust + React 19 + TypeScript + Vite 7 + SQLite (FTS5) + Tailwind CSS v4 + Zustand + TanStack Query + Expo (React Native)
 
-~26,000 lines of code across ~163 files.
-
-Building from source? See the [Developer Guide](DEVELOPER_GUIDE.md).
+~22,000 lines of code across the desktop and mobile apps.
 
 ## License
 
-This project does not currently have a license. All rights reserved.
+This source code is shared for reference and learning purposes. All rights reserved — not licensed for redistribution or commercial use.
