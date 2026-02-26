@@ -1,4 +1,4 @@
-# SetCrate (Ableton Project Library) — CLAUDE.md
+# SetCrate — CLAUDE.md
 
 ## Project Overview
 A Tauri v2 desktop app (Windows) branded as **SetCrate** for managing ~100+ Ableton Live projects. Scans a root folder for project directories (containing `.als` files), displays them in a searchable/filterable library grid, and provides metadata editing, WAV bounce playback, session tracking, and one-click Ableton launching. All data is local (SQLite + filesystem).
@@ -168,8 +168,8 @@ cargo check
 ```
 
 ## Build Artifacts
-- Release binary: `src-tauri/target/release/ableton-project-library.exe`
-- NSIS installer: `src-tauri/target/release/bundle/nsis/Ableton Project Library_0.1.0_x64-setup.exe`
+- Release binary: `src-tauri/target/release/setcrate.exe`
+- NSIS installer: `src-tauri/target/release/bundle/nsis/SetCrate_0.1.0_x64-setup.exe`
 
 ## Spec Documents
 - `Ableton_Project_Library_App_Plan_v1.docx` — Original app plan

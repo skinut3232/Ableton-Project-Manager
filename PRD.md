@@ -1,4 +1,4 @@
-# SetCrate (Ableton Project Library) - Product Requirements Document
+# SetCrate — Product Requirements Document
 
 ---
 
@@ -247,8 +247,8 @@ Spotify (port 17483) and SoundCloud (port 17484) use distinct localhost ports fo
 
 | Platform | Artifact | Install Method |
 |----------|----------|----------------|
-| **Windows Desktop** | `Ableton.Project.Library_0.1.0_x64-setup.exe` (NSIS installer) | Download from [GitHub Releases](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v0.1.0), run installer |
-| **Android Mobile** | `ableton-project-library.apk` (EAS Build, Expo SDK 54) | Download APK from GitHub Releases, sideload (Settings → Install unknown apps) |
+| **Windows Desktop** | `SetCrate_0.1.0_x64-setup.exe` (NSIS installer) | Download from [GitHub Releases](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v0.1.0), run installer |
+| **Android Mobile** | `setcrate.apk` (EAS Build, Expo SDK 54) | Download APK from GitHub Releases, sideload (Settings → Install unknown apps) |
 
 **Build pipeline:**
 - Desktop: `npx tauri build` → NSIS installer in `src-tauri/target/release/bundle/nsis/`
@@ -300,7 +300,7 @@ The Obsidian Integration addendum specifies a one-way export system where the ap
 | **SessionTimer unused prop** | Low | Trivial — `projectName` prop accepted but prefixed with `_` to suppress warning |
 | **Node.js version** | Low | Trivial — v20.11.0 works but Vite 7 recommends v20.19+ |
 | **Spotify callback timeout** | Low | Low — Spotify's TCP listener has no timeout (SoundCloud's was fixed to 2 min); could freeze app if user abandons login |
-| **No README.md** | Low | Low — `DEVELOPER_GUIDE.md` exists but no standard README |
+| **README.md could be richer** | Low | Low — `README.md` exists but could include screenshots and more detailed setup instructions |
 
 ### 6.4 Future / Stretch Goals (From Spec Documents)
 
