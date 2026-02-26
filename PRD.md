@@ -39,6 +39,9 @@
 | **Mobile state** | Zustand 5 + TanStack React Query 5 | Same state management pattern as desktop |
 | **Mobile audio** | expo-av | Background audio playback with seeking |
 | **Mobile auth** | @supabase/supabase-js | Shared Supabase auth with desktop |
+| **Landing site** | Next.js 16 (Turbopack) + Tailwind CSS v4 | Marketing site at setcrate.app |
+| **Landing animations** | Framer Motion 12 | Scroll-triggered animations and transitions |
+| **Landing hosting** | Vercel | Auto-deploy from GitHub, edge CDN, custom domain |
 
 ---
 
@@ -205,7 +208,25 @@ Spotify (port 17483) and SoundCloud (port 17484) use distinct localhost ports fo
 | App rename | Done | Title changed to "SetCrate", sidebar branding updated |
 | Consistent border radius | Done | Containers/modals/inputs upgraded from `rounded-md` to `rounded-lg` |
 
-### 4.9 Additional Features (Beyond Spec)
+### 4.9 Landing Site (Beyond Spec - Complete)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Next.js 16 site | Done | Turbopack-powered landing page at [setcrate.app](https://setcrate.app), hosted on Vercel |
+| Hero section | Done | CDN-hosted launch video, headline, CTA button |
+| Pain section | Done | Problem statement targeting music producers |
+| Features section | Done | Product feature showcase with app screenshots |
+| Comparison section | Done | Before/after or competitive comparison |
+| Pricing section | Done | Desktop license + mobile sync subscription pricing |
+| Roadmap section | Done | Public roadmap and upcoming features |
+| FAQ section | Done | Collapsible accordion with common questions |
+| Email capture | Done | Modal with `/api/subscribe` endpoint for waitlist signups |
+| Brand integration | Done | Purple accent palette, dark theme, JetBrains Mono logo font |
+| Legal pages | Done | `/terms`, `/privacy`, `/refund` — styled with shared LegalNav + Footer |
+| Footer links | Done | Privacy Policy, Terms of Service, Refund Policy, support email |
+| Deployment | Done | Auto-deploys from `skinut3232/setcrate-site` GitHub repo via Vercel |
+
+### 4.10 Additional Features (Beyond Spec)
 
 | Feature | Status | Description |
 |---------|--------|-------------|
@@ -232,6 +253,7 @@ Spotify (port 17483) and SoundCloud (port 17484) use distinct localhost ports fo
 **Build pipeline:**
 - Desktop: `npx tauri build` → NSIS installer in `src-tauri/target/release/bundle/nsis/`
 - Mobile: `eas build --platform android --profile production` → APK built in Expo cloud
+- Landing site: `next build` → auto-deployed to Vercel on push to `skinut3232/setcrate-site` (`master` branch)
 - Releases: `gh release create` with both artifacts attached
 
 **Signing:**
@@ -374,5 +396,8 @@ External API calls (Spotify, SoundCloud) follow the same pattern but also involv
 | Mobile hooks | 10 | 500 |
 | Mobile stores + lib | 7 | 550 |
 | Mobile navigation + providers | 4 | 250 |
-| Config (Tauri, Vite, TS, Expo) | 8 | 150 |
-| **Total** | **~163** | **~26,000** |
+| Landing site components | 16 | 1,200 |
+| Landing site pages + layout | 5 | 400 |
+| Landing site lib + API | 4 | 150 |
+| Config (Tauri, Vite, TS, Expo, Next.js) | 12 | 200 |
+| **Total** | **~188** | **~27,950** |
