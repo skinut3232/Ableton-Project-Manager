@@ -1,4 +1,4 @@
-# Ableton Project Manager — Gotcha Fixes
+# SetCrate — Gotcha Fixes
 
 > A running list of fixes addressing the gotchas identified in DEVELOPER_GUIDE.md.
 > Hand this document to your developer for implementation.

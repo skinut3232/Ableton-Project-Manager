@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Ableton Project Library",
-    "slug": "ableton-project-library",
+    "name": "SetCrate",
+    "slug": "setcrate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.abletonprojectlibrary.mobile"
+      "bundleIdentifier": "com.setcrate.mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +22,7 @@
         "backgroundColor": "#0a0a0a"
       },
       "edgeToEdgeEnabled": false,
-      "package": "com.abletonprojectlibrary.mobile"
+      "package": "com.setcrate.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"

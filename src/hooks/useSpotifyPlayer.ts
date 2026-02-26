@@ -19,7 +19,7 @@ export function useSpotifyPlayer(isLoggedIn: boolean, isPremium: boolean) {
       store.getState().setConnecting(true);
 
       const player = new window.Spotify!.Player({
-        name: 'Ableton Project Library',
+        name: 'SetCrate',
         getOAuthToken: async (cb) => {
           try {
             const token = await tauriInvoke<string>('spotify_get_access_token', {});

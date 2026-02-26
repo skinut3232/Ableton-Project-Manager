@@ -1,12 +1,12 @@
 [package]
-name = "ableton-project-library"
+name = "setcrate"
 version = "0.1.0"
-description = "Ableton Project Library Manager"
+description = "SetCrate — Ableton Live project manager"
 authors = ["Rob"]
 edition = "2021"
 
 [lib]
-name = "ableton_project_library_lib"
+name = "setcrate_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

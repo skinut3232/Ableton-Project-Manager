@@ -80,7 +80,7 @@ export function LibraryView() {
   if (!rootFolder) {
     return (
       <EmptyState
-        title="Welcome to Ableton Project Library"
+        title="Welcome to SetCrate"
         description="Set your root project folder in Settings to get started."
         action={<Button onClick={() => navigate('/settings')}>Go to Settings</Button>}
       />

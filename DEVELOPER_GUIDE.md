@@ -1,4 +1,4 @@
-# Ableton Project Library - Developer Guide
+# SetCrate — Developer Guide
 
 > A Tauri v2 desktop app (Windows) for managing ~100+ Ableton Live projects. Scans a root folder for project directories, displays them in a searchable/filterable library, and provides metadata editing, WAV bounce playback, session tracking, waveform timeline with markers, cover art generation, Spotify integration, SoundCloud uploads, and one-click Ableton launching. All data is local (SQLite + filesystem).
 
@@ -536,9 +536,9 @@ Remember to set MSVC environment variables in Git Bash before any `cargo` or `ta
 
 | Artifact | Path |
 |----------|------|
-| Debug binary | `src-tauri/target/debug/ableton-project-library.exe` |
-| Release binary | `src-tauri/target/release/ableton-project-library.exe` |
-| NSIS installer | `src-tauri/target/release/bundle/nsis/Ableton Project Library_0.1.0_x64-setup.exe` |
+| Debug binary | `src-tauri/target/debug/setcrate.exe` |
+| Release binary | `src-tauri/target/release/setcrate.exe` |
+| NSIS installer | `src-tauri/target/release/bundle/nsis/SetCrate_0.1.0_x64-setup.exe` |
 | SQLite database | `%APPDATA%/AbletonProjectLibrary/library.db` |
 | Uploaded assets | `%APPDATA%/AbletonProjectLibrary/assets/` |
 | Cover art | `%APPDATA%/AbletonProjectLibrary/covers/` |

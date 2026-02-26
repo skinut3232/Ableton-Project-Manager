@@ -1,4 +1,4 @@
-# Ableton Project Library
+# SetCrate
 
 A local-first desktop app for managing your Ableton Live projects — scan, search, tag, play bounces, and get back to making music.
 
@@ -36,12 +36,12 @@ Optional Supabase cloud sync keeps your desktop and mobile libraries in sync. Th
 ## Download
 
 ### Windows (Desktop)
-**[Download Ableton Project Library v0.1.0 Installer (.exe)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v0.1.0/Ableton.Project.Library_0.1.0_x64-setup.exe)**
+**[Download SetCrate v0.1.0 Installer (.exe)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v0.1.0/Ableton.Project.Library_0.1.0_x64-setup.exe)**
 
 > Windows may show a SmartScreen warning since the app isn't code-signed yet. Click **"More info"** then **"Run anyway"** to proceed.
 
 ### Android (Mobile Companion)
-**[Download Ableton Project Library v0.1.0 (.apk)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v0.1.0/ableton-project-library.apk)**
+**[Download SetCrate Mobile v0.1.0 (.apk)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v0.1.0/ableton-project-library.apk)**
 
 > You'll need to enable "Install from unknown sources" in your Android settings to sideload the APK.
 

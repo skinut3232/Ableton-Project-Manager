@@ -631,7 +631,7 @@ fn upload_bounce_mp3s_inline(
 
     log::info!("Found {} bounces needing MP3 upload", bounces.len());
 
-    let temp_dir = std::env::temp_dir().join("ableton-project-library-mp3");
+    let temp_dir = std::env::temp_dir().join("setcrate-mp3");
     std::fs::create_dir_all(&temp_dir).ok();
 
     for (local_id, wav_path, bounce_remote_id, project_remote_id) in &bounces {

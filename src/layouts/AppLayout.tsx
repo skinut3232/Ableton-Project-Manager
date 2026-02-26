@@ -83,7 +83,7 @@ export function AppLayout() {
       <nav className="w-48 shrink-0 border-r border-border-default bg-bg-secondary flex flex-col">
         <div className="p-4 border-b border-border-default">
           <h1 className="text-sm font-bold tracking-wide text-text-primary font-brand">SetCrate</h1>
-          <p className="text-[10px] text-text-muted mt-0.5">Ableton Project Library</p>
+          <p className="text-[10px] text-text-muted mt-0.5">Project Library</p>
         </div>
         <div className="flex flex-col gap-1 p-2 flex-1">
           <NavLink

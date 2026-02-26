@@ -44,7 +44,7 @@ export function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.inner}>
-        <Text style={styles.title}>Ableton Project Library</Text>
+        <Text style={styles.title}>SetCrate</Text>
         <Text style={styles.subtitle}>
           {isSignUp ? 'Create an account' : 'Sign in to your account'}
         </Text>
