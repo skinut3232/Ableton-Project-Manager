@@ -67,29 +67,6 @@ All releases: [github.com/skinut3232/Ableton-Project-Manager/releases](https://g
 | `M` | Add marker (on Timeline tab) |
 | `N` / `P` | Next / previous marker |
 
-## Building from Source
-
-### Prerequisites
-
-- [Rust](https://rustup.rs/) (stable, MSVC toolchain)
-- [Node.js](https://nodejs.org/) v20+
-- [VS 2022 Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) with the "Desktop development with C++" workload
-
-### Build
-
-```bash
-# Install frontend dependencies
-npm install
-
-# Development mode (hot-reload frontend + auto-recompile Rust)
-npx tauri dev
-
-# Production build (creates NSIS installer)
-npx tauri build
-```
-
-> **Git Bash users:** the MSVC `link.exe` linker gets shadowed by `/usr/bin/link.exe`. You must prepend the MSVC bin path to `$PATH` before running any Rust/Tauri commands. See [CLAUDE.md](CLAUDE.md) for the exact exports. Alternatively, use a **Developer Command Prompt for VS 2022** which sets these automatically.
-
 ## Tech Stack
 
 Tauri v2 + Rust + React 19 + TypeScript + Vite 7 + SQLite (FTS5) + Tailwind CSS v4 + Zustand + TanStack Query + Expo (React Native)

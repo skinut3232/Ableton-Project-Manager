@@ -16,6 +16,7 @@ Desktop.ini
 .vscode/
 .idea/
 .claude/
+CLAUDE.md
 
 # Word temp files
 ~$*.docx
