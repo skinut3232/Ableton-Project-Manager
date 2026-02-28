@@ -12,7 +12,7 @@
 
 **Target user:** Solo music producers managing ~50-500 Ableton Live projects on Windows.
 
-**Current release:** v0.1.0 — [GitHub Release](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v0.1.0)
+**Current release:** v1.0.0 — [GitHub Release](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v1.0.0)
 
 ---
 
@@ -291,7 +291,7 @@ The LemonSqueezy checkout URL and API keys are injected via `option_env!()` at c
 
 | Platform | Artifact | Install Method |
 |----------|----------|----------------|
-| **Windows Desktop** | `SetCrate_0.1.0_x64-setup.exe` (NSIS installer) | Download from [GitHub Releases](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v0.1.0), run installer |
+| **Windows Desktop** | `SetCrate_1.0.0_x64-setup.exe` (NSIS installer) | Download from [GitHub Releases](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v1.0.0), run installer |
 | **Android Mobile** | `setcrate.apk` (EAS Build, Expo SDK 54) | Download APK from GitHub Releases, sideload (Settings → Install unknown apps) |
 
 **Build pipeline:**

@@ -215,7 +215,7 @@ export const FINAL_CTA = {
 
 // ── Download ────────────────────────────────────────────────────
 export const DOWNLOAD_URL =
-  "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_0.1.0_x64-setup.exe";
+  "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_1.0.0_x64-setup.exe";
 
 // ── Email Modal ─────────────────────────────────────────────────
 export const EMAIL_MODAL = {

@@ -23,17 +23,17 @@ A local-first desktop app for managing your Ableton Live projects — scan, sear
 
 ### Windows (Desktop)
 
-**[Download SetCrate v0.1.0 Installer (.exe)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v0.1.0/Ableton.Project.Library_0.1.0_x64-setup.exe)**
+**[Download SetCrate v1.0.0 Installer (.exe)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v1.0.0/SetCrate_1.0.0_x64-setup.exe)**
 
 > Windows may show a SmartScreen warning since the app isn't code-signed yet. Click **"More info"** then **"Run anyway"** to proceed.
 
 ### Android (Mobile Companion)
 
-**[Download SetCrate Mobile v0.1.0 (.apk)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v0.1.0/ableton-project-library.apk)**
+**[Download SetCrate Mobile v1.0.0 (.apk)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v1.0.0/ableton-project-library.apk)**
 
 > You'll need to enable "Install from unknown sources" in your Android settings to sideload the APK.
 
-All releases: [github.com/skinut3232/Ableton-Project-Manager/releases](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v0.1.0)
+All releases: [github.com/skinut3232/Ableton-Project-Manager/releases](https://github.com/skinut3232/Ableton-Project-Manager/releases)
 
 ### System Requirements
 
