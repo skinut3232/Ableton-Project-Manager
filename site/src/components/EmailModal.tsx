@@ -63,11 +63,6 @@ export default function EmailModal({ open, onClose }: EmailModalProps) {
       setStatus("success");
       // Trigger the installer download
       window.location.href = DOWNLOAD_URL;
-      setTimeout(() => {
-        handleClose();
-        setStatus("idle");
-        setEmail("");
-      }, 3000);
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong");
@@ -115,6 +110,29 @@ export default function EmailModal({ open, onClose }: EmailModalProps) {
                 <p className="mt-4 text-lg font-semibold text-heading">
                   {EMAIL_MODAL.successMessage}
                 </p>
+
+                {/* Windows SmartScreen notice */}
+                <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-left">
+                  <p className="text-sm font-medium text-amber-400">
+                    Windows may show a security warning
+                  </p>
+                  <p className="mt-1 text-xs text-muted leading-relaxed">
+                    SetCrate is new and not yet code-signed, so Windows SmartScreen
+                    may flag it. Click <strong className="text-body">&quot;More info&quot;</strong> then{" "}
+                    <strong className="text-body">&quot;Run anyway&quot;</strong> to install.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    handleClose();
+                    setStatus("idle");
+                    setEmail("");
+                  }}
+                  className="mt-4 text-sm text-muted transition-colors hover:text-body cursor-pointer"
+                >
+                  Got it
+                </button>
               </div>
             ) : (
               <>
