@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "./ui/Button";
-import { EMAIL_MODAL } from "@/lib/constants";
+import { EMAIL_MODAL, DOWNLOAD_URL } from "@/lib/constants";
 
 interface EmailModalProps {
   open: boolean;
@@ -61,11 +61,13 @@ export default function EmailModal({ open, onClose }: EmailModalProps) {
       }
 
       setStatus("success");
+      // Trigger the installer download
+      window.location.href = DOWNLOAD_URL;
       setTimeout(() => {
         handleClose();
         setStatus("idle");
         setEmail("");
-      }, 2000);
+      }, 3000);
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong");

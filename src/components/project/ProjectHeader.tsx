@@ -3,7 +3,6 @@ import { CoverImage } from '../ui/CoverImage';
 import { CoverLightbox } from '../cover/CoverLightbox';
 import { ChangeCoverModal } from '../cover/ChangeCoverModal';
 import { PROJECT_STATUSES, MUSICAL_KEYS } from '../../lib/constants';
-import { tauriInvoke } from '../../hooks/useTauriInvoke';
 import { formatTimestamp } from '../../lib/utils';
 import type { Project } from '../../types';
 import { useState, useRef, useEffect } from 'react';

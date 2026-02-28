@@ -213,6 +213,10 @@ export const FINAL_CTA = {
   subText: "Windows \u00b7 Made by a producer, for producers.",
 };
 
+// ── Download ────────────────────────────────────────────────────
+export const DOWNLOAD_URL =
+  "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_0.1.0_x64-setup.exe";
+
 // ── Email Modal ─────────────────────────────────────────────────
 export const EMAIL_MODAL = {
   headline: "Download SetCrate",
