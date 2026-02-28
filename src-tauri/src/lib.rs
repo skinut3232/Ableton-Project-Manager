@@ -44,8 +44,16 @@ pub fn run() {
             app.manage(SupabaseState(Mutex::new(SupabaseClient::new())));
             app.manage(SyncTrigger(Mutex::new(None)));
 
-            // Show window after setup (prevents position flash with window-state plugin)
+            // Set window icon explicitly (bundle.icon only applies to release builds)
             if let Some(window) = app.get_webview_window("main") {
+                let icon_bytes = include_bytes!("../icons/icon.png");
+                if let Ok(img) = image::load_from_memory(icon_bytes) {
+                    let rgba = img.to_rgba8();
+                    let (w, h) = rgba.dimensions();
+                    let icon = tauri::image::Image::new_owned(rgba.into_raw(), w, h);
+                    window.set_icon(icon).ok();
+                }
+                // Show window after setup (prevents position flash with window-state plugin)
                 window.show().ok();
             }
 
