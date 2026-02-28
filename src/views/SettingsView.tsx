@@ -8,6 +8,7 @@ import { useSettings, useUpdateSettings, getSettingValue } from '../hooks/useSet
 import { useRefreshLibrary, useDiscoverProjects, useImportProjects } from '../hooks/useProjects';
 import { useSoundCloudAuthStatus, useSoundCloudLogout } from '../hooks/useSoundCloud';
 import { CloudSyncSection } from '../components/settings/CloudSyncSection';
+import { LicenseSettings } from '../components/license/LicenseSettings';
 import type { DiscoveredProject } from '../types';
 
 export function SettingsView() {
@@ -114,6 +115,14 @@ export function SettingsView() {
       )}
 
       <div className="space-y-6">
+        {/* License */}
+        <div>
+          <h3 className="text-sm font-medium text-text-secondary mb-3">License</h3>
+          <LicenseSettings />
+        </div>
+
+        <div className="border-t border-border-default" />
+
         {/* Root Folder */}
         <div>
           <label className="block text-sm font-medium text-text-secondary mb-1">Root Project Folder</label>

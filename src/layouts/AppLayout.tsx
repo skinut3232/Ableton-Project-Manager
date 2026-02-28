@@ -7,6 +7,7 @@ import { useSpotifyAuthStatus } from '../hooks/useSpotify';
 import { useSpotifyPlayer } from '../hooks/useSpotifyPlayer';
 import { useSpotifyPlayerStore } from '../stores/spotifyPlayerStore';
 import { SyncIndicator } from '../components/ui/SyncIndicator';
+import { TrialBanner } from '../components/license/TrialBanner';
 import { useRestoreSession } from '../hooks/useAuth';
 
 export function AppLayout() {
@@ -120,6 +121,7 @@ export function AppLayout() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        <TrialBanner />
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>

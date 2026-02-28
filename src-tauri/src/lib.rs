@@ -7,6 +7,7 @@ mod spotify;
 mod soundcloud;
 mod mp3;
 mod supabase;
+mod license;
 
 use db::DbState;
 use spotify::{SpotifyState, SpotifyInner};
@@ -128,6 +129,10 @@ pub fn run() {
             commands::auth::supabase_restore_session,
             commands::sync::get_sync_status,
             commands::sync::trigger_sync,
+            commands::license::get_license_status,
+            commands::license::activate_license_key,
+            commands::license::deactivate_license_key,
+            commands::license::get_checkout_url,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

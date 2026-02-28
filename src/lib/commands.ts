@@ -39,6 +39,7 @@ import type {
   SoundCloudUploadResult,
   ProjectAsset,
   IncompleteSession,
+  LicenseInfo,
 } from '../types';
 
 // Each key is the exact command name string passed to invoke().
@@ -410,6 +411,24 @@ export type CommandMap = {
   sc_logout: {
     args: Record<string, never>;
     return: void;
+  };
+
+  // --- License ---
+  get_license_status: {
+    args: Record<string, never>;
+    return: LicenseInfo;
+  };
+  activate_license_key: {
+    args: { key: string };
+    return: LicenseInfo;
+  };
+  deactivate_license_key: {
+    args: Record<string, never>;
+    return: LicenseInfo;
+  };
+  get_checkout_url: {
+    args: Record<string, never>;
+    return: string;
   };
 };
 

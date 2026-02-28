@@ -231,3 +231,14 @@ export interface SyncStatus {
   last_push_at: string | null;
   last_pull_at: string | null;
 }
+
+// ── License types ──
+
+export type LicenseStatus = 'TrialActive' | 'TrialExpired' | 'Activated' | 'Expired' | 'OfflineGrace';
+
+export interface LicenseInfo {
+  status: LicenseStatus;
+  days_remaining: number | null;
+  checkout_url: string;
+  license_key_masked: string | null;
+}

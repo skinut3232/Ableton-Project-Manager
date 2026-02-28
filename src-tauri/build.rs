@@ -3,7 +3,7 @@ fn main() {
     println!("cargo:rerun-if-changed=../.env");
 
     // Forward .env values to rustc so option_env!() can read them
-    for key in &["SPOTIFY_CLIENT_ID", "SPOTIFY_CLIENT_SECRET", "SOUNDCLOUD_CLIENT_ID", "SOUNDCLOUD_CLIENT_SECRET", "SUPABASE_URL", "SUPABASE_ANON_KEY"] {
+    for key in &["SPOTIFY_CLIENT_ID", "SPOTIFY_CLIENT_SECRET", "SOUNDCLOUD_CLIENT_ID", "SOUNDCLOUD_CLIENT_SECRET", "SUPABASE_URL", "SUPABASE_ANON_KEY", "LEMONSQUEEZY_URL"] {
         if let Ok(val) = std::env::var(key) {
             println!("cargo:rustc-env={}={}", key, val);
         }
