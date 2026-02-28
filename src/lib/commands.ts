@@ -140,6 +140,10 @@ export type CommandMap = {
   };
 
   // --- Scanner ---
+  scan_library: {
+    args: Record<string, never>;
+    return: ScanSummary;
+  };
   refresh_library: {
     args: Record<string, never>;
     return: ScanSummary;

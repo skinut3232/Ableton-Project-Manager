@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   title: "SetCrate — Project Management for Ableton Live",
   description:
     "Organize sessions, track versions, capture ideas — and never lose work again. Built by a producer, for producers.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "48x48" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "SetCrate — Project Management for Ableton Live",
     description:

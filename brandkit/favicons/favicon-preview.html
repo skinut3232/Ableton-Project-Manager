@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SetCrate Favicon Options</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #0A0A0A;
+    color: #e0e0e0;
+    font-family: 'DM Sans', sans-serif;
+    padding: 48px 32px;
+    min-height: 100vh;
+  }
+  
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  
+  .subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 48px;
+  }
+  
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+  }
+  
+  .option-card {
+    background: #141414;
+    border: 1px solid #222;
+    border-radius: 16px;
+    padding: 32px;
+    transition: border-color 0.2s;
+  }
+  
+  .option-card:hover {
+    border-color: #8B5CF6;
+  }
+  
+  .option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  
+  .option-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+  }
+  
+  .option-number {
+    font-size: 12px;
+    color: #8B5CF6;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .option-desc {
+    font-size: 13px;
+    color: #777;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+  
+  .sizes-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    margin-bottom: 16px;
+  }
+  
+  .size-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .size-label {
+    font-size: 10px;
+    color: #555;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  
+  .size-item img {
+    display: block;
+  }
+  
+  .browser-mock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 8px 16px;
+    margin-top: 20px;
+  }
+  
+  .browser-mock img {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .browser-mock .tab-text {
+    font-size: 12px;
+    color: #999;
+  }
+  
+  .browser-mock .tab-url {
+    font-size: 11px;
+    color: #555;
+    margin-left: auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>SetCrate — Favicon Options</h1>
+<p class="subtitle">Previewed at 16px (tab), 32px (bookmark), 64px, and 180px (Apple Touch)</p>
+
+<div class="options-grid">
+
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-name">Crate S</span>
+      <span class="option-number">Option 1</span>
+    </div>
+    <p class="option-desc">Bold S letterform built from rectangular blocks with a subtle crate grid in the background. Reads clearly at all sizes.</p>
+    <div class="sizes-row">
+      <div class="size-item">
+        <img src="favicon-option-1-crate.svg" width="16" height="16">
+        <span class="size-label">16px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-1-crate.svg" width="32" height="32">
+        <span class="size-label">32px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-1-crate.svg" width="64" height="64">
+        <span class="size-label">64px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-1-crate.svg" width="180" height="180">
+        <span class="size-label">180px</span>
+      </div>
+    </div>
+    <div class="browser-mock">
+      <img src="favicon-option-1-crate.svg">
+      <span class="tab-text">SetCrate</span>
+      <span class="tab-url">setcrate.app</span>
+    </div>
+  </div>
+
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-name">Session Bars</span>
+      <span class="option-number">Option 2</span>
+    </div>
+    <p class="option-desc">Horizontal bars offset to form an S — inspired by Ableton's session view clips. Clean and modern.</p>
+    <div class="sizes-row">
+      <div class="size-item">
+        <img src="favicon-option-2-bars.svg" width="16" height="16">
+        <span class="size-label">16px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-2-bars.svg" width="32" height="32">
+        <span class="size-label">32px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-2-bars.svg" width="64" height="64">
+        <span class="size-label">64px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-2-bars.svg" width="180" height="180">
+        <span class="size-label">180px</span>
+      </div>
+    </div>
+    <div class="browser-mock">
+      <img src="favicon-option-2-bars.svg">
+      <span class="tab-text">SetCrate</span>
+      <span class="tab-url">setcrate.app</span>
+    </div>
+  </div>
+
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-name">Vinyl Crate</span>
+      <span class="option-number">Option 3</span>
+    </div>
+    <p class="option-desc">A record peeking out of a crate — directly represents the "crate digging" metaphor for music organization.</p>
+    <div class="sizes-row">
+      <div class="size-item">
+        <img src="favicon-option-3-vinyl.svg" width="16" height="16">
+        <span class="size-label">16px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-3-vinyl.svg" width="32" height="32">
+        <span class="size-label">32px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-3-vinyl.svg" width="64" height="64">
+        <span class="size-label">64px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-3-vinyl.svg" width="180" height="180">
+        <span class="size-label">180px</span>
+      </div>
+    </div>
+    <div class="browser-mock">
+      <img src="favicon-option-3-vinyl.svg">
+      <span class="tab-text">SetCrate</span>
+      <span class="tab-url">setcrate.app</span>
+    </div>
+  </div>
+
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-name">Gradient S</span>
+      <span class="option-number">Option 4</span>
+    </div>
+    <p class="option-desc">Bold S cut out of a purple gradient rounded square. High contrast, excellent readability at tiny sizes.</p>
+    <div class="sizes-row">
+      <div class="size-item">
+        <img src="favicon-option-4-bold-s.svg" width="16" height="16">
+        <span class="size-label">16px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-4-bold-s.svg" width="32" height="32">
+        <span class="size-label">32px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-4-bold-s.svg" width="64" height="64">
+        <span class="size-label">64px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-4-bold-s.svg" width="180" height="180">
+        <span class="size-label">180px</span>
+      </div>
+    </div>
+    <div class="browser-mock">
+      <img src="favicon-option-4-bold-s.svg">
+      <span class="tab-text">SetCrate</span>
+      <span class="tab-url">setcrate.app</span>
+    </div>
+  </div>
+
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-name">Clip Grid</span>
+      <span class="option-number">Option 5</span>
+    </div>
+    <p class="option-desc">Blocks arranged in an S-pattern like Ableton's clip grid. Most directly evokes the DAW workflow.</p>
+    <div class="sizes-row">
+      <div class="size-item">
+        <img src="favicon-option-5-grid.svg" width="16" height="16">
+        <span class="size-label">16px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-5-grid.svg" width="32" height="32">
+        <span class="size-label">32px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-5-grid.svg" width="64" height="64">
+        <span class="size-label">64px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-5-grid.svg" width="180" height="180">
+        <span class="size-label">180px</span>
+      </div>
+    </div>
+    <div class="browser-mock">
+      <img src="favicon-option-5-grid.svg">
+      <span class="tab-text">SetCrate</span>
+      <span class="tab-url">setcrate.app</span>
+    </div>
+  </div>
+
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-name">File Crate</span>
+      <span class="option-number">Option 6</span>
+    </div>
+    <p class="option-desc">Bracket-shaped crate with stacked lines inside representing organized sets/files. Minimal and clean.</p>
+    <div class="sizes-row">
+      <div class="size-item">
+        <img src="favicon-option-6-bracket.svg" width="16" height="16">
+        <span class="size-label">16px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-6-bracket.svg" width="32" height="32">
+        <span class="size-label">32px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-6-bracket.svg" width="64" height="64">
+        <span class="size-label">64px</span>
+      </div>
+      <div class="size-item">
+        <img src="favicon-option-6-bracket.svg" width="180" height="180">
+        <span class="size-label">180px</span>
+      </div>
+    </div>
+    <div class="browser-mock">
+      <img src="favicon-option-6-bracket.svg">
+      <span class="tab-text">SetCrate</span>
+      <span class="tab-url">setcrate.app</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

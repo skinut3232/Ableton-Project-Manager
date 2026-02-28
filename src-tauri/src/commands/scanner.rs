@@ -5,6 +5,25 @@ use crate::db::queries;
 use crate::scanner::walker;
 
 #[tauri::command]
+pub fn scan_library(app: AppHandle, state: State<DbState>) -> Result<ScanSummary, String> {
+    let conn = state.0.lock().map_err(|e| e.to_string())?;
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+
+    let root_folder = queries::get_setting(&conn, "root_folder")?
+        .ok_or("Root folder not configured. Please set it in Settings.")?;
+
+    let bounce_folder_name = queries::get_setting(&conn, "bounce_folder_name")?
+        .unwrap_or_else(|| "Bounces".to_string());
+
+    let summary = walker::scan_library(&conn, &root_folder, &bounce_folder_name, &app_data_dir)?;
+
+    // Generate covers for new projects
+    walker::generate_missing_covers(&conn, &app_data_dir);
+
+    Ok(summary)
+}
+
+#[tauri::command]
 pub fn refresh_library(app: AppHandle, state: State<DbState>) -> Result<ScanSummary, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;

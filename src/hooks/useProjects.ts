@@ -75,6 +75,16 @@ export function useUpdateProject() {
   });
 }
 
+export function useScanLibrary() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => tauriInvoke<ScanSummary>('scan_library'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
 export function useRefreshLibrary() {
   const queryClient = useQueryClient();
   return useMutation({

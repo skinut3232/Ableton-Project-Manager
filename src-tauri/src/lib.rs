@@ -54,6 +54,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::settings::get_settings,
             commands::settings::update_settings,
+            commands::scanner::scan_library,
             commands::scanner::refresh_library,
             commands::scanner::discover_untracked_projects,
             commands::scanner::add_project,

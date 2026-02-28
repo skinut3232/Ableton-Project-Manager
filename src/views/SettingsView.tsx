@@ -5,7 +5,7 @@ import { Input } from '../components/ui/Input';
 import { Toggle } from '../components/ui/Toggle';
 import { Select } from '../components/ui/Select';
 import { useSettings, useUpdateSettings, getSettingValue } from '../hooks/useSettings';
-import { useRefreshLibrary, useDiscoverProjects, useImportProjects } from '../hooks/useProjects';
+import { useScanLibrary, useRefreshLibrary, useDiscoverProjects, useImportProjects } from '../hooks/useProjects';
 import { useSoundCloudAuthStatus, useSoundCloudLogout } from '../hooks/useSoundCloud';
 import { CloudSyncSection } from '../components/settings/CloudSyncSection';
 import { LicenseSettings } from '../components/license/LicenseSettings';
@@ -14,6 +14,7 @@ import type { DiscoveredProject } from '../types';
 export function SettingsView() {
   const { data: settings, isLoading } = useSettings();
   const updateSettings = useUpdateSettings();
+  const scanLibrary = useScanLibrary();
   const refreshLibrary = useRefreshLibrary();
   const discoverProjects = useDiscoverProjects();
   const importProjects = useImportProjects();
@@ -43,7 +44,16 @@ export function SettingsView() {
 
   const pickRootFolder = async () => {
     const selected = await open({ directory: true, multiple: false, title: 'Select Root Project Folder' });
-    if (selected) setRootFolder(selected as string);
+    if (selected) {
+      const folder = selected as string;
+      setRootFolder(folder);
+      // Auto-save the root folder immediately so the user doesn't have to click Save
+      await updateSettings.mutateAsync([
+        { key: 'root_folder', value: folder },
+      ]);
+      // Full scan to discover and import all projects
+      scanLibrary.mutate();
+    }
   };
 
   const pickAbletonExe = async () => {
@@ -52,7 +62,14 @@ export function SettingsView() {
       title: 'Select Ableton Live Executable',
       filters: [{ name: 'Executable', extensions: ['exe'] }],
     });
-    if (selected) setAbletonPath(selected as string);
+    if (selected) {
+      const exe = selected as string;
+      setAbletonPath(exe);
+      // Auto-save so the user doesn't have to click Save
+      await updateSettings.mutateAsync([
+        { key: 'ableton_exe_path', value: exe },
+      ]);
+    }
   };
 
   const handleSave = async () => {

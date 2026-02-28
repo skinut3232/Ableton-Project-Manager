@@ -24,8 +24,20 @@ fn get_instance_name() -> String {
 
 /// Main status check — called on every app launch and periodically.
 /// Determines the current license state by checking stored data and validating remotely.
+/// In debug builds (tauri dev), always returns Activated to skip license checks.
 #[tauri::command]
 pub fn get_license_status(state: State<DbState>, supabase: State<SupabaseState>) -> Result<LicenseInfo, String> {
+    // Dev mode bypass — skip all license/trial checks during development
+    #[cfg(debug_assertions)]
+    {
+        return Ok(LicenseInfo {
+            status: LicenseStatus::Activated,
+            days_remaining: None,
+            checkout_url: checkout_url(),
+            license_key_masked: Some("DEV-MODE".to_string()),
+        });
+    }
+
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     let url = checkout_url();
 
