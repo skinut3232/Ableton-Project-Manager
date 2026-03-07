@@ -5,6 +5,7 @@ const LS_API_BASE: &str = "https://api.lemonsqueezy.com/v1/licenses";
 
 /// Response from the LemonSqueezy activate endpoint.
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ActivateResponse {
     pub activated: bool,
     pub instance: Option<InstanceData>,
@@ -14,6 +15,7 @@ pub struct ActivateResponse {
 
 /// Response from the LemonSqueezy validate endpoint.
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ValidateResponse {
     pub valid: bool,
     pub error: Option<String>,
@@ -22,6 +24,7 @@ pub struct ValidateResponse {
 
 /// Response from the LemonSqueezy deactivate endpoint.
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct DeactivateResponse {
     pub deactivated: bool,
     pub error: Option<String>,
@@ -35,6 +38,7 @@ pub struct InstanceData {
 
 /// License key metadata from LemonSqueezy.
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct LicenseKeyData {
     pub status: String,
 }

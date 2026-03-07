@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT INTO schema_version (version) VALUES (11);
+INSERT INTO schema_version (version) VALUES (12);
 
 -- Settings (key-value pairs)
 CREATE TABLE IF NOT EXISTS settings (
@@ -42,7 +42,9 @@ CREATE TABLE IF NOT EXISTS projects (
     cover_style_preset TEXT NOT NULL DEFAULT 'default',
     cover_asset_id INTEGER REFERENCES assets(id) ON DELETE SET NULL,
     cover_updated_at TEXT,
-    cover_url TEXT
+    cover_url TEXT,
+    has_missing_deps INTEGER NOT NULL DEFAULT 0,
+    als_parsed_at INTEGER
 );
 
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
@@ -198,10 +200,33 @@ CREATE TABLE IF NOT EXISTS spotify_references (
 
 CREATE INDEX IF NOT EXISTS idx_spotify_references_project_id ON spotify_references(project_id);
 
+-- Project Plugins (extracted from .als files)
+CREATE TABLE IF NOT EXISTS project_plugins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    plugin_type TEXT NOT NULL DEFAULT 'unknown'
+);
+
+CREATE INDEX IF NOT EXISTS idx_project_plugins_project_id ON project_plugins(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_plugins_name ON project_plugins(name);
+
+-- Project Samples (extracted from .als files)
+CREATE TABLE IF NOT EXISTS project_samples (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    path TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    is_missing INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_project_samples_project_id ON project_samples(project_id);
+
 -- FTS5 Virtual Table (standalone — Rust manages inserts/deletes with HTML stripping)
 CREATE VIRTUAL TABLE IF NOT EXISTS projects_fts USING fts5(
     name,
     genre_label,
     notes,
-    tags_text
+    tags_text,
+    plugins_text
 );

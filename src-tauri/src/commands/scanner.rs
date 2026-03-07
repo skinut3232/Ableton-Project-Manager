@@ -1,8 +1,10 @@
 use tauri::{AppHandle, Manager, State};
+use tauri::Emitter;
 use crate::db::DbState;
 use crate::db::models::{ScanSummary, DiscoveredProject};
 use crate::db::queries;
 use crate::scanner::walker;
+use crate::scanner::walker::ScanProgress;
 
 #[tauri::command]
 pub fn scan_library(app: AppHandle, state: State<DbState>) -> Result<ScanSummary, String> {
@@ -15,10 +17,16 @@ pub fn scan_library(app: AppHandle, state: State<DbState>) -> Result<ScanSummary
     let bounce_folder_name = queries::get_setting(&conn, "bounce_folder_name")?
         .unwrap_or_else(|| "Bounces".to_string());
 
-    let summary = walker::scan_library(&conn, &root_folder, &bounce_folder_name, &app_data_dir)?;
+    let summary = walker::scan_library(&conn, &root_folder, &bounce_folder_name, &app_data_dir, &app)?;
 
     // Generate covers for new projects
-    walker::generate_missing_covers(&conn, &app_data_dir);
+    walker::generate_missing_covers(&conn, &app_data_dir, &app);
+
+    app.emit("scan-progress", ScanProgress {
+        current: 0, total: 0,
+        project_name: String::new(),
+        stage: "complete".to_string(),
+    }).ok();
 
     Ok(summary)
 }
@@ -31,10 +39,16 @@ pub fn refresh_library(app: AppHandle, state: State<DbState>) -> Result<ScanSumm
     let bounce_folder_name = queries::get_setting(&conn, "bounce_folder_name")?
         .unwrap_or_else(|| "Bounces".to_string());
 
-    let summary = walker::refresh_library(&conn, &bounce_folder_name, &app_data_dir)?;
+    let summary = walker::refresh_library(&conn, &bounce_folder_name, &app_data_dir, &app)?;
 
     // Generate covers for projects that need them (fast — ~50ms per cover at 300x300)
-    walker::generate_missing_covers(&conn, &app_data_dir);
+    walker::generate_missing_covers(&conn, &app_data_dir, &app);
+
+    app.emit("scan-progress", ScanProgress {
+        current: 0, total: 0,
+        project_name: String::new(),
+        stage: "complete".to_string(),
+    }).ok();
 
     Ok(summary)
 }
@@ -57,10 +71,16 @@ pub fn add_project(app: AppHandle, state: State<DbState>, folder_path: String) -
     let bounce_folder_name = queries::get_setting(&conn, "bounce_folder_name")?
         .unwrap_or_else(|| "Bounces".to_string());
 
-    let summary = walker::add_single_project(&conn, &folder_path, &bounce_folder_name, &app_data_dir)?;
+    let summary = walker::add_single_project(&conn, &folder_path, &bounce_folder_name, &app_data_dir, &app)?;
 
     // Generate cover for the new project
-    walker::generate_missing_covers(&conn, &app_data_dir);
+    walker::generate_missing_covers(&conn, &app_data_dir, &app);
+
+    app.emit("scan-progress", ScanProgress {
+        current: 0, total: 0,
+        project_name: String::new(),
+        stage: "complete".to_string(),
+    }).ok();
 
     Ok(summary)
 }
@@ -73,10 +93,16 @@ pub fn import_projects(app: AppHandle, state: State<DbState>, projects: Vec<Disc
     let bounce_folder_name = queries::get_setting(&conn, "bounce_folder_name")?
         .unwrap_or_else(|| "Bounces".to_string());
 
-    let summary = walker::import_projects(&conn, &projects, &bounce_folder_name, &app_data_dir)?;
+    let summary = walker::import_projects(&conn, &projects, &bounce_folder_name, &app_data_dir, &app)?;
 
     // Generate covers for imported projects
-    walker::generate_missing_covers(&conn, &app_data_dir);
+    walker::generate_missing_covers(&conn, &app_data_dir, &app);
+
+    app.emit("scan-progress", ScanProgress {
+        current: 0, total: 0,
+        project_name: String::new(),
+        stage: "complete".to_string(),
+    }).ok();
 
     Ok(summary)
 }

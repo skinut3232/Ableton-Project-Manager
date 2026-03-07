@@ -4,7 +4,7 @@
 A Tauri v2 desktop app (Windows) branded as **SetCrate** for managing ~100+ Ableton Live projects. Scans a root folder for project directories (containing `.als` files), displays them in a searchable/filterable library grid, and provides metadata editing, WAV bounce playback, session tracking, and one-click Ableton launching. All data is local (SQLite + filesystem).
 
 ## Obsidian Project Note
-`C:\Users\Rob\Documents\Software\Obsidian\My Notebook\1 Projects\ableton-project-manager-app.md`
+`C:\Users\Rob\Documents\Software\Obsidian\My Notebook\1 Projects\SetCrate.md`
 
 ## Tech Stack
 - **Backend:** Tauri v2, Rust (edition 2021), rusqlite 0.31 (bundled SQLite + FTS5), chrono, walkdir, image

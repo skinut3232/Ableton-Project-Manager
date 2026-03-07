@@ -113,7 +113,7 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
          p.in_rotation, p.notes, p.artwork_path, p.current_set_path, p.archived, p.missing, p.progress, \
          p.last_worked_on, p.created_at, p.updated_at, \
          p.cover_type, p.cover_locked, p.cover_seed, p.cover_style_preset, p.cover_asset_id, p.cover_updated_at, \
-         p.cover_url \
+         p.cover_url, p.has_missing_deps, p.als_parsed_at \
          FROM projects p"
     );
     let mut conditions: Vec<String> = Vec::new();
@@ -272,6 +272,8 @@ pub fn get_projects(conn: &Connection, filters: &ProjectFilters) -> Result<Vec<P
                 cover_asset_id: row.get(22)?,
                 cover_updated_at: row.get(23)?,
                 cover_url: row.get(24)?,
+                has_missing_deps: row.get::<_, i64>(25).unwrap_or(0) != 0,
+                als_parsed_at: row.get(26)?,
             })
         })
         .map_err(|e| e.to_string())?
@@ -293,7 +295,7 @@ pub fn get_project_by_id(conn: &Connection, id: i64) -> Result<Project, String> 
          in_rotation, notes, artwork_path, current_set_path, archived, missing, progress, \
          last_worked_on, created_at, updated_at, \
          cover_type, cover_locked, cover_seed, cover_style_preset, cover_asset_id, cover_updated_at, \
-         cover_url \
+         cover_url, has_missing_deps, als_parsed_at \
          FROM projects WHERE id = ?1",
         params![id],
         |row| {
@@ -324,6 +326,8 @@ pub fn get_project_by_id(conn: &Connection, id: i64) -> Result<Project, String> 
                 cover_asset_id: row.get(22)?,
                 cover_updated_at: row.get(23)?,
                 cover_url: row.get(24)?,
+                has_missing_deps: row.get::<_, i64>(25).unwrap_or(0) != 0,
+                als_parsed_at: row.get(26)?,
             })
         },
     ).map_err(|e| format!("Project not found: {}", e))?;
@@ -532,6 +536,7 @@ pub fn get_notes_text_for_fts(conn: &Connection, project_id: i64) -> Result<Stri
 pub fn rebuild_fts_tags(conn: &Connection, project_id: i64) -> Result<(), String> {
     let tags = get_tags_for_project(conn, project_id)?;
     let tags_text = tags.iter().map(|t| t.name.as_str()).collect::<Vec<_>>().join(" ");
+    let plugins_text = get_plugins_text_for_fts(conn, project_id);
 
     // Get current project data
     let project = get_project_by_id(conn, project_id)?;
@@ -543,10 +548,10 @@ pub fn rebuild_fts_tags(conn: &Connection, project_id: i64) -> Result<(), String
         params![project_id],
     ).ok(); // Ignore if row doesn't exist
 
-    // Reinsert with concatenated project_notes content
+    // Reinsert with concatenated project_notes content + plugin names
     conn.execute(
-        "INSERT INTO projects_fts(rowid, name, genre_label, notes, tags_text) VALUES (?1, ?2, ?3, ?4, ?5)",
-        params![project_id, project.name, project.genre_label, notes_text, tags_text],
+        "INSERT INTO projects_fts(rowid, name, genre_label, notes, tags_text, plugins_text) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        params![project_id, project.name, project.genre_label, notes_text, tags_text, plugins_text],
     ).map_err(|e| format!("FTS insert failed: {}", e))?;
 
     Ok(())
@@ -576,14 +581,136 @@ pub fn rebuild_all_fts(conn: &Connection) -> Result<(), String> {
         let notes_text = get_notes_text_for_fts(conn, *id).unwrap_or_default();
         let tags = get_tags_for_project(conn, *id).unwrap_or_default();
         let tags_text = tags.iter().map(|t| t.name.as_str()).collect::<Vec<_>>().join(" ");
+        let plugins_text = get_plugins_text_for_fts(conn, *id);
 
         conn.execute(
-            "INSERT INTO projects_fts(rowid, name, genre_label, notes, tags_text) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![id, name, genre_label, notes_text, tags_text],
+            "INSERT INTO projects_fts(rowid, name, genre_label, notes, tags_text, plugins_text) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            params![id, name, genre_label, notes_text, tags_text, plugins_text],
         ).ok();
     }
 
     Ok(())
+}
+
+// ============================================================================
+// ALS PARSING QUERIES
+// ============================================================================
+
+/// Set BPM only if currently empty (NULL or 0) — preserves manual user edits.
+pub fn set_bpm_if_empty(conn: &Connection, project_id: i64, bpm: f64) -> Result<(), String> {
+    conn.execute(
+        "UPDATE projects SET bpm = ?1, updated_at = datetime('now') WHERE id = ?2 AND (bpm IS NULL OR bpm = 0)",
+        params![bpm, project_id],
+    ).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Set musical_key only if currently empty — preserves manual user edits.
+pub fn set_key_if_empty(conn: &Connection, project_id: i64, key: &str) -> Result<(), String> {
+    conn.execute(
+        "UPDATE projects SET musical_key = ?1, updated_at = datetime('now') WHERE id = ?2 AND (musical_key IS NULL OR musical_key = '')",
+        params![key, project_id],
+    ).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Replace all plugins for a project (delete + reinsert).
+pub fn replace_project_plugins(conn: &Connection, project_id: i64, plugins: &[PluginInfo]) -> Result<(), String> {
+    conn.execute("DELETE FROM project_plugins WHERE project_id = ?1", params![project_id])
+        .map_err(|e| e.to_string())?;
+    for plugin in plugins {
+        conn.execute(
+            "INSERT INTO project_plugins (project_id, name, plugin_type) VALUES (?1, ?2, ?3)",
+            params![project_id, plugin.name, plugin.plugin_type],
+        ).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// Replace all samples for a project (delete + reinsert).
+pub fn replace_project_samples(conn: &Connection, project_id: i64, samples: &[SampleWithStatus]) -> Result<(), String> {
+    conn.execute("DELETE FROM project_samples WHERE project_id = ?1", params![project_id])
+        .map_err(|e| e.to_string())?;
+    for sample in samples {
+        conn.execute(
+            "INSERT INTO project_samples (project_id, path, filename, is_missing) VALUES (?1, ?2, ?3, ?4)",
+            params![project_id, sample.path, sample.filename, sample.is_missing as i64],
+        ).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// Set the has_missing_deps flag on a project.
+pub fn set_has_missing_deps(conn: &Connection, project_id: i64, has_missing: bool) -> Result<(), String> {
+    conn.execute(
+        "UPDATE projects SET has_missing_deps = ?1, updated_at = datetime('now') WHERE id = ?2",
+        params![has_missing as i64, project_id],
+    ).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Record when the .als file was last parsed (Unix seconds of file mtime).
+pub fn set_als_parsed_at(conn: &Connection, project_id: i64, mtime: i64) -> Result<(), String> {
+    conn.execute(
+        "UPDATE projects SET als_parsed_at = ?1 WHERE id = ?2",
+        params![mtime, project_id],
+    ).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Get the als_parsed_at value for a project.
+pub fn get_als_parsed_at(conn: &Connection, project_id: i64) -> Result<Option<i64>, String> {
+    conn.query_row(
+        "SELECT als_parsed_at FROM projects WHERE id = ?1",
+        params![project_id],
+        |row| row.get(0),
+    ).map_err(|e| e.to_string())
+}
+
+/// Get all plugins for a project.
+pub fn get_project_plugins(conn: &Connection, project_id: i64) -> Result<Vec<PluginInfo>, String> {
+    let mut stmt = conn.prepare(
+        "SELECT name, plugin_type FROM project_plugins WHERE project_id = ?1 ORDER BY name"
+    ).map_err(|e| e.to_string())?;
+    let plugins = stmt.query_map(params![project_id], |row| {
+        Ok(PluginInfo {
+            name: row.get(0)?,
+            plugin_type: row.get(1)?,
+        })
+    }).map_err(|e| e.to_string())?
+      .filter_map(|r| r.ok())
+      .collect();
+    Ok(plugins)
+}
+
+/// Get all samples for a project.
+pub fn get_project_samples(conn: &Connection, project_id: i64) -> Result<Vec<SampleWithStatus>, String> {
+    let mut stmt = conn.prepare(
+        "SELECT path, filename, is_missing FROM project_samples WHERE project_id = ?1 ORDER BY filename"
+    ).map_err(|e| e.to_string())?;
+    let samples = stmt.query_map(params![project_id], |row| {
+        Ok(SampleWithStatus {
+            path: row.get(0)?,
+            filename: row.get(1)?,
+            is_missing: row.get::<_, i64>(2)? != 0,
+        })
+    }).map_err(|e| e.to_string())?
+      .filter_map(|r| r.ok())
+      .collect();
+    Ok(samples)
+}
+
+/// Get plugins text for FTS indexing.
+fn get_plugins_text_for_fts(conn: &Connection, project_id: i64) -> String {
+    let mut stmt = match conn.prepare("SELECT name FROM project_plugins WHERE project_id = ?1") {
+        Ok(s) => s,
+        Err(_) => return String::new(),
+    };
+    let names: Vec<String> = match stmt.query_map(params![project_id], |row| row.get(0)) {
+        Ok(rows) => rows.filter_map(|r| r.ok()).collect(),
+        Err(_) => return String::new(),
+    };
+    names.join(" ")
 }
 
 pub fn get_sets_for_project(conn: &Connection, project_id: i64) -> Result<Vec<AbletonSet>, String> {

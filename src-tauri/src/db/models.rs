@@ -28,6 +28,8 @@ pub struct Project {
     pub cover_asset_id: Option<i64>,
     pub cover_updated_at: Option<String>,
     pub cover_url: Option<String>,
+    pub has_missing_deps: bool,
+    pub als_parsed_at: Option<i64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -203,4 +205,17 @@ pub struct ProjectFilters {
     pub show_archived: Option<bool>,
     pub sort_by: Option<String>,
     pub sort_dir: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PluginInfo {
+    pub name: String,
+    pub plugin_type: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SampleWithStatus {
+    pub path: String,
+    pub filename: String,
+    pub is_missing: bool,
 }

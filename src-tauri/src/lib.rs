@@ -8,6 +8,7 @@ mod soundcloud;
 mod mp3;
 mod supabase;
 mod license;
+mod als_parser;
 
 use db::DbState;
 use spotify::{SpotifyState, SpotifyInner};
@@ -142,6 +143,8 @@ pub fn run() {
             commands::license::activate_license_key,
             commands::license::deactivate_license_key,
             commands::license::get_checkout_url,
+            commands::als::get_project_plugins,
+            commands::als::get_project_samples,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

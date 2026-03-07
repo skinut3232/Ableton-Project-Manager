@@ -40,6 +40,7 @@ pub fn upload_file(
 }
 
 /// Delete a file from Supabase Storage.
+#[allow(dead_code)]
 pub fn delete_file(
     client: &SupabaseClient,
     bucket: &str,

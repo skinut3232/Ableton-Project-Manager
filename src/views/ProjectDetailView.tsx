@@ -9,6 +9,7 @@ import { TasksTab } from '../components/tasks/TasksTab';
 import { ReferencesTab } from '../components/references/ReferencesTab';
 import { AssetsTab } from '../components/assets/AssetsTab';
 import { InsightsTab } from '../components/insights/InsightsTab';
+import { PluginsTab } from '../components/project/PluginsTab';
 import { NotesPanel } from '../components/project/NotesPanel';
 import { Button } from '../components/ui/Button';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
@@ -20,6 +21,7 @@ const TABS = [
   { key: 'tasks', label: 'Tasks' },
   { key: 'references', label: 'References' },
   { key: 'assets', label: 'Assets' },
+  { key: 'plugins', label: 'Plugins' },
   { key: 'insights', label: 'Insights' },
 ] as const;
 
@@ -133,6 +135,9 @@ export function ProjectDetailView() {
         )}
         {activeTab === 'assets' && (
           <AssetsTab projectId={project.id} />
+        )}
+        {activeTab === 'plugins' && (
+          <PluginsTab projectId={project.id} />
         )}
         {activeTab === 'insights' && (
           <InsightsTab

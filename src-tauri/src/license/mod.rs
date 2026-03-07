@@ -1,4 +1,6 @@
+#[allow(dead_code)]
 pub mod trial;
+#[allow(dead_code)]
 pub mod api;
 
 use serde::{Deserialize, Serialize};

@@ -26,6 +26,8 @@ export interface Project {
   cover_style_preset: string;
   cover_asset_id: number | null;
   cover_updated_at: string | null;
+  has_missing_deps: number;
+  als_parsed_at: number | null;
 }
 
 export interface ProjectDetail {
@@ -201,6 +203,28 @@ export interface SoundCloudAuthStatus {
 export interface SoundCloudUploadResult {
   permalink_url: string;
   title: string;
+}
+
+// ── ALS Parsing types ──
+
+export interface PluginInfo {
+  name: string;
+  plugin_type: string;
+}
+
+export interface SampleInfo {
+  path: string;
+  filename: string;
+  is_missing: boolean;
+}
+
+// ── Scan Progress types ──
+
+export interface ScanProgress {
+  current: number;
+  total: number;
+  project_name: string;
+  stage: 'scanning' | 'generating_covers' | 'complete';
 }
 
 export type AssetType = 'image' | 'audio' | 'generic';

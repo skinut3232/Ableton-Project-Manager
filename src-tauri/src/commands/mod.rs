@@ -19,3 +19,4 @@ pub mod soundcloud;
 pub mod auth;
 pub mod sync;
 pub mod license;
+pub mod als;

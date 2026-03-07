@@ -40,6 +40,8 @@ import type {
   ProjectAsset,
   IncompleteSession,
   LicenseInfo,
+  PluginInfo,
+  SampleInfo,
 } from '../types';
 
 // Each key is the exact command name string passed to invoke().
@@ -415,6 +417,16 @@ export type CommandMap = {
   sc_logout: {
     args: Record<string, never>;
     return: void;
+  };
+
+  // --- ALS Parsing ---
+  get_project_plugins: {
+    args: { projectId: number };
+    return: PluginInfo[];
+  };
+  get_project_samples: {
+    args: { projectId: number };
+    return: SampleInfo[];
   };
 
   // --- License ---

@@ -1,10 +1,20 @@
 use std::path::{Path, PathBuf};
 use std::fs;
 use rusqlite::{params, Connection};
+use tauri::AppHandle;
+use tauri::Emitter;
 use crate::db::models::ScanSummary;
 use crate::cover_gen;
 
-pub fn scan_library(conn: &Connection, root_folder: &str, bounce_folder_name: &str, app_data_dir: &Path) -> Result<ScanSummary, String> {
+#[derive(Clone, serde::Serialize)]
+pub struct ScanProgress {
+    pub current: usize,
+    pub total: usize,
+    pub project_name: String,
+    pub stage: String, // "scanning" | "generating_covers" | "complete"
+}
+
+pub fn scan_library(conn: &Connection, root_folder: &str, bounce_folder_name: &str, app_data_dir: &Path, app: &AppHandle) -> Result<ScanSummary, String> {
     let root = Path::new(root_folder);
     if !root.exists() || !root.is_dir() {
         return Err(format!("Root folder does not exist: {}", root_folder));
@@ -70,6 +80,13 @@ pub fn scan_library(conn: &Connection, root_folder: &str, bounce_folder_name: &s
             .unwrap_or_default()
             .to_string_lossy()
             .to_string();
+
+        app.emit("scan-progress", ScanProgress {
+            current: summary.found,
+            total: project_dirs.len(),
+            project_name: project_name.clone(),
+            stage: "scanning".to_string(),
+        }).ok();
 
         match process_project(conn, &path_str, &project_name, genre_label, bounce_folder_name, app_data_dir) {
             Ok(is_new) => {
@@ -232,12 +249,17 @@ pub(crate) fn process_project(
         scan_bounces(conn, project_id, &bounces_dir)?;
     }
 
+    // Parse .als file for metadata (BPM, key, plugins, samples)
+    if let Some(ref als_path) = newest_set {
+        parse_als_metadata(conn, project_id, als_path);
+    }
+
     Ok(is_new)
 }
 
 /// Generate covers for all projects that need one (cover_type='none' and not locked).
 /// Called separately from the scan to avoid holding the DB lock during image generation.
-pub fn generate_missing_covers(conn: &Connection, app_data_dir: &Path) {
+pub fn generate_missing_covers(conn: &Connection, app_data_dir: &Path, app: &AppHandle) {
     use crate::db::queries;
 
     // Collect project IDs needing covers
@@ -303,6 +325,13 @@ pub fn generate_missing_covers(conn: &Connection, app_data_dir: &Path) {
     log::info!("Generating covers for {} projects...", jobs.len());
     let mut generated = 0;
     for job in &jobs {
+        app.emit("scan-progress", ScanProgress {
+            current: generated + 1,
+            total: jobs.len(),
+            project_name: format!("Cover {}", job.project_id),
+            stage: "generating_covers".to_string(),
+        }).ok();
+
         let cover_dir = app_data_dir.join("covers").join("generated").join(job.project_id.to_string());
         match cover_gen::generate_cover(&job.seed, &cover_dir, None) {
             Ok(thumb) => {
@@ -412,7 +441,7 @@ use crate::db::models::DiscoveredProject;
 
 /// Refresh metadata for all non-archived projects already in the DB.
 /// Does NOT discover new projects.
-pub fn refresh_library(conn: &Connection, bounce_folder_name: &str, app_data_dir: &Path) -> Result<ScanSummary, String> {
+pub fn refresh_library(conn: &Connection, bounce_folder_name: &str, app_data_dir: &Path, app: &AppHandle) -> Result<ScanSummary, String> {
     let mut summary = ScanSummary {
         found: 0,
         new: 0,
@@ -434,6 +463,14 @@ pub fn refresh_library(conn: &Connection, bounce_folder_name: &str, app_data_dir
 
     for (_id, project_path, project_name, genre_label) in &rows {
         summary.found += 1;
+
+        app.emit("scan-progress", ScanProgress {
+            current: summary.found,
+            total: rows.len(),
+            project_name: project_name.clone(),
+            stage: "scanning".to_string(),
+        }).ok();
+
         let path = Path::new(project_path);
 
         if !path.exists() || !path.is_dir() {
@@ -534,7 +571,7 @@ pub fn discover_untracked_projects(conn: &Connection, root_folder: &str) -> Resu
 }
 
 /// Add a single project folder (any folder, .als not required).
-pub fn add_single_project(conn: &Connection, folder_path: &str, bounce_folder_name: &str, app_data_dir: &Path) -> Result<ScanSummary, String> {
+pub fn add_single_project(conn: &Connection, folder_path: &str, bounce_folder_name: &str, app_data_dir: &Path, _app: &AppHandle) -> Result<ScanSummary, String> {
     let path = Path::new(folder_path);
     if !path.exists() || !path.is_dir() {
         return Err(format!("Folder does not exist: {}", folder_path));
@@ -569,7 +606,7 @@ pub fn add_single_project(conn: &Connection, folder_path: &str, bounce_folder_na
 }
 
 /// Import multiple discovered projects.
-pub fn import_projects(conn: &Connection, projects: &[DiscoveredProject], bounce_folder_name: &str, app_data_dir: &Path) -> Result<ScanSummary, String> {
+pub fn import_projects(conn: &Connection, projects: &[DiscoveredProject], bounce_folder_name: &str, app_data_dir: &Path, _app: &AppHandle) -> Result<ScanSummary, String> {
     let mut summary = ScanSummary {
         found: projects.len(),
         new: 0,
@@ -601,6 +638,89 @@ pub fn import_projects(conn: &Connection, projects: &[DiscoveredProject], bounce
     );
 
     Ok(summary)
+}
+
+/// Parse the newest .als file for a project, extracting BPM, key, plugins, and samples.
+/// Skips parsing if the file hasn't changed since last parse (based on mtime).
+fn parse_als_metadata(conn: &Connection, project_id: i64, als_path: &str) {
+    use crate::als_parser;
+    use crate::db::queries;
+    use crate::db::models::SampleWithStatus;
+    use std::time::UNIX_EPOCH;
+
+    let als_file = Path::new(als_path);
+    if !als_file.exists() {
+        return;
+    }
+
+    // Get file mtime as Unix seconds
+    let current_mtime = match fs::metadata(als_file)
+        .and_then(|m| m.modified())
+        .map(|t| t.duration_since(UNIX_EPOCH).unwrap_or_default().as_secs() as i64)
+    {
+        Ok(t) => t,
+        Err(_) => return,
+    };
+
+    // Check if already parsed at this mtime
+    if let Ok(Some(parsed_at)) = queries::get_als_parsed_at(conn, project_id) {
+        if parsed_at == current_mtime {
+            return; // File unchanged, skip
+        }
+    }
+
+    log::info!("Parsing .als metadata for project {}: {}", project_id, als_path);
+
+    match als_parser::parse_als(als_file) {
+        Err(e) => {
+            log::warn!("Failed to parse .als for project {}: {}", project_id, e);
+            // Record mtime anyway so we don't retry on every scan
+            queries::set_als_parsed_at(conn, project_id, current_mtime).ok();
+        }
+        Ok(metadata) => {
+            // Set BPM if not already set by user
+            if let Some(bpm) = metadata.bpm {
+                queries::set_bpm_if_empty(conn, project_id, bpm).ok();
+            }
+
+            // Set key if not already set by user
+            if let (Some(tonic), Some(scale)) = (&metadata.key_tonic, &metadata.key_scale) {
+                let key_str = format!("{} {}", tonic, scale);
+                queries::set_key_if_empty(conn, project_id, &key_str).ok();
+            }
+
+            // Store plugins
+            queries::replace_project_plugins(conn, project_id, &metadata.plugins).ok();
+
+            // Check sample existence and store
+            let samples_with_status: Vec<SampleWithStatus> = metadata.samples.iter().map(|s| {
+                let is_missing = !Path::new(&s.path).exists();
+                SampleWithStatus {
+                    path: s.path.clone(),
+                    filename: s.filename.clone(),
+                    is_missing,
+                }
+            }).collect();
+
+            let any_missing = samples_with_status.iter().any(|s| s.is_missing);
+            queries::replace_project_samples(conn, project_id, &samples_with_status).ok();
+            queries::set_has_missing_deps(conn, project_id, any_missing).ok();
+
+            // Record parse time
+            queries::set_als_parsed_at(conn, project_id, current_mtime).ok();
+
+            // Rebuild FTS to include plugin names in search index
+            queries::rebuild_fts_tags(conn, project_id).ok();
+
+            log::info!(
+                "Parsed .als for project {}: {} plugins, {} samples ({} missing)",
+                project_id,
+                metadata.plugins.len(),
+                samples_with_status.len(),
+                samples_with_status.iter().filter(|s| s.is_missing).count()
+            );
+        }
+    }
 }
 
 fn project_exists_in_db(conn: &Connection, path: &str) -> Result<bool, String> {

@@ -7,6 +7,7 @@ use crate::supabase::api;
 
 /// Tables in sync order (respects foreign key dependencies).
 /// Parents first, children after.
+#[allow(dead_code)]
 const SYNC_ORDER: &[&str] = &[
     "tags",
     "projects",

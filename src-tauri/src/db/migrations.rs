@@ -281,6 +281,48 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
             ).map_err(|e| format!("Migration v11 failed: {}", e))?;
             log::info!("Migrated database to schema version 11 (projects.cover_url)");
         }
+
+        // Migration v11 → v12: .als parsing (plugins, samples, FTS plugins_text)
+        if version < 12 {
+            // New tables for plugins and samples
+            conn.execute_batch(
+                "CREATE TABLE IF NOT EXISTS project_plugins (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                    name TEXT NOT NULL,
+                    plugin_type TEXT NOT NULL DEFAULT 'unknown'
+                );
+                CREATE TABLE IF NOT EXISTS project_samples (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                    path TEXT NOT NULL,
+                    filename TEXT NOT NULL,
+                    is_missing INTEGER NOT NULL DEFAULT 0
+                );
+                CREATE INDEX IF NOT EXISTS idx_project_plugins_project_id ON project_plugins(project_id);
+                CREATE INDEX IF NOT EXISTS idx_project_plugins_name ON project_plugins(name);
+                CREATE INDEX IF NOT EXISTS idx_project_samples_project_id ON project_samples(project_id);"
+            ).map_err(|e| format!("Migration v12 tables failed: {}", e))?;
+
+            // New columns on projects
+            conn.execute("ALTER TABLE projects ADD COLUMN has_missing_deps INTEGER NOT NULL DEFAULT 0", []).ok();
+            conn.execute("ALTER TABLE projects ADD COLUMN als_parsed_at INTEGER", []).ok();
+
+            // Recreate FTS with plugins_text column
+            conn.execute("DROP TABLE IF EXISTS projects_fts", []).ok();
+            conn.execute_batch(
+                "CREATE VIRTUAL TABLE IF NOT EXISTS projects_fts USING fts5(
+                    name, genre_label, notes, tags_text, plugins_text
+                );"
+            ).map_err(|e| format!("Migration v12 FTS failed: {}", e))?;
+
+            // Rebuild full FTS index
+            crate::db::queries::rebuild_all_fts(conn)?;
+
+            conn.execute_batch("INSERT INTO schema_version (version) VALUES (12);")
+                .map_err(|e| format!("Migration v12 failed: {}", e))?;
+            log::info!("Migrated database to schema version 12 (als parsing, plugins, samples, FTS plugins_text)");
+        }
     }
 
     Ok(())

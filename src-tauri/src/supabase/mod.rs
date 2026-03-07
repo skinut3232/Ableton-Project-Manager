@@ -2,6 +2,7 @@ pub mod auth;
 pub mod api;
 pub mod sync;
 pub mod upload;
+#[allow(dead_code)]
 pub mod migration;
 
 use std::sync::Mutex;
@@ -56,6 +57,7 @@ impl SupabaseClient {
     }
 
     /// Get headers for authenticated requests.
+    #[allow(dead_code)]
     pub fn auth_headers(&self) -> Vec<(&str, String)> {
         let mut headers = vec![
             ("apikey", self.anon_key.clone()),

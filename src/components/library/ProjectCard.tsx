@@ -51,6 +51,11 @@ export function ProjectCard({ project, index, isFocused, onClick, onContextMenu 
         {project.genre_label && (
           <span className="text-xs text-text-muted">{project.genre_label}</span>
         )}
+        {project.has_missing_deps === 1 && (
+          <span className="text-amber-400 text-xs flex items-center gap-0.5" title="Missing samples or plugins">
+            <span>&#9888;</span> Missing deps
+          </span>
+        )}
       </div>
 
       {/* Rating */}
