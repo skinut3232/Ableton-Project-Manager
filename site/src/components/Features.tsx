@@ -52,6 +52,9 @@ export default function Features() {
                   <p className="mt-4 text-lg leading-relaxed text-body">
                     {feature.body}
                   </p>
+                  {feature.technicalNote && (
+                    <p className="mt-3 text-sm text-muted italic">{feature.technicalNote}</p>
+                  )}
                   {isLast && (
                     <p className="mt-3 text-sm text-muted">{MOBILE_SYNC_NOTE}</p>
                   )}

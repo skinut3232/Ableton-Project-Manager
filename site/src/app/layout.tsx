@@ -14,9 +14,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SetCrate — Project Management for Ableton Live",
+  title: "SetCrate — Ableton Project Manager for Windows",
   description:
-    "Organize sessions, track versions, capture ideas — and never lose work again. Built by a producer, for producers.",
+    "Scan your Ableton library, extract BPM and key from .als files, detect missing samples, find projects by plugin — and access everything from your phone.",
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
@@ -25,17 +25,17 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "SetCrate — Project Management for Ableton Live",
+    title: "SetCrate — Ableton Project Manager for Windows",
     description:
-      "Organize sessions, track versions, capture ideas — and never lose work again.",
+      "Scan your Ableton library, extract BPM and key from .als files, detect missing samples, find projects by plugin — and access everything from your phone.",
     type: "website",
     url: "https://setcrate.app",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SetCrate — Project Management for Ableton Live",
+    title: "SetCrate — Ableton Project Manager for Windows",
     description:
-      "Organize sessions, track versions, capture ideas — and never lose work again.",
+      "Scan your Ableton library, extract BPM and key from .als files, detect missing samples, find projects by plugin — and access everything from your phone.",
   },
 };
 

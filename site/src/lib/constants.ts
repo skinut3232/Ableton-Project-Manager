@@ -11,7 +11,7 @@ import type {
 export const HERO = {
   headline: 'Your sessions deserve better than a folder of "final_v2_REAL.als"',
   subheadline:
-    "SetCrate is project management built for Ableton Live. Organize sessions, track versions, capture ideas — and never lose work again.",
+    "SetCrate scans your Ableton library, reads your .als files to extract BPM, key, and plugins, catches missing samples before you open the DAW — and syncs everything to your phone.",
   cta: "Try Free for 14 Days",
   subCta: "Windows \u00b7 Free for 14 days \u00b7 No credit card required",
   tagline: "Made by a producer who got tired of messy project folders.",
@@ -32,6 +32,12 @@ export const PAIN_POINTS: PainPoint[] = [
     title: "No context",
     description:
       "You open a .als file from 3 months ago and have zero memory of what you were going for, what's done, or what needs fixing.",
+  },
+  {
+    icon: "\uD83D\uDD34",
+    title: "Broken sessions, no warning",
+    description:
+      "You double-click a project and Ableton opens to a sea of missing samples and red plugin slots. You had no idea until it was too late.",
   },
   {
     icon: "\uD83D\uDCA1",
@@ -59,6 +65,12 @@ export const FEATURES: Feature[] = [
     screenshot: "/screenshots/Project_Detail.jpg",
   },
   {
+    headline: "Know what\u2019s inside before you open it.",
+    body: "SetCrate reads your .als files to pull out BPM, key, and every plugin you used \u2014 all searchable from your library. It also checks every sample path against your file system, so you\u2019ll know about missing files before you open the DAW. No surprises.",
+    screenshotLabel: "ALS metadata extraction showing BPM, key, plugins, and missing samples",
+    technicalNote: "Reads Ableton Live 10, 11, and 12 project files.",
+  },
+  {
     headline: "One click back into the DAW.",
     body: "Found what you're looking for? Open any project directly in Ableton Live from SetCrate. No digging through folders, no hunting for the right .als file — just click and create.",
     screenshotLabel: "Open in Ableton button on project detail",
@@ -72,7 +84,7 @@ export const FEATURES: Feature[] = [
   },
   {
     headline: "Your studio in your pocket.",
-    body: "Sync your projects, notes, and session logs to your phone. Review your work on the couch, capture ideas on the go, and walk into your next session ready to work.",
+    body: "The only Ableton project manager with a mobile companion app. Sync your full library \u2014 projects, metadata, bounces, notes \u2014 to your Android phone. Browse your library on the couch, listen to your latest bounces, and walk into your next session already knowing what you\u2019re working on.",
     screenshotLabel: "Mobile app showing synced project on phone",
     screenshot: "/screenshots/mobile_sync.jpg",
   },
@@ -91,6 +103,9 @@ export const PRICING_CARDS: PricingCard[] = [
     priceLabel: "One-time purchase",
     features: [
       "Organize unlimited projects and sessions",
+      "Reads .als files \u2014 auto-extracts BPM, key, and plugins",
+      "Missing sample detection before you open Ableton",
+      "Search your library by plugin name",
       "Session tracking and bounce history",
       "Notes, photos, and session logs",
       "Activate on up to 3 computers",
@@ -129,19 +144,23 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   },
   {
     without: '"Which version had that bassline?"',
-    with: "All your .als files organized in one place",
+    with: "All your .als files, organized and indexed",
   },
   {
-    without: '"What was I doing in this session?"',
-    with: "Notes and context for every session",
+    without: "Open a project, half the samples are missing",
+    with: "Missing samples flagged before you open Ableton",
+  },
+  {
+    without: '"What plugins did I use in this track?"',
+    with: "Every plugin indexed and searchable",
   },
   {
     without: "Alt-tabbing to Notes.app",
-    with: "Everything lives inside one tool",
+    with: "Notes, tasks, and ideas inside one tool",
   },
   {
-    without: '"I had an idea but forgot it"',
-    with: "Capture ideas from your phone",
+    without: "Chained to your studio computer",
+    with: "Full library synced to your phone",
   },
 ];
 
@@ -151,7 +170,7 @@ export const ROADMAP_HEADLINE = "Where we're headed";
 export const ROADMAP_ITEMS: RoadmapItem[] = [
   {
     phase: "Now",
-    description: "Windows desktop app + mobile sync (iOS & Android)",
+    description: "Windows desktop app + Android mobile sync",
     opacity: "opacity-100",
   },
   {
@@ -172,6 +191,16 @@ export const FAQ_ITEMS: FAQItem[] = [
     question: "Is there a free trial?",
     answer:
       "Yes. SetCrate is fully functional for 14 days, including mobile sync. No credit card required. After the trial, purchase a desktop license to keep using it.",
+  },
+  {
+    question: "Does SetCrate read my .als files?",
+    answer:
+      "Yes \u2014 SetCrate decompresses and parses your Ableton project files to extract metadata like BPM, key, and which plugins you used. This happens locally on your machine. SetCrate never modifies your .als files, never uploads them anywhere, and never changes your project folders. It\u2019s read-only, and everything stays on your computer.",
+  },
+  {
+    question: "What is missing sample detection?",
+    answer:
+      "When SetCrate scans your library, it checks every sample path referenced in your .als files against your file system. If a sample has moved, been deleted, or lives on a drive that isn\u2019t connected, SetCrate flags it with a warning badge in your library \u2014 before you open the project in Ableton. No more surprise broken sessions.",
   },
   {
     question: "What happens to my data after the trial ends?",
