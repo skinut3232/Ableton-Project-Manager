@@ -68,6 +68,7 @@ export const FEATURES: Feature[] = [
     headline: "Know what\u2019s inside before you open it.",
     body: "SetCrate reads your .als files to pull out BPM, key, and every plugin you used \u2014 all searchable from your library. It also checks every sample path against your file system, so you\u2019ll know about missing files before you open the DAW. No surprises.",
     screenshotLabel: "ALS metadata extraction showing BPM, key, plugins, and missing samples",
+    screenshot: "/screenshots/Plugins.jpg",
     technicalNote: "Reads Ableton Live 10, 11, and 12 project files.",
   },
   {
