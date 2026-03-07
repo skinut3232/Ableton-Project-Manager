@@ -7,7 +7,11 @@ import AccordionItem from "./ui/AccordionItem";
 import { FAQ_ITEMS } from "@/lib/constants";
 import { fadeIn } from "@/lib/animations";
 
-export default function FAQ() {
+interface FAQProps {
+  onMacWaitlistClick?: () => void;
+}
+
+export default function FAQ({ onMacWaitlistClick }: FAQProps) {
   return (
     <section id="faq" className="py-20 sm:py-28">
       <Container>
@@ -25,6 +29,16 @@ export default function FAQ() {
               key={item.question}
               question={item.question}
               answer={item.answer}
+              extra={
+                item.question === "Is macOS supported?" && onMacWaitlistClick ? (
+                  <button
+                    onClick={onMacWaitlistClick}
+                    className="text-sm font-medium text-accent hover:text-accent/80 transition-colors cursor-pointer"
+                  >
+                    Join the Mac waitlist &rarr;
+                  </button>
+                ) : undefined
+              }
             />
           ))}
         </motion.div>

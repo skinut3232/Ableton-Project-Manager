@@ -13,26 +13,33 @@ import FinalCTA from "./FinalCTA";
 import Footer from "./Footer";
 import EmailModal from "./EmailModal";
 
+type ModalVariant = "trial_download" | "mac_waitlist";
+
 export default function PageContent() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  const [modalVariant, setModalVariant] = useState<ModalVariant | null>(null);
+  const openTrialModal = () => setModalVariant("trial_download");
+  const openMacWaitlist = () => setModalVariant("mac_waitlist");
+  const closeModal = () => setModalVariant(null);
 
   return (
     <>
-      <Nav onCtaClick={openModal} />
+      <Nav onCtaClick={openTrialModal} />
       <main id="main-content">
-        <Hero onCtaClick={openModal} />
+        <Hero onCtaClick={openTrialModal} />
         <PainSection />
         <Features />
         <Comparison />
-        <Pricing onCtaClick={openModal} />
-        <Roadmap />
-        <FAQ />
-        <FinalCTA onCtaClick={openModal} />
+        <Pricing onCtaClick={openTrialModal} />
+        <Roadmap onMacWaitlistClick={openMacWaitlist} />
+        <FAQ onMacWaitlistClick={openMacWaitlist} />
+        <FinalCTA onCtaClick={openTrialModal} />
       </main>
       <Footer />
-      <EmailModal open={modalOpen} onClose={closeModal} />
+      <EmailModal
+        open={modalVariant !== null}
+        onClose={closeModal}
+        variant={modalVariant ?? "trial_download"}
+      />
     </>
   );
 }

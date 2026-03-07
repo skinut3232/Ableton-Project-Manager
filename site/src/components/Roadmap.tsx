@@ -6,7 +6,11 @@ import SectionHeading from "./ui/SectionHeading";
 import { ROADMAP_HEADLINE, ROADMAP_ITEMS } from "@/lib/constants";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 
-export default function Roadmap() {
+interface RoadmapProps {
+  onMacWaitlistClick?: () => void;
+}
+
+export default function Roadmap({ onMacWaitlistClick }: RoadmapProps) {
   return (
     <section id="roadmap" className="py-20 sm:py-28">
       <Container>
@@ -39,6 +43,14 @@ export default function Roadmap() {
                 </div>
                 <h3 className="text-lg font-bold text-heading">{item.phase}</h3>
                 <p className="mt-1 text-sm text-body">{item.description}</p>
+                {item.phase === "Next" && onMacWaitlistClick && (
+                  <button
+                    onClick={onMacWaitlistClick}
+                    className="mt-2 text-sm font-medium text-accent hover:text-accent/80 transition-colors cursor-pointer"
+                  >
+                    Join the Mac waitlist &rarr;
+                  </button>
+                )}
               </motion.div>
             ))}
           </div>
@@ -66,6 +78,14 @@ export default function Roadmap() {
                     {item.phase}
                   </h3>
                   <p className="mt-1 text-sm text-body">{item.description}</p>
+                  {item.phase === "Next" && onMacWaitlistClick && (
+                    <button
+                      onClick={onMacWaitlistClick}
+                      className="mt-2 text-sm font-medium text-accent hover:text-accent/80 transition-colors cursor-pointer"
+                    >
+                      Join the Mac waitlist &rarr;
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))}

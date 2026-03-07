@@ -6,9 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 interface AccordionItemProps {
   question: string;
   answer: string;
+  extra?: React.ReactNode;
 }
 
-export default function AccordionItem({ question, answer }: AccordionItemProps) {
+export default function AccordionItem({ question, answer, extra }: AccordionItemProps) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const panelId = `${id}-panel`;
@@ -44,6 +45,7 @@ export default function AccordionItem({ question, answer }: AccordionItemProps) 
             className="overflow-hidden"
           >
             <p className="pb-5 text-body leading-relaxed">{answer}</p>
+            {extra && <div className="pb-5">{extra}</div>}
           </motion.div>
         )}
       </AnimatePresence>

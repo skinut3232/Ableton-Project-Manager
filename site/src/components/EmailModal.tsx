@@ -3,14 +3,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "./ui/Button";
-import { EMAIL_MODAL, DOWNLOAD_URL } from "@/lib/constants";
+import { EMAIL_MODAL, MAC_WAITLIST_MODAL, DOWNLOAD_URL } from "@/lib/constants";
+
+type ModalVariant = "trial_download" | "mac_waitlist";
 
 interface EmailModalProps {
   open: boolean;
   onClose: () => void;
+  variant?: ModalVariant;
 }
 
-export default function EmailModal({ open, onClose }: EmailModalProps) {
+export default function EmailModal({ open, onClose, variant = "trial_download" }: EmailModalProps) {
+  const copy = variant === "mac_waitlist" ? MAC_WAITLIST_MODAL : EMAIL_MODAL;
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
@@ -51,7 +55,7 @@ export default function EmailModal({ open, onClose }: EmailModalProps) {
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, source: variant }),
       });
 
       const data = await res.json();
@@ -61,8 +65,10 @@ export default function EmailModal({ open, onClose }: EmailModalProps) {
       }
 
       setStatus("success");
-      // Trigger the installer download
-      window.location.href = DOWNLOAD_URL;
+      // Only trigger download for trial signups
+      if (variant === "trial_download") {
+        window.location.href = DOWNLOAD_URL;
+      }
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong");
@@ -108,20 +114,22 @@ export default function EmailModal({ open, onClose }: EmailModalProps) {
                   </svg>
                 </div>
                 <p className="mt-4 text-lg font-semibold text-heading">
-                  {EMAIL_MODAL.successMessage}
+                  {copy.successMessage}
                 </p>
 
-                {/* Windows SmartScreen notice */}
-                <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-left">
-                  <p className="text-sm font-medium text-amber-400">
-                    Windows may show a security warning
-                  </p>
-                  <p className="mt-1 text-xs text-muted leading-relaxed">
-                    SetCrate is new and not yet code-signed, so Windows SmartScreen
-                    may flag it. Click <strong className="text-body">&quot;More info&quot;</strong> then{" "}
-                    <strong className="text-body">&quot;Run anyway&quot;</strong> to install.
-                  </p>
-                </div>
+                {/* Windows SmartScreen notice — only for trial downloads */}
+                {variant === "trial_download" && (
+                  <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-left">
+                    <p className="text-sm font-medium text-amber-400">
+                      Windows may show a security warning
+                    </p>
+                    <p className="mt-1 text-xs text-muted leading-relaxed">
+                      SetCrate is new and not yet code-signed, so Windows SmartScreen
+                      may flag it. Click <strong className="text-body">&quot;More info&quot;</strong> then{" "}
+                      <strong className="text-body">&quot;Run anyway&quot;</strong> to install.
+                    </p>
+                  </div>
+                )}
 
                 <button
                   onClick={() => {
@@ -137,9 +145,9 @@ export default function EmailModal({ open, onClose }: EmailModalProps) {
             ) : (
               <>
                 <h2 id="email-modal-title" className="text-2xl font-bold text-heading">
-                  {EMAIL_MODAL.headline}
+                  {copy.headline}
                 </h2>
-                <p className="mt-2 text-body">{EMAIL_MODAL.description}</p>
+                <p className="mt-2 text-body">{copy.description}</p>
 
                 <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                   <input
@@ -148,7 +156,7 @@ export default function EmailModal({ open, onClose }: EmailModalProps) {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={EMAIL_MODAL.placeholder}
+                    placeholder={copy.placeholder}
                     className="w-full rounded-lg border border-border bg-background px-4 py-3 text-heading placeholder:text-muted outline-none focus:border-accent transition-colors"
                   />
 
@@ -160,7 +168,7 @@ export default function EmailModal({ open, onClose }: EmailModalProps) {
                     type="submit"
                     className="w-full"
                   >
-                    {status === "loading" ? "Submitting..." : EMAIL_MODAL.cta}
+                    {status === "loading" ? "Submitting..." : copy.cta}
                   </Button>
                 </form>
 

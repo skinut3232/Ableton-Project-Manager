@@ -256,3 +256,12 @@ export const EMAIL_MODAL = {
   placeholder: "you@email.com",
   successMessage: "Your download is starting!",
 };
+
+export const MAC_WAITLIST_MODAL = {
+  headline: "Join the Mac Waitlist",
+  description:
+    "macOS support is actively in development. Drop your email and we'll let you know as soon as it's ready.",
+  cta: "Join Waitlist",
+  placeholder: "you@email.com",
+  successMessage: "You're on the list! We'll email you when the Mac version is ready.",
+};
