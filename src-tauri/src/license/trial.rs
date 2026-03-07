@@ -36,9 +36,12 @@ pub fn get_or_create_device_id(conn: &Connection) -> Result<String, String> {
 
 /// Get the trial start date from settings, creating one (today) if it doesn't exist.
 /// Returns the ISO 8601 date string (YYYY-MM-DD).
+/// Treats empty or unparseable dates the same as missing — overwrites with today.
 pub fn get_or_create_trial_start(conn: &Connection) -> Result<String, String> {
     if let Some(date) = queries::get_setting(conn, "trial_start_date")? {
-        return Ok(date);
+        if !date.is_empty() && NaiveDate::parse_from_str(&date, "%Y-%m-%d").is_ok() {
+            return Ok(date);
+        }
     }
     let today = Utc::now().format("%Y-%m-%d").to_string();
     queries::set_setting(conn, "trial_start_date", &today)?;

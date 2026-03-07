@@ -107,43 +107,62 @@ pub fn get_license_status(state: State<DbState>, supabase: State<SupabaseState>)
         }
 
         // --- Trial path: no license key ---
-        let device_id = trial::get_or_create_device_id(&conn)?;
+        // Fail-open: any error in trial checking defaults to TrialActive with 14 days.
+        // This prevents fresh installs from being blocked by unexpected failures.
+        const TRIAL_DAYS_DEFAULT: i64 = 14;
 
-        let supabase_client = supabase.0.lock().map_err(|e| e.to_string())?;
-        let supabase_url = supabase_client.url.clone();
-        let anon_key = supabase_client.anon_key.clone();
-        drop(supabase_client);
+        let trial_result: Result<LicenseInfo, String> = (|| {
+            let device_id = trial::get_or_create_device_id(&conn)?;
 
-        if let Some(remote_start) = trial::check_supabase_trial(&supabase_url, &anon_key, &device_id) {
-            let local_start = queries::get_setting(&conn, "trial_start_date")?;
-            match local_start {
-                Some(ref local) if local <= &remote_start => {
-                    trial::sync_trial_to_supabase(&supabase_url, &anon_key, &device_id, local);
-                }
-                _ => {
-                    queries::set_setting(&conn, "trial_start_date", &remote_start)?;
+            let supabase_client = supabase.0.lock().map_err(|e| e.to_string())?;
+            let supabase_url = supabase_client.url.clone();
+            let anon_key = supabase_client.anon_key.clone();
+            drop(supabase_client);
+
+            if let Some(remote_start) = trial::check_supabase_trial(&supabase_url, &anon_key, &device_id) {
+                let local_start = queries::get_setting(&conn, "trial_start_date")?;
+                match local_start {
+                    Some(ref local) if local <= &remote_start => {
+                        trial::sync_trial_to_supabase(&supabase_url, &anon_key, &device_id, local);
+                    }
+                    _ => {
+                        queries::set_setting(&conn, "trial_start_date", &remote_start)?;
+                    }
                 }
             }
+
+            let (status, remaining) = trial::check_trial_status(&conn)?;
+            let status_str = match status {
+                LicenseStatus::TrialActive => "TrialActive",
+                LicenseStatus::TrialExpired => "TrialExpired",
+                _ => "TrialExpired",
+            };
+            queries::set_setting(&conn, "license_status", status_str)?;
+
+            if let Ok(Some(start)) = queries::get_setting(&conn, "trial_start_date") {
+                trial::sync_trial_to_supabase(&supabase_url, &anon_key, &device_id, &start);
+            }
+
+            Ok(LicenseInfo {
+                status,
+                days_remaining: Some(remaining),
+                checkout_url: url.clone(),
+                license_key_masked: None,
+            })
+        })();
+
+        match trial_result {
+            Ok(info) => Ok(info),
+            Err(e) => {
+                eprintln!("[SetCrate] Trial check failed, failing open: {}", e);
+                Ok(LicenseInfo {
+                    status: LicenseStatus::TrialActive,
+                    days_remaining: Some(TRIAL_DAYS_DEFAULT),
+                    checkout_url: url,
+                    license_key_masked: None,
+                })
+            }
         }
-
-        let (status, remaining) = trial::check_trial_status(&conn)?;
-        let status_str = match status {
-            LicenseStatus::TrialActive => "TrialActive",
-            LicenseStatus::TrialExpired => "TrialExpired",
-            _ => "TrialExpired",
-        };
-        queries::set_setting(&conn, "license_status", status_str)?;
-
-        if let Ok(Some(start)) = queries::get_setting(&conn, "trial_start_date") {
-            trial::sync_trial_to_supabase(&supabase_url, &anon_key, &device_id, &start);
-        }
-
-        Ok(LicenseInfo {
-            status,
-            days_remaining: Some(remaining),
-            checkout_url: url,
-            license_key_masked: None,
-        })
     }
 }
 
