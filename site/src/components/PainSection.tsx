@@ -17,7 +17,7 @@ export default function PainSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-80px" }}
-          className="grid gap-6 sm:grid-cols-3"
+          className="mx-auto grid max-w-3xl gap-6 sm:grid-cols-2"
         >
           {PAIN_POINTS.map((point) => (
             <motion.div
