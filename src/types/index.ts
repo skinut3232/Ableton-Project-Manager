@@ -26,7 +26,7 @@ export interface Project {
   cover_style_preset: string;
   cover_asset_id: number | null;
   cover_updated_at: string | null;
-  has_missing_deps: number;
+  has_missing_deps: boolean;
   als_parsed_at: number | null;
 }
 

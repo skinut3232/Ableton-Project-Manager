@@ -135,6 +135,11 @@ function CellRenderer({ column, project }: { column: TableColumnKey; project: Pr
           {project.in_rotation && (
             <span className="shrink-0 h-2 w-2 rounded-full bg-green-400" title="In Rotation" />
           )}
+          {project.has_missing_deps && (
+            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-400" title="Missing samples or plugins">
+              &#9888; Missing
+            </span>
+          )}
         </div>
       );
 
