@@ -1,0 +1,71 @@
+name: Release
+
+# Only runs when you push a version tag like v1.1.0
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  build-and-release:
+    name: Build (${{ matrix.os }})
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            target: aarch64-apple-darwin
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # macOS needs autoconf/automake/libtool for mp3lame-sys
+      - name: Install macOS build dependencies
+        if: matrix.os == 'macos-latest'
+        run: brew install autoconf automake libtool
+
+      - run: npm ci
+
+      # Build the Tauri app and upload assets to the GitHub Release
+      - name: Build and publish release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ""
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "SetCrate ${{ github.ref_name }}"
+          releaseBody: "See the full changelog at https://github.com/skinut3232/Ableton-Project-Manager/commits/${{ github.ref_name }}"
+          releaseDraft: true
+          prerelease: false

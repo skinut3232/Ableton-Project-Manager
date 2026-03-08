@@ -1,5 +1,7 @@
 # SetCrate
 
+[![Build](https://github.com/skinut3232/Ableton-Project-Manager/actions/workflows/build.yml/badge.svg)](https://github.com/skinut3232/Ableton-Project-Manager/actions/workflows/build.yml)
+
 A local-first desktop app for managing your Ableton Live projects — scan, search, tag, play bounces, and get back to making music.
 
 **Website:** [setcrate.app](https://setcrate.app)
@@ -27,6 +29,12 @@ A local-first desktop app for managing your Ableton Live projects — scan, sear
 
 > Windows may show a SmartScreen warning since the app isn't code-signed yet. Click **"More info"** then **"Run anyway"** to proceed.
 
+### macOS (Desktop)
+
+**[Download SetCrate v1.0.0 (.dmg)](https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_1.0.0_aarch64.dmg)**
+
+> The macOS build is not code-signed yet. On first launch, right-click the app and choose **"Open"** to bypass Gatekeeper.
+
 ### Android (Mobile Companion)
 
 **[Download SetCrate Mobile v1.0.0 (.apk)](https://github.com/skinut3232/Ableton-Project-Manager/releases/download/v1.0.0/ableton-project-library.apk)**
@@ -37,7 +45,7 @@ All releases: [github.com/skinut3232/Ableton-Project-Manager/releases](https://g
 
 ### System Requirements
 
-- **Desktop:** Windows 10 or 11 (macOS and Linux are not currently supported)
+- **Desktop:** Windows 10+ or macOS 10.15+ (Catalina or later)
 - **Mobile:** Android 8.0+
 
 ## Getting Started
@@ -58,11 +66,11 @@ All releases: [github.com/skinut3232/Ableton-Project-Manager/releases](https://g
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl+F` or `/` | Focus search bar |
+| `Ctrl/Cmd+F` or `/` | Focus search bar |
 | `Space` | Play / pause audio (when not typing) |
 | `Escape` | Clear search / close modal / navigate home |
-| `Ctrl+R` | Rescan library |
-| `Ctrl+Shift+R` | Open a random project |
+| `Ctrl/Cmd+R` | Rescan library |
+| `Ctrl/Cmd+Shift+R` | Open a random project |
 | Arrow keys | Navigate the project grid |
 | `M` | Add marker (on Timeline tab) |
 | `N` / `P` | Next / previous marker |
