@@ -8,12 +8,14 @@ interface AudioState {
   isLoading: boolean;
   positionMs: number;
   durationMs: number;
+  audioError: string | null;
 
   setCurrentTrack: (bounce: Bounce, project: Project) => void;
   setIsPlaying: (playing: boolean) => void;
   setIsLoading: (loading: boolean) => void;
   setPosition: (positionMs: number) => void;
   setDuration: (durationMs: number) => void;
+  setAudioError: (error: string | null) => void;
   clear: () => void;
 }
 
@@ -24,13 +26,15 @@ export const useAudioStore = create<AudioState>()((set) => ({
   isLoading: false,
   positionMs: 0,
   durationMs: 0,
+  audioError: null,
 
   setCurrentTrack: (bounce, project) =>
-    set({ currentBounce: bounce, currentProject: project, positionMs: 0, durationMs: 0 }),
+    set({ currentBounce: bounce, currentProject: project, positionMs: 0, durationMs: 0, audioError: null }),
   setIsPlaying: (playing) => set({ isPlaying: playing }),
   setIsLoading: (loading) => set({ isLoading: loading }),
   setPosition: (positionMs) => set({ positionMs }),
   setDuration: (durationMs) => set({ durationMs }),
+  setAudioError: (audioError) => set({ audioError }),
   clear: () =>
     set({
       currentBounce: null,
@@ -39,5 +43,6 @@ export const useAudioStore = create<AudioState>()((set) => ({
       isLoading: false,
       positionMs: 0,
       durationMs: 0,
+      audioError: null,
     }),
 }));

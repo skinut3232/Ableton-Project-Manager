@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, type LayoutChangeEvent, type 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAudioStore } from '../stores/audioStore';
 import { togglePlayPause, seekTo, skipForward, skipBackward } from '../lib/audioPlayer';
+import { mediumTap, lightTap } from '../lib/haptics';
 import { CoverImage } from '../components/ui/CoverImage';
 import { extractFilename, formatDuration } from '../lib/utils';
 import { colors, spacing, fontSize } from '../lib/theme';
@@ -45,6 +46,21 @@ export function NowPlayingScreen() {
     seekTo(newMs);
   }, [barWidth, durationMs]);
 
+  const handlePlayPause = () => {
+    mediumTap();
+    togglePlayPause();
+  };
+
+  const handleSkipBack = (ms: number) => {
+    lightTap();
+    skipBackward(ms);
+  };
+
+  const handleSkipForward = (ms: number) => {
+    lightTap();
+    skipForward(ms);
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
@@ -58,7 +74,7 @@ export function NowPlayingScreen() {
         </View>
 
         {/* Track Info */}
-        <Text style={styles.bounceName} numberOfLines={1}>
+        <Text style={styles.bounceName} numberOfLines={1} accessibilityRole="header">
           {extractFilename(currentBounce.bounce_path)}
         </Text>
         <Text style={styles.projectName} numberOfLines={1}>
@@ -74,6 +90,8 @@ export function NowPlayingScreen() {
             onMoveShouldSetResponder={() => true}
             onResponderGrant={handleSeekFromTouch}
             onResponderMove={handleSeekFromTouch}
+            accessibilityRole="adjustable"
+            accessibilityLabel={`Playback position: ${formatDuration(positionMs / 1000)} of ${formatDuration(durationMs / 1000)}`}
           >
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
@@ -94,19 +112,28 @@ export function NowPlayingScreen() {
         <View style={styles.controls}>
           <TouchableOpacity
             style={styles.skipButton}
-            onPress={() => skipBackward(30000)}
+            onPress={() => handleSkipBack(30000)}
+            accessibilityRole="button"
+            accessibilityLabel="Skip back 30 seconds"
           >
             <Text style={styles.skipText}>-30s</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.skipButton}
-            onPress={() => skipBackward(10000)}
+            onPress={() => handleSkipBack(10000)}
+            accessibilityRole="button"
+            accessibilityLabel="Skip back 10 seconds"
           >
             <Text style={styles.skipText}>-10s</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.playButton} onPress={togglePlayPause}>
+          <TouchableOpacity
+            style={styles.playButton}
+            onPress={handlePlayPause}
+            accessibilityRole="button"
+            accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+          >
             <Text style={styles.playText}>
               {isPlaying ? '\u23F8' : '\u25B6'}
             </Text>
@@ -114,14 +141,18 @@ export function NowPlayingScreen() {
 
           <TouchableOpacity
             style={styles.skipButton}
-            onPress={() => skipForward(10000)}
+            onPress={() => handleSkipForward(10000)}
+            accessibilityRole="button"
+            accessibilityLabel="Skip forward 10 seconds"
           >
             <Text style={styles.skipText}>+10s</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.skipButton}
-            onPress={() => skipForward(30000)}
+            onPress={() => handleSkipForward(30000)}
+            accessibilityRole="button"
+            accessibilityLabel="Skip forward 30 seconds"
           >
             <Text style={styles.skipText}>+30s</Text>
           </TouchableOpacity>

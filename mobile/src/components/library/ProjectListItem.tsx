@@ -13,7 +13,13 @@ interface Props {
 
 export function ProjectListItem({ project, onPress }: Props) {
   return (
-    <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.row}
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Project: ${project.name}, status: ${project.status}`}
+    >
       <CoverImage coverUrl={project.cover_url} projectId={project.id} size={40} />
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>

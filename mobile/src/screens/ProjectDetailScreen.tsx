@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { LibraryStackParamList } from '../navigation/types';
 import { useProjectDetail } from '../hooks/useProjects';
@@ -44,6 +45,7 @@ const SECTIONS: { key: SectionKey; title: string }[] = [
 export function ProjectDetailScreen({ route }: Props) {
   const { projectId } = route.params;
   const { data: project, isLoading } = useProjectDetail(projectId);
+  const insets = useSafeAreaInsets();
   const [expandedSections, setExpandedSections] = useState<Set<SectionKey>>(
     new Set(['metadata', 'tags', 'bounces'])
   );
@@ -62,12 +64,17 @@ export function ProjectDetailScreen({ route }: Props) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxxl * 2 }]}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={styles.header} accessible accessibilityLabel={`Project: ${project.name}`}>
         <CoverImage coverUrl={project.cover_url} projectId={project.id} size={120} />
         <View style={styles.headerInfo}>
-          <Text style={styles.projectName}>{project.name}</Text>
+          <Text style={styles.projectName} accessibilityRole="header">{project.name}</Text>
           <StatusBadge status={project.status} />
           <RatingStars rating={project.rating} size={16} />
           {project.progress != null && (
@@ -92,6 +99,8 @@ export function ProjectDetailScreen({ route }: Props) {
           <TouchableOpacity
             style={styles.sectionHeader}
             onPress={() => toggleSection(key)}
+            accessibilityRole="button"
+            accessibilityLabel={`${title} section, ${expandedSections.has(key) ? 'expanded' : 'collapsed'}`}
           >
             <Text style={styles.sectionTitle}>{title}</Text>
             <Text style={styles.sectionArrow}>
@@ -124,7 +133,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.lg,
-    paddingBottom: spacing.xxxl * 3,
   },
   header: {
     flexDirection: 'row',

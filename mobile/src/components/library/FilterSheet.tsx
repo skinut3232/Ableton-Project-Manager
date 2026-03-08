@@ -10,6 +10,7 @@ import {
 import { colors, spacing, fontSize, borderRadius } from '../../lib/theme';
 import { PROJECT_STATUSES, STATUS_COLORS, SORT_OPTIONS } from '../../lib/constants';
 import { useLibraryStore } from '../../stores/libraryStore';
+import { selectionTap } from '../../lib/haptics';
 
 interface Props {
   visible: boolean;
@@ -30,11 +31,17 @@ export function FilterSheet({ visible, onClose }: Props) {
   const resetFilters = useLibraryStore((s) => s.resetFilters);
 
   const toggleStatus = (status: string) => {
+    selectionTap();
     if (statusFilters.includes(status)) {
       setStatusFilters(statusFilters.filter((s) => s !== status));
     } else {
       setStatusFilters([...statusFilters, status]);
     }
+  };
+
+  const handleSmartFilterToggle = (key: string) => {
+    selectionTap();
+    toggleSmartFilter(key);
   };
 
   return (
@@ -43,7 +50,11 @@ export function FilterSheet({ visible, onClose }: Props) {
         <View style={styles.sheet}>
           <View style={styles.header}>
             <Text style={styles.title}>Filters</Text>
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel="Close filters"
+            >
               <Text style={styles.closeText}>Done</Text>
             </TouchableOpacity>
           </View>
@@ -56,7 +67,10 @@ export function FilterSheet({ visible, onClose }: Props) {
                 <TouchableOpacity
                   key={sf.key}
                   style={[styles.chip, sf.active && styles.chipActive]}
-                  onPress={() => toggleSmartFilter(sf.key)}
+                  onPress={() => handleSmartFilterToggle(sf.key)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${sf.label} filter`}
+                  accessibilityState={{ selected: sf.active }}
                 >
                   <Text style={[styles.chipText, sf.active && styles.chipTextActive]}>
                     {sf.label}
@@ -78,6 +92,9 @@ export function FilterSheet({ visible, onClose }: Props) {
                       active && { backgroundColor: STATUS_COLORS[status] + '30', borderColor: STATUS_COLORS[status] },
                     ]}
                     onPress={() => toggleStatus(status)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${status} status filter`}
+                    accessibilityState={{ selected: active }}
                   >
                     <Text
                       style={[
@@ -100,6 +117,9 @@ export function FilterSheet({ visible, onClose }: Props) {
                   key={opt.value}
                   style={[styles.chip, sortBy === opt.value && styles.chipActive]}
                   onPress={() => setSortBy(opt.value)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Sort by ${opt.label}`}
+                  accessibilityState={{ selected: sortBy === opt.value }}
                 >
                   <Text style={[styles.chipText, sortBy === opt.value && styles.chipTextActive]}>
                     {opt.label}
@@ -113,6 +133,9 @@ export function FilterSheet({ visible, onClose }: Props) {
               <TouchableOpacity
                 style={[styles.chip, sortDir === 'desc' && styles.chipActive]}
                 onPress={() => setSortDir('desc')}
+                accessibilityRole="button"
+                accessibilityLabel="Sort descending"
+                accessibilityState={{ selected: sortDir === 'desc' }}
               >
                 <Text style={[styles.chipText, sortDir === 'desc' && styles.chipTextActive]}>
                   Descending
@@ -121,6 +144,9 @@ export function FilterSheet({ visible, onClose }: Props) {
               <TouchableOpacity
                 style={[styles.chip, sortDir === 'asc' && styles.chipActive]}
                 onPress={() => setSortDir('asc')}
+                accessibilityRole="button"
+                accessibilityLabel="Sort ascending"
+                accessibilityState={{ selected: sortDir === 'asc' }}
               >
                 <Text style={[styles.chipText, sortDir === 'asc' && styles.chipTextActive]}>
                   Ascending
@@ -132,6 +158,9 @@ export function FilterSheet({ visible, onClose }: Props) {
             <TouchableOpacity
               style={[styles.chip, showArchived && styles.chipActive, { marginTop: spacing.lg }]}
               onPress={() => setShowArchived(!showArchived)}
+              accessibilityRole="button"
+              accessibilityLabel="Show archived projects"
+              accessibilityState={{ selected: showArchived }}
             >
               <Text style={[styles.chipText, showArchived && styles.chipTextActive]}>
                 Show Archived
@@ -139,7 +168,12 @@ export function FilterSheet({ visible, onClose }: Props) {
             </TouchableOpacity>
 
             {/* Reset */}
-            <TouchableOpacity style={styles.resetButton} onPress={resetFilters}>
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={resetFilters}
+              accessibilityRole="button"
+              accessibilityLabel="Reset all filters"
+            >
               <Text style={styles.resetText}>Reset All Filters</Text>
             </TouchableOpacity>
           </ScrollView>

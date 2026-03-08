@@ -13,7 +13,13 @@ interface Props {
 
 export function ProjectCard({ project, onPress }: Props) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Project: ${project.name}, status: ${project.status}`}
+    >
       <CoverImage coverUrl={project.cover_url} projectId={project.id} size={cardImageSize} />
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>

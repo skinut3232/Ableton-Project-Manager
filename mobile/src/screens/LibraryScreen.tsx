@@ -60,7 +60,7 @@ export function LibraryScreen() {
     return f;
   }, [searchQuery, sortBy, sortDir, showArchived, statusFilters, smartFilters]);
 
-  const { data: projects, isLoading, refetch, isRefetching } = useProjects(filters);
+  const { data: projects, isLoading, isError, refetch, isRefetching } = useProjects(filters);
 
   const handleProjectPress = useCallback(
     (project: Project) => {
@@ -91,11 +91,32 @@ export function LibraryScreen() {
     smartFilters.filter((f) => f.active).length +
     (showArchived ? 1 : 0);
 
+  // Determine empty state content
+  const renderEmptyOrError = () => {
+    if (isError) {
+      return (
+        <EmptyState
+          title="Failed to load projects"
+          message="Check your connection and try again"
+          variant="error"
+          actionLabel="Retry"
+          onAction={() => refetch()}
+        />
+      );
+    }
+    return (
+      <EmptyState
+        title="No projects found"
+        message={searchQuery ? 'Try a different search term' : 'Sign in to see your projects'}
+      />
+    );
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Library</Text>
+        <Text style={styles.title} accessibilityRole="header">Library</Text>
         <Text style={styles.count}>
           {projects?.length ?? 0} projects
         </Text>
@@ -112,6 +133,8 @@ export function LibraryScreen() {
           <TouchableOpacity
             style={styles.filterButton}
             onPress={() => setFilterVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`Filters${activeFilterCount > 0 ? `, ${activeFilterCount} active` : ''}`}
           >
             <Text style={styles.filterButtonText}>
               Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
@@ -120,6 +143,8 @@ export function LibraryScreen() {
           <TouchableOpacity
             style={styles.viewToggle}
             onPress={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+            accessibilityRole="button"
+            accessibilityLabel={`Switch to ${viewMode === 'grid' ? 'list' : 'grid'} view`}
           >
             <Text style={styles.viewToggleText}>
               {viewMode === 'grid' ? '\u2630' : '\u25A6'}
@@ -132,10 +157,7 @@ export function LibraryScreen() {
       {isLoading ? (
         <LoadingSpinner />
       ) : !projects || projects.length === 0 ? (
-        <EmptyState
-          title="No projects found"
-          message={searchQuery ? 'Try a different search term' : 'Sign in to see your projects'}
-        />
+        renderEmptyOrError()
       ) : viewMode === 'grid' ? (
         <FlatList
           key="grid"

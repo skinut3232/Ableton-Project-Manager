@@ -4,6 +4,7 @@ import type { Bounce, Project } from '../../types';
 import { useBounces } from '../../hooks/useBounces';
 import { useAudioStore } from '../../stores/audioStore';
 import { playBounce } from '../../lib/audioPlayer';
+import { lightTap } from '../../lib/haptics';
 import { formatDuration, extractFilename, getRelativeTime } from '../../lib/utils';
 import { colors, spacing, fontSize, borderRadius } from '../../lib/theme';
 
@@ -25,19 +26,28 @@ export function BouncesList({ projectId, project }: Props) {
     );
   }
 
+  const handlePlay = (bounce: Bounce) => {
+    lightTap();
+    playBounce(bounce, project);
+  };
+
   return (
     <View style={styles.container}>
       {bounces.map((bounce) => {
         const isCurrent = currentBounce?.id === bounce.id;
         const canPlay = !!bounce.mp3_url;
+        const bounceName = extractFilename(bounce.bounce_path);
 
         return (
           <TouchableOpacity
             key={bounce.id}
             style={[styles.item, isCurrent && styles.itemActive]}
-            onPress={() => canPlay && playBounce(bounce, project)}
+            onPress={() => canPlay && handlePlay(bounce)}
             disabled={!canPlay}
             activeOpacity={canPlay ? 0.7 : 1}
+            accessibilityRole="button"
+            accessibilityLabel={`${canPlay ? (isCurrent && isPlaying ? 'Pause' : 'Play') : 'No audio for'} ${bounceName}`}
+            accessibilityState={{ disabled: !canPlay }}
           >
             <View style={styles.playIcon}>
               <Text style={[styles.playText, !canPlay && styles.disabledText]}>
@@ -46,7 +56,7 @@ export function BouncesList({ projectId, project }: Props) {
             </View>
             <View style={styles.info}>
               <Text style={[styles.name, !canPlay && styles.disabledText]} numberOfLines={1}>
-                {extractFilename(bounce.bounce_path)}
+                {bounceName}
               </Text>
               <View style={styles.meta}>
                 {bounce.duration_seconds && (

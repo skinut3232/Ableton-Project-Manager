@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAudioStore } from '../../stores/audioStore';
 import { togglePlayPause } from '../../lib/audioPlayer';
+import { lightTap } from '../../lib/haptics';
 import { CoverImage } from '../ui/CoverImage';
 import { extractFilename, formatDuration } from '../../lib/utils';
 import { colors, spacing, fontSize, borderRadius } from '../../lib/theme';
@@ -18,12 +19,20 @@ export function MiniPlayer() {
   if (!currentBounce || !currentProject) return null;
 
   const progress = durationMs > 0 ? positionMs / durationMs : 0;
+  const trackName = extractFilename(currentBounce.bounce_path);
+
+  const handlePlayPause = () => {
+    lightTap();
+    togglePlayPause();
+  };
 
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={() => navigation.navigate('NowPlayingTab')}
       activeOpacity={0.9}
+      accessibilityRole="button"
+      accessibilityLabel={`Now playing: ${trackName} by ${currentProject.name}. Tap to open player.`}
     >
       {/* Progress bar */}
       <View style={styles.progressBar}>
@@ -38,13 +47,18 @@ export function MiniPlayer() {
         />
         <View style={styles.info}>
           <Text style={styles.name} numberOfLines={1}>
-            {extractFilename(currentBounce.bounce_path)}
+            {trackName}
           </Text>
           <Text style={styles.project} numberOfLines={1}>
             {currentProject.name}
           </Text>
         </View>
-        <TouchableOpacity onPress={togglePlayPause} style={styles.playButton}>
+        <TouchableOpacity
+          onPress={handlePlayPause}
+          style={styles.playButton}
+          accessibilityRole="button"
+          accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+        >
           <Text style={styles.playText}>
             {isPlaying ? '\u23F8' : '\u25B6'}
           </Text>

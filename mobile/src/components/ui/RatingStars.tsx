@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { selectionTap } from '../../lib/haptics';
 import { colors, spacing } from '../../lib/theme';
 
 interface Props {
@@ -12,16 +13,25 @@ export function RatingStars({ rating, onRate, size = 16 }: Props) {
   const stars = [1, 2, 3, 4, 5];
   const current = rating ?? 0;
 
+  const handleRate = (star: number) => {
+    if (!onRate) return;
+    selectionTap();
+    onRate(star === current ? 0 : star);
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={styles.container} accessibilityRole="radiogroup" accessibilityLabel="Rating">
       {stars.map((star) => {
         const filled = star <= current;
         const StarComponent = onRate ? TouchableOpacity : View;
         return (
           <StarComponent
             key={star}
-            onPress={onRate ? () => onRate(star === current ? 0 : star) : undefined}
+            onPress={onRate ? () => handleRate(star) : undefined}
             style={{ padding: 2 }}
+            accessibilityRole={onRate ? 'radio' : 'text'}
+            accessibilityLabel={`Rate ${star} out of 5`}
+            accessibilityState={onRate ? { selected: filled } : undefined}
           >
             <Text style={{ fontSize: size, color: filled ? '#eab308' : colors.border }}>
               {filled ? '\u2605' : '\u2606'}

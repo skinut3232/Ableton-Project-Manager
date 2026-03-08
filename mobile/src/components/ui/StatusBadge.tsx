@@ -11,11 +11,15 @@ interface Props {
 
 export function StatusBadge({ status, small }: Props) {
   return (
-    <View style={[
-      styles.badge,
-      { backgroundColor: STATUS_BG_COLORS[status] },
-      small && styles.badgeSmall,
-    ]}>
+    <View
+      style={[
+        styles.badge,
+        { backgroundColor: STATUS_BG_COLORS[status] },
+        small && styles.badgeSmall,
+      ]}
+      accessibilityRole="text"
+      accessibilityLabel={`Status: ${status}`}
+    >
       <Text style={[
         styles.text,
         { color: STATUS_COLORS[status] },

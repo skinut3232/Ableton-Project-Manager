@@ -42,9 +42,16 @@ export function SearchBar({ value, onChangeText, debounceMs = 300 }: Props) {
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="search"
+        accessibilityLabel="Search projects"
+        accessibilityRole="search"
       />
       {localValue.length > 0 && (
-        <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
+        <TouchableOpacity
+          onPress={handleClear}
+          style={styles.clearButton}
+          accessibilityRole="button"
+          accessibilityLabel="Clear search"
+        >
           <Text style={styles.clearText}>{'\u2715'}</Text>
         </TouchableOpacity>
       )}
