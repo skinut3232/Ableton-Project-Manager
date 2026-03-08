@@ -41,12 +41,35 @@ A local-first desktop app for managing your Ableton Live projects — scan, sear
 
 > You'll need to enable "Install from unknown sources" in your Android settings to sideload the APK.
 
+### iOS (Mobile Companion)
+
+The iOS app is built with Expo (EAS Build) and distributed via TestFlight during the pre-release period.
+
+**Install via TestFlight:**
+
+1. Install [TestFlight](https://apps.apple.com/app/testflight/id899247664) from the App Store on your iPhone or iPad
+2. Open the TestFlight invite link (provided by the developer)
+3. Tap **"Accept"** then **"Install"** to add SetCrate to your device
+4. SetCrate will appear on your home screen like any other app
+
+**Building from source:**
+
+```bash
+cd mobile
+npm install
+npx eas build --platform ios --profile preview   # internal TestFlight build
+npx eas build --platform ios --profile production # App Store build
+npx eas submit --platform ios                     # submit to App Store Connect
+```
+
+> Requires an [Apple Developer](https://developer.apple.com) account ($99/year) and the [EAS CLI](https://docs.expo.dev/build/introduction/) (`npm install -g eas-cli`). Run `eas login` and `eas build:configure` before your first build.
+
 All releases: [github.com/skinut3232/Ableton-Project-Manager/releases](https://github.com/skinut3232/Ableton-Project-Manager/releases)
 
 ### System Requirements
 
 - **Desktop:** Windows 10+ or macOS 10.15+ (Catalina or later)
-- **Mobile:** Android 8.0+
+- **Mobile:** Android 8.0+ / iOS 15.0+
 
 ## Getting Started
 
