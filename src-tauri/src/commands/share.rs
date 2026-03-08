@@ -57,29 +57,52 @@ fn is_cache_valid(wav_path: &Path, mp3_path: &PathBuf) -> bool {
     mp3_modified > wav_modified
 }
 
-/// Copy a file to the Windows clipboard as a file drop list using PowerShell.
+/// Copy a file to the clipboard as a file drop list.
+/// Uses PowerShell on Windows and osascript on macOS.
 fn copy_file_to_clipboard(file_path: &Path) -> Result<(), String> {
     let path_str = file_path
         .to_str()
         .ok_or("Invalid file path encoding")?;
 
-    // PowerShell script to copy file to clipboard as a file drop
-    let ps_script = format!(
-        "Add-Type -AssemblyName System.Windows.Forms; \
-         $f = [System.Collections.Specialized.StringCollection]::new(); \
-         $f.Add('{}'); \
-         [System.Windows.Forms.Clipboard]::SetFileDropList($f)",
-        path_str.replace('\'', "''")
-    );
+    #[cfg(target_os = "windows")]
+    {
+        // PowerShell script to copy file to clipboard as a file drop
+        let ps_script = format!(
+            "Add-Type -AssemblyName System.Windows.Forms; \
+             $f = [System.Collections.Specialized.StringCollection]::new(); \
+             $f.Add('{}'); \
+             [System.Windows.Forms.Clipboard]::SetFileDropList($f)",
+            path_str.replace('\'', "''")
+        );
 
-    let output = Command::new("powershell")
-        .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
-        .output()
-        .map_err(|e| format!("Failed to run PowerShell: {}", e))?;
+        let output = Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
+            .output()
+            .map_err(|e| format!("Failed to run PowerShell: {}", e))?;
 
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Clipboard copy failed: {}", stderr));
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("Clipboard copy failed: {}", stderr));
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        // Use osascript to set the clipboard to a POSIX file reference
+        let script = format!(
+            "set the clipboard to (POSIX file \"{}\")",
+            path_str.replace('"', "\\\"")
+        );
+
+        let output = Command::new("osascript")
+            .args(["-e", &script])
+            .output()
+            .map_err(|e| format!("Failed to run osascript: {}", e))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("Clipboard copy failed: {}", stderr));
+        }
     }
 
     Ok(())

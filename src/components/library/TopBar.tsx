@@ -2,6 +2,7 @@ import { useLibraryStore } from '../../stores/libraryStore';
 import { SORT_OPTIONS } from '../../lib/constants';
 import { Button } from '../ui/Button';
 import { ColumnSelector } from './ColumnSelector';
+import { MOD_KEY_LABEL } from '../../lib/platform';
 
 interface TopBarProps {
   isAdding: boolean;
@@ -87,7 +88,7 @@ export function TopBar({ isAdding, onAddProject, onRandomProject, projectCount }
         size="sm"
         onClick={onRandomProject}
         disabled={projectCount === 0}
-        title="Random project (Ctrl+Shift+R)"
+        title={`Random project (${MOD_KEY_LABEL}+Shift+R)`}
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <rect x="3" y="3" width="18" height="18" rx="3" strokeWidth={2} />

@@ -9,6 +9,7 @@ import { useSpotifyPlayerStore } from '../stores/spotifyPlayerStore';
 import { SyncIndicator } from '../components/ui/SyncIndicator';
 import { TrialBanner } from '../components/license/TrialBanner';
 import { useRestoreSession } from '../hooks/useAuth';
+import { isModKey } from '../lib/platform';
 
 export function AppLayout() {
   const currentBounce = useAudioStore((s) => s.currentBounce);
@@ -34,7 +35,7 @@ export function AppLayout() {
     const target = e.target as HTMLElement;
     const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
 
-    if ((e.ctrlKey && e.key === 'f') || (e.key === '/' && !isInput)) {
+    if ((isModKey(e) && e.key === 'f') || (e.key === '/' && !isInput)) {
       e.preventDefault();
       const searchInput = document.getElementById('search-input');
       searchInput?.focus();
@@ -60,13 +61,13 @@ export function AppLayout() {
       }
     }
 
-    if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+    if (isModKey(e) && e.shiftKey && e.key === 'R') {
       e.preventDefault();
       window.dispatchEvent(new CustomEvent('random-project'));
       return;
     }
 
-    if (e.ctrlKey && e.key === 'r') {
+    if (isModKey(e) && e.key === 'r') {
       e.preventDefault();
       // Trigger refresh via custom event
       window.dispatchEvent(new CustomEvent('refresh-library'));

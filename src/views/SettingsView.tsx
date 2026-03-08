@@ -9,6 +9,7 @@ import { useScanLibrary, useRefreshLibrary, useDiscoverProjects, useImportProjec
 import { useSoundCloudAuthStatus, useSoundCloudLogout } from '../hooks/useSoundCloud';
 import { CloudSyncSection } from '../components/settings/CloudSyncSection';
 import { LicenseSettings } from '../components/license/LicenseSettings';
+import { IS_MAC, MOD_KEY_LABEL } from '../lib/platform';
 import type { DiscoveredProject } from '../types';
 
 export function SettingsView() {
@@ -59,8 +60,10 @@ export function SettingsView() {
   const pickAbletonExe = async () => {
     const selected = await open({
       multiple: false,
-      title: 'Select Ableton Live Executable',
-      filters: [{ name: 'Executable', extensions: ['exe'] }],
+      title: IS_MAC ? 'Select Ableton Live Application' : 'Select Ableton Live Executable',
+      filters: IS_MAC ? undefined : [{ name: 'Executable', extensions: ['exe'] }],
+      // On macOS, .app bundles are directories — use directory picker
+      directory: IS_MAC,
     });
     if (selected) {
       const exe = selected as string;
@@ -159,12 +162,14 @@ export function SettingsView() {
 
         {/* Ableton Exe Path */}
         <div>
-          <label className="block text-sm font-medium text-text-secondary mb-1">Ableton Live Executable</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">
+            {IS_MAC ? 'Ableton Live Application' : 'Ableton Live Executable'}
+          </label>
           <div className="flex gap-2">
             <input
               readOnly
               value={abletonPath}
-              placeholder="Select Ableton Live .exe..."
+              placeholder={IS_MAC ? 'Select Ableton Live .app...' : 'Select Ableton Live .exe...'}
               className="flex-1 rounded-lg border border-border-default bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder-text-muted"
             />
             <Button variant="secondary" onClick={pickAbletonExe}>Browse</Button>
@@ -199,7 +204,7 @@ export function SettingsView() {
             ]}
           />
           <p className="mt-1 text-xs text-text-muted">
-            What happens when you click the Random button or press Ctrl+Shift+R.
+            What happens when you click the Random button or press {MOD_KEY_LABEL}+Shift+R.
           </p>
         </div>
 
