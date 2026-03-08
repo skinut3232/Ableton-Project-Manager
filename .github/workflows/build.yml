@@ -68,3 +68,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Skip code signing — just verifying it compiles
           TAURI_SIGNING_PRIVATE_KEY: ""
+
+      # Upload installers so testers can download them from the Actions tab
+      - name: Upload Windows installer
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: SetCrate-Windows
+          path: src-tauri/target/release/bundle/nsis/*.exe
+
+      - name: Upload macOS installer
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: SetCrate-macOS
+          path: src-tauri/target/release/bundle/dmg/*.dmg
