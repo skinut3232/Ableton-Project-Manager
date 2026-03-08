@@ -183,3 +183,10 @@ If any check fails, fix the errors before moving on. **Do not skip these checks.
 See [project_spec.md](./project_spec.md) for full details. Key items:
 - Node.js version warning (v20.11.0 vs Vite 7's v20.19+ requirement) — builds fine
 - `SessionTimer` receives unused `projectName` prop (prefixed `_`)
+
+### Two Test Runners — Desktop vs Mobile (IMPORTANT)
+The desktop and mobile apps have **separate, independent test setups**:
+- **Desktop:** Vitest (runs via root `npm test` / `npx vitest run`) — configured in `vite.config.ts`
+- **Mobile:** Jest 29 + jest-expo (runs via `cd mobile && npm test`) — configured in `mobile/jest.config.js`
+
+`vite.config.ts` **must** exclude `**/mobile/**` from Vitest's test paths. Without this, the CI `npm test` step picks up mobile Jest test files and fails because `expo/tsconfig.base` isn't available at the root level. This was fixed in commit `a38a3ee`.
