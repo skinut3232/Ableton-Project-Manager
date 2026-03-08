@@ -37,8 +37,11 @@
 | **Cloud sync** | Supabase (Postgres + Storage + Auth) | User auth, project data sync, MP3/cover uploads |
 | **Mobile app** | Expo SDK 54, React Native 0.81 | Companion app for browsing, editing, and playback on the go |
 | **Mobile state** | Zustand 5 + TanStack React Query 5 | Same state management pattern as desktop |
-| **Mobile audio** | expo-av | Background audio playback with seeking |
+| **Mobile audio** | expo-av | Background audio playback with seeking, iOS/Android interruption handling |
+| **Mobile haptics** | expo-haptics | Tactile feedback on play/pause, ratings, filter toggles |
+| **Mobile network** | @react-native-community/netinfo | Offline detection with animated banner |
 | **Mobile auth** | @supabase/supabase-js | Shared Supabase auth with desktop |
+| **Mobile testing** | Jest 29 + jest-expo + @testing-library/react-native | 140 tests across 15 suites |
 | **Landing site** | Next.js 16 (Turbopack) + Tailwind CSS v4 | Marketing site at setcrate.app |
 | **Landing animations** | Framer Motion 12 | Scroll-triggered animations and transitions |
 | **Landing hosting** | Vercel | Auto-deploy from GitHub, edge CDN, custom domain |
@@ -201,10 +204,25 @@ The LemonSqueezy checkout URL and API keys are injected via `option_env!()` at c
 | Spotify references | Done | View saved Spotify tracks/albums |
 | Bounces list | Done | View bounces with MP3 playback |
 | Audio playback | Done | Expo-av background audio, play/pause, seek via progress bar, skip forward/back |
+| Audio hardening | Done | Full iOS/Android interruption modes (DoNotMix), duck Android, try/catch on all audio exports, audioError state in store |
 | Now Playing screen | Done | Large cover art, seekable progress bar (responder system), transport controls |
 | MiniPlayer | Done | Persistent bottom bar with play/pause, navigates to Now Playing |
 | Cover images | Done | Renders from Supabase `cover_url`, HSL color fallback when null |
 | Pull-to-refresh | Done | Refetch data from Supabase |
+| Error boundary | Done | React class component catches render errors with dark-themed fallback UI and "Try Again" button |
+| Offline banner | Done | Animated banner via @react-native-community/netinfo, shows "No internet connection" |
+| Session expiry | Done | Detects unexpected SIGNED_OUT events, shows "Session expired" warning on login screen |
+| Haptic feedback | Done | expo-haptics: light tap (play/pause, skip, bounce play), medium tap (now playing controls), selection tap (ratings, filters) |
+| Forgot password | Done | Inline reset flow on login screen, calls `resetPasswordForEmail`, success message |
+| Form validation | Done | Email regex, 6-char password minimum, inline field errors below inputs |
+| Legal links | Done | Settings screen: Privacy Policy, Terms of Service (open in browser), Contact Support (mailto) |
+| Account deletion | Done | Two-step confirmation Alert, calls `delete-account` Supabase Edge Function, signs out on success |
+| Keyboard handling | Done | `keyboardShouldPersistTaps`, `keyboardDismissMode`, `returnKeyType` next/done flow with auto-focus |
+| Safe area fixes | Done | Login screen top padding, ProjectDetail dynamic bottom padding via `insets.bottom` |
+| Enhanced EmptyState | Done | `variant` (empty/error), `actionLabel` + `onAction` for retry buttons |
+| Accessibility pass | Done | `accessibilityRole` and `accessibilityLabel` on all interactive elements across all screens |
+| iOS build config | Done | `buildNumber`, `UIBackgroundModes: ["audio"]`, EAS production/preview iOS profiles, submit placeholder |
+| Test suite | Done | 140 tests across 15 suites (Jest 29 + jest-expo + @testing-library/react-native) |
 
 ### 4.8 SetCrate Brand Alignment (Beyond Spec - Complete)
 
@@ -293,16 +311,19 @@ The LemonSqueezy checkout URL and API keys are injected via `option_env!()` at c
 |----------|----------|----------------|
 | **Windows Desktop** | `SetCrate_1.0.0_x64-setup.exe` (NSIS installer) | Download from [GitHub Releases](https://github.com/skinut3232/Ableton-Project-Manager/releases/tag/v1.0.0), run installer |
 | **Android Mobile** | `setcrate.apk` (EAS Build, Expo SDK 54) | Download APK from GitHub Releases, sideload (Settings → Install unknown apps) |
+| **iOS Mobile** | IPA (EAS Build, Expo SDK 54) | TestFlight during pre-release; App Store submission pending Apple Developer enrollment |
 
 **Build pipeline:**
 - Desktop: `npx tauri build` → NSIS installer in `src-tauri/target/release/bundle/nsis/`
-- Mobile: `eas build --platform android --profile production` → APK built in Expo cloud
+- Mobile Android: `eas build --platform android --profile production` → APK built in Expo cloud
+- Mobile iOS: `eas build --platform ios --profile production` → IPA built in Expo cloud, then `eas submit --platform ios`
 - Landing site: `next build` → auto-deployed to Vercel on push to `skinut3232/setcrate-site` (`master` branch)
 - Releases: `gh release create` with both artifacts attached
 
 **Signing:**
 - Desktop: Unsigned (Windows SmartScreen warns on first run — download modal includes amber callout with bypass instructions)
 - Android: Keystore managed by EAS (stored on Expo servers)
+- iOS: Certificates and provisioning profiles managed by EAS (linked via `eas credentials`)
 
 **Licensing:**
 - Desktop: 14-day local trial → $29 one-time purchase via LemonSqueezy (license key activation)
@@ -328,8 +349,8 @@ The LemonSqueezy checkout URL and API keys are injected via `option_env!()` at c
 
 | Item | Impact | Effort |
 |------|--------|--------|
-| **No test infrastructure** | High | High — no unit tests, integration tests, or E2E tests exist for a data management app |
-| **No React error boundaries** | Medium | Low — app crashes could leave user in broken state with no recovery UI |
+| **No desktop test infrastructure** | High | High — no unit tests, integration tests, or E2E tests exist for the desktop app (mobile has 140 tests) |
+| **No desktop React error boundaries** | Medium | Low — desktop app crashes could leave user in broken state with no recovery UI (mobile has ErrorBoundary) |
 | **Dead code cleanup** | Low | Low — `BouncesList.tsx` (orphaned, bounces render in TimelineTab), `ArtworkUpload.tsx` (empty), `NotesEditor.tsx` (replaced by NotesPanel), `App.tsx` (3-line stub, unused) |
 | **Console.log statements** | Low | Low — 7 debug logs in Spotify SDK integration should use proper logging |
 | **SessionTimer unused prop** | Low | Trivial — `projectName` prop accepted but prefixed with `_` to suppress warning |
@@ -354,6 +375,12 @@ These are explicitly listed as future ideas in the spec documents, not current c
 - AI-driven cover suggestions
 - Cover art export to release platforms
 - macOS support
+- iOS App Store submission (code-ready, pending Apple Developer enrollment — $99/yr)
+- Lock screen / Control Center playback controls (requires react-native-track-player migration)
+- Biometric auth (Face ID / Touch ID)
+- Push notifications
+- Crash reporting (Sentry/similar)
+- Mobile analytics
 
 ---
 
@@ -431,17 +458,19 @@ External API calls (Spotify, SoundCloud) follow the same pattern but also involv
 | Rust license (trial, API, commands) | 4 | 550 |
 | Rust MP3 + artwork | 2 | 250 |
 | SQL schema + migrations | 2 | 600 |
-| Mobile screens | 5 | 900 |
-| Mobile components | 16 | 1,900 |
-| Mobile hooks | 10 | 500 |
-| Mobile stores + lib | 7 | 550 |
-| Mobile navigation + providers | 4 | 250 |
+| Mobile screens | 5 | 1,200 |
+| Mobile components | 18 | 2,200 |
+| Mobile hooks | 11 | 550 |
+| Mobile stores + lib | 8 | 600 |
+| Mobile navigation + providers | 4 | 300 |
+| Mobile tests | 15 | 1,400 |
+| Mobile config (jest, babel, setup) | 3 | 30 |
 | License UI components | 4 | 400 |
 | License hooks | 1 | 80 |
-| Supabase Edge Functions | 1 | 200 |
+| Supabase Edge Functions | 2 | 250 |
 | Supabase migrations | 5 | 300 |
 | Landing site components | 16 | 1,200 |
 | Landing site pages + layout | 5 | 400 |
 | Landing site lib + API | 4 | 150 |
 | Config (Tauri, Vite, TS, Expo, Next.js) | 12 | 200 |
-| **Total** | **~203** | **~29,480** |
+| **Total** | **~223** | **~31,510** |
