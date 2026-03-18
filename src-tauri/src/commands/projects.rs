@@ -39,3 +39,29 @@ pub fn get_all_genres(state: State<DbState>) -> Result<Vec<String>, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
     queries::get_all_genres(&conn)
 }
+
+#[tauri::command]
+pub fn quick_create_project(state: State<DbState>, name: String, parent_folder: String) -> Result<Project, String> {
+    let trimmed = name.trim();
+    if trimmed.is_empty() {
+        return Err("Project name cannot be empty".to_string());
+    }
+
+    let project_path = std::path::Path::new(&parent_folder).join(trimmed);
+    let project_path_str = project_path.to_string_lossy().to_string();
+
+    // Create directory
+    std::fs::create_dir_all(&project_path)
+        .map_err(|e| format!("Failed to create project folder: {}", e))?;
+
+    // Create Bounces subfolder (use default name "Bounces")
+    let conn = state.0.lock().map_err(|e| e.to_string())?;
+    let bounce_folder_name = queries::get_setting(&conn, "bounce_folder_name")?
+        .unwrap_or_else(|| "Bounces".to_string());
+    let bounces_dir = project_path.join(&bounce_folder_name);
+    std::fs::create_dir_all(&bounces_dir)
+        .map_err(|e| format!("Failed to create bounces folder: {}", e))?;
+
+    // Insert into DB
+    queries::create_project(&conn, trimmed, &project_path_str)
+}

@@ -6,6 +6,8 @@ import { FilterBar } from '../components/library/FilterBar';
 import { ProjectGrid } from '../components/library/ProjectGrid';
 import { ProjectTable } from '../components/library/ProjectTable';
 import { ScanProgressModal } from '../components/library/ScanProgressModal';
+import { BulkActionBar } from '../components/library/BulkActionBar';
+import { QuickCreateDialog } from '../components/library/QuickCreateDialog';
 import { useProjects, useRefreshLibrary, useAddProject } from '../hooks/useProjects';
 import { useSettings, getSettingValue } from '../hooks/useSettings';
 import { tauriInvoke } from '../hooks/useTauriInvoke';
@@ -25,6 +27,9 @@ export function LibraryView() {
   const searchQuery = useLibraryStore((s) => s.searchQuery);
   const viewMode = useLibraryStore((s) => s.viewMode);
   const [scanProgress, setScanProgress] = useState<ScanProgress | null>(null);
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const activeCollectionId = useLibraryStore((s) => s.activeCollectionId);
+  const setActiveCollectionId = useLibraryStore((s) => s.setActiveCollectionId);
 
   const rootFolder = getSettingValue(settings, 'root_folder');
   const scanOnLaunch = getSettingValue(settings, 'scan_on_launch') !== 'false';
@@ -111,8 +116,20 @@ export function LibraryView() {
         isAdding={addProject.isPending}
         onAddProject={handleAddProject}
         onRandomProject={handleRandomProject}
+        onNewProject={() => setShowQuickCreate(true)}
         projectCount={projects?.length ?? 0}
       />
+      {activeCollectionId !== null && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-text-secondary">Viewing collection</span>
+          <button
+            onClick={() => setActiveCollectionId(null)}
+            className="text-xs text-brand-400 hover:text-brand-300"
+          >
+            Clear
+          </button>
+        </div>
+      )}
       <FilterBar />
 
       {refreshLibrary.isPending && !projects?.length ? (
@@ -136,6 +153,9 @@ export function LibraryView() {
       ) : (
         <ProjectGrid projects={projects} />
       )}
+
+      <BulkActionBar />
+      <QuickCreateDialog isOpen={showQuickCreate} onClose={() => setShowQuickCreate(false)} />
 
       {/* Refresh error banner */}
       {refreshLibrary.data?.errors && refreshLibrary.data.errors.length > 0 && (

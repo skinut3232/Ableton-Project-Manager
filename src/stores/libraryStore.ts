@@ -21,6 +21,8 @@ interface LibraryState {
   viewMode: 'grid' | 'table';
   visibleColumns: TableColumnKey[];
   tableSortDir: 'asc' | 'desc';
+  activeCollectionId: number | null;
+  selectedProjectIds: number[];
 
   setSearchQuery: (query: string) => void;
   setSortBy: (sort: string) => void;
@@ -34,6 +36,11 @@ interface LibraryState {
   setVisibleColumns: (columns: TableColumnKey[]) => void;
   toggleColumn: (column: TableColumnKey) => void;
   setTableSort: (sortBy: string, dir: 'asc' | 'desc') => void;
+  setActiveCollectionId: (id: number | null) => void;
+  toggleProjectSelection: (id: number) => void;
+  selectRange: (fromId: number, toId: number, allIds: number[]) => void;
+  selectAll: (ids: number[]) => void;
+  clearSelection: () => void;
   resetFilters: () => void;
   getFilters: () => ProjectFilters;
 }
@@ -58,6 +65,8 @@ export const useLibraryStore = create<LibraryState>()(
       viewMode: 'table',
       visibleColumns: DEFAULT_VISIBLE_COLUMNS,
       tableSortDir: 'desc',
+      activeCollectionId: null,
+      selectedProjectIds: [],
 
       setSearchQuery: (query) => set({ searchQuery: query }),
       setSortBy: (sort) => set({ sortBy: sort }),
@@ -86,6 +95,32 @@ export const useLibraryStore = create<LibraryState>()(
         }),
       setTableSort: (sortBy, dir) => set({ sortBy, tableSortDir: dir }),
 
+      setActiveCollectionId: (id) => set({ activeCollectionId: id }),
+
+      toggleProjectSelection: (id) =>
+        set((state) => {
+          const has = state.selectedProjectIds.includes(id);
+          return {
+            selectedProjectIds: has
+              ? state.selectedProjectIds.filter((pid) => pid !== id)
+              : [...state.selectedProjectIds, id],
+          };
+        }),
+
+      selectRange: (fromId, toId, allIds) =>
+        set(() => {
+          const fromIdx = allIds.indexOf(fromId);
+          const toIdx = allIds.indexOf(toId);
+          if (fromIdx === -1 || toIdx === -1) return {};
+          const start = Math.min(fromIdx, toIdx);
+          const end = Math.max(fromIdx, toIdx);
+          return { selectedProjectIds: allIds.slice(start, end + 1) };
+        }),
+
+      selectAll: (ids) => set({ selectedProjectIds: ids }),
+
+      clearSelection: () => set({ selectedProjectIds: [] }),
+
       resetFilters: () =>
         set({
           searchQuery: '',
@@ -102,6 +137,8 @@ export const useLibraryStore = create<LibraryState>()(
             { key: 'near_done', label: 'Near Done', active: false },
           ],
           tableSortDir: 'desc',
+          activeCollectionId: null,
+          selectedProjectIds: [],
         }),
 
       getFilters: () => {
@@ -123,6 +160,11 @@ export const useLibraryStore = create<LibraryState>()(
         }
         if (state.genreFilters.length > 0) {
           filters.genres = state.genreFilters;
+        }
+
+        // Collection filter
+        if (state.activeCollectionId !== null) {
+          filters.collection_id = state.activeCollectionId;
         }
 
         // Apply smart filters

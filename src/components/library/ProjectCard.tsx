@@ -3,6 +3,7 @@ import { RatingStars } from '../ui/RatingStars';
 import { PlayButton } from '../audio/PlayButton';
 import { CoverImage } from '../ui/CoverImage';
 import { getRelativeTime } from '../../lib/utils';
+import { useLibraryStore } from '../../stores/libraryStore';
 import type { Project, ProjectStatus } from '../../types';
 
 interface ProjectCardProps {
@@ -14,6 +15,10 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, index, isFocused, onClick, onContextMenu }: ProjectCardProps) {
+  const selectedIds = useLibraryStore((s) => s.selectedProjectIds);
+  const toggleSelection = useLibraryStore((s) => s.toggleProjectSelection);
+  const isSelected = selectedIds.includes(project.id);
+  const hasSelection = selectedIds.length > 0;
   const relativeTime = project.last_worked_on ? getRelativeTime(project.last_worked_on) : '';
 
   return (
@@ -25,6 +30,18 @@ export function ProjectCard({ project, index, isFocused, onClick, onContextMenu 
         isFocused ? 'border-brand-500 ring-1 ring-brand-500' : 'border-border-default'
       }`}
     >
+      {/* Selection checkbox */}
+      <div
+        className={`absolute top-2 left-2 z-10 ${hasSelection || isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
+        onClick={(e) => { e.stopPropagation(); toggleSelection(project.id); }}
+      >
+        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer ${
+          isSelected ? 'bg-brand-500 border-brand-500' : 'border-text-muted bg-bg-primary/80'
+        }`}>
+          {isSelected && <span className="text-white text-xs">&#10003;</span>}
+        </div>
+      </div>
+
       {/* Artwork */}
       <div className="relative mb-3">
         <CoverImage project={project} size="md" className="rounded-md" />

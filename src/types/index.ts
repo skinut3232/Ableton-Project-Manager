@@ -42,6 +42,7 @@ export interface AbletonSet {
   project_id: number;
   set_path: string;
   modified_time: string;
+  file_size: number | null;
 }
 
 export interface Bounce {
@@ -50,6 +51,7 @@ export interface Bounce {
   bounce_path: string;
   modified_time: string;
   duration_seconds: number | null;
+  notes: string;
 }
 
 export interface Tag {
@@ -96,6 +98,7 @@ export interface ProjectFilters {
   show_archived?: boolean;
   sort_by?: string;
   sort_dir?: string;
+  collection_id?: number;
 }
 
 export interface IncompleteSession {
@@ -265,4 +268,84 @@ export interface LicenseInfo {
   days_remaining: number | null;
   checkout_url: string;
   license_key_masked: string | null;
+}
+
+// ── Version Timeline types ──
+
+export interface VersionNote {
+  id: number;
+  set_id: number;
+  project_id: number;
+  note: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VersionTimelineEntry {
+  set: AbletonSet;
+  note: string | null;
+  note_id: number | null;
+}
+
+// ── Collections types ──
+
+export type CollectionType = 'smart' | 'manual';
+
+export interface Collection {
+  id: number;
+  name: string;
+  collection_type: CollectionType;
+  icon: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+  project_count: number;
+}
+
+export interface SmartCollectionRule {
+  id: number;
+  collection_id: number;
+  field: SmartFilterField;
+  operator: SmartFilterOperator;
+  value: string;
+  sort_order: number;
+}
+
+export interface SmartCollectionRuleInput {
+  field: string;
+  operator: string;
+  value: string;
+}
+
+export type SmartFilterField =
+  | 'bpm' | 'key' | 'genre' | 'status' | 'tag' | 'plugin'
+  | 'in_rotation' | 'rating' | 'last_worked_on' | 'has_missing_deps' | 'progress';
+
+export type SmartFilterOperator =
+  | 'gt' | 'lt' | 'eq' | 'gte' | 'lte' | 'between'
+  | 'is' | 'is_not' | 'has' | 'has_not' | 'contains'
+  | 'within_days' | 'older_than_days';
+
+// ── Health Dashboard types ──
+
+export interface LibraryHealth {
+  total_projects: number;
+  total_als_files: number;
+  total_bounces: number;
+  total_disk_size_bytes: number;
+  missing_deps_count: number;
+  stale_projects_count: number;
+  stale_threshold_days: number;
+  status_breakdown: StatusCount[];
+  genre_breakdown: GenreCount[];
+}
+
+export interface StatusCount {
+  status: string;
+  count: number;
+}
+
+export interface GenreCount {
+  genre: string;
+  count: number;
 }

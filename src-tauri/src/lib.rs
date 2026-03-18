@@ -145,6 +145,33 @@ pub fn run() {
             commands::license::get_checkout_url,
             commands::als::get_project_plugins,
             commands::als::get_project_samples,
+            // v1.1.0 — Bounce notes
+            commands::bounces::update_bounce_notes,
+            // v1.1.0 — Version timeline
+            commands::versions::get_version_timeline,
+            commands::versions::upsert_version_note,
+            commands::versions::delete_version_note,
+            // v1.1.0 — Project quick-create
+            commands::projects::quick_create_project,
+            // v1.1.0 — Collections
+            commands::collections::get_collections,
+            commands::collections::create_collection,
+            commands::collections::update_collection,
+            commands::collections::delete_collection,
+            commands::collections::reorder_collections,
+            commands::collections::get_smart_collection_rules,
+            commands::collections::set_smart_collection_rules,
+            commands::collections::add_project_to_collection,
+            commands::collections::remove_project_from_collection,
+            commands::collections::reorder_collection_projects,
+            // v1.1.0 — Bulk operations
+            commands::bulk::bulk_add_tag,
+            commands::bulk::bulk_remove_tag,
+            commands::bulk::bulk_archive,
+            commands::bulk::bulk_set_genre,
+            commands::bulk::bulk_add_to_collection,
+            // v1.1.0 — Health dashboard
+            commands::health::get_library_health,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

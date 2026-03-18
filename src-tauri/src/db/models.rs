@@ -46,6 +46,7 @@ pub struct AbletonSet {
     pub project_id: i64,
     pub set_path: String,
     pub modified_time: String,
+    pub file_size: Option<i64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -55,6 +56,7 @@ pub struct Bounce {
     pub bounce_path: String,
     pub modified_time: String,
     pub duration_seconds: Option<f64>,
+    pub notes: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -205,6 +207,7 @@ pub struct ProjectFilters {
     pub show_archived: Option<bool>,
     pub sort_by: Option<String>,
     pub sort_dir: Option<String>,
+    pub collection_id: Option<i64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -218,4 +221,90 @@ pub struct SampleWithStatus {
     pub path: String,
     pub filename: String,
     pub is_missing: bool,
+}
+
+// ── Version Timeline types ──
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct VersionNote {
+    pub id: i64,
+    pub set_id: i64,
+    pub project_id: i64,
+    pub note: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct VersionTimelineEntry {
+    pub set: AbletonSet,
+    pub note: Option<String>,
+    pub note_id: Option<i64>,
+}
+
+// ── Collections types ──
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Collection {
+    pub id: i64,
+    pub name: String,
+    pub collection_type: String,
+    pub icon: String,
+    pub sort_order: i64,
+    pub created_at: String,
+    pub updated_at: String,
+    pub project_count: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SmartCollectionRule {
+    pub id: i64,
+    pub collection_id: i64,
+    pub field: String,
+    pub operator: String,
+    pub value: String,
+    pub sort_order: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SmartCollectionRuleInput {
+    pub field: String,
+    pub operator: String,
+    pub value: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CollectionProject {
+    pub id: i64,
+    pub collection_id: i64,
+    pub project_id: i64,
+    pub sort_order: i64,
+    pub created_at: String,
+}
+
+// ── Health Dashboard types ──
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct LibraryHealth {
+    pub total_projects: i64,
+    pub total_als_files: i64,
+    pub total_bounces: i64,
+    pub total_disk_size_bytes: i64,
+    pub missing_deps_count: i64,
+    pub stale_projects_count: i64,
+    pub stale_threshold_days: i64,
+    pub status_breakdown: Vec<StatusCount>,
+    pub genre_breakdown: Vec<GenreCount>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct StatusCount {
+    pub status: String,
+    pub count: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GenreCount {
+    pub genre: String,
+    pub count: i64,
 }

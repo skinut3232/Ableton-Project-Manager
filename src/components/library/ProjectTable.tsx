@@ -22,7 +22,15 @@ export function ProjectTable({ projects }: ProjectTableProps) {
   const setTableSort = useLibraryStore((s) => s.setTableSort);
   const focusedCardIndex = useLibraryStore((s) => s.focusedCardIndex);
   const setFocusedCardIndex = useLibraryStore((s) => s.setFocusedCardIndex);
+  const selectedIds = useLibraryStore((s) => s.selectedProjectIds);
+  const toggleSelection = useLibraryStore((s) => s.toggleProjectSelection);
+  const selectAll = useLibraryStore((s) => s.selectAll);
+  const clearSelection = useLibraryStore((s) => s.clearSelection);
+  const selectRange = useLibraryStore((s) => s.selectRange);
   const { menuState, menuItems, handleContextMenu, closeMenu } = useProjectContextMenu();
+
+  const allIds = projects.map(p => p.id);
+  const allSelected = projects.length > 0 && selectedIds.length === projects.length;
 
   const columns = TABLE_COLUMNS.filter((c) => visibleColumns.includes(c.key));
 
@@ -57,6 +65,15 @@ export function ProjectTable({ projects }: ProjectTableProps) {
       <table className="w-full text-sm text-left table-fixed">
         <thead className="bg-bg-elevated border-b border-border-default sticky top-0 z-10">
           <tr>
+            <th className="w-8 px-1 py-2.5 text-center">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={() => allSelected ? clearSelection() : selectAll(allIds)}
+                className="accent-brand-500 cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </th>
             <th className="w-10 px-1 py-2.5" />
             {columns.map((col) => (
               <th
@@ -78,19 +95,38 @@ export function ProjectTable({ projects }: ProjectTableProps) {
           </tr>
         </thead>
         <tbody className="divide-y divide-bg-elevated">
-          {projects.map((project, index) => (
+          {projects.map((project, index) => {
+            const isSelected = selectedIds.includes(project.id);
+            return (
             <tr
               key={project.id}
               id={`project-card-${index}`}
-              onClick={() => navigate(`/project/${project.id}`)}
+              onClick={(e) => {
+                if (e.shiftKey && selectedIds.length > 0) {
+                  const lastSelected = selectedIds[selectedIds.length - 1];
+                  selectRange(lastSelected, project.id, allIds);
+                } else {
+                  navigate(`/project/${project.id}`);
+                }
+              }}
               onContextMenu={(e) => handleContextMenu(e, project)}
               onMouseEnter={() => setFocusedCardIndex(index)}
               className={`cursor-pointer transition-colors ${
-                focusedCardIndex === index
-                  ? 'bg-bg-surface/50'
-                  : 'bg-bg-primary hover:bg-bg-elevated'
+                isSelected
+                  ? 'bg-brand-500/10'
+                  : focusedCardIndex === index
+                    ? 'bg-bg-surface/50'
+                    : 'bg-bg-primary hover:bg-bg-elevated'
               }`}
             >
+              <td className="px-1 py-2 text-center" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => toggleSelection(project.id)}
+                  className="accent-brand-500 cursor-pointer"
+                />
+              </td>
               <td className="px-1 py-2 text-center">
                 <PlayButton projectId={project.id} project={project} />
               </td>
@@ -103,7 +139,8 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                 </td>
               ))}
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
       {menuState && (

@@ -20,3 +20,7 @@ pub mod auth;
 pub mod sync;
 pub mod license;
 pub mod als;
+pub mod versions;
+pub mod collections;
+pub mod bulk;
+pub mod health;

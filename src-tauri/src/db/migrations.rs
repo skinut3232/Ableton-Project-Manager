@@ -283,6 +283,7 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
         }
 
         // Migration v11 → v12: .als parsing (plugins, samples, FTS plugins_text)
+        #[allow(unused_assignments)]
         if version < 12 {
             // New tables for plugins and samples
             conn.execute_batch(
@@ -322,6 +323,11 @@ pub fn run_migrations(conn: &Connection) -> Result<(), String> {
             conn.execute_batch("INSERT INTO schema_version (version) VALUES (12);")
                 .map_err(|e| format!("Migration v12 failed: {}", e))?;
             log::info!("Migrated database to schema version 12 (als parsing, plugins, samples, FTS plugins_text)");
+        }
+
+        // Migration v12 → v13: collections, version notes, bounce notes, file_size
+        if version < 13 {
+            migrate_v12_to_v13(conn)?;
         }
     }
 
@@ -380,6 +386,77 @@ fn migrate_v8_to_v9(conn: &Connection) -> Result<(), String> {
     ).map_err(|e| format!("Migration v9 failed (version bump): {}", e))?;
 
     log::info!("Migrated database to schema version 9 (sync tracking columns)");
+    Ok(())
+}
+
+fn migrate_v12_to_v13(conn: &Connection) -> Result<(), String> {
+    // --- Collections (smart and manual) ---
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS collections (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            collection_type TEXT NOT NULL DEFAULT 'manual',
+            icon TEXT NOT NULL DEFAULT '',
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            remote_id INTEGER,
+            sync_status TEXT NOT NULL DEFAULT 'unsynced',
+            sync_updated_at TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS smart_collection_rules (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            collection_id INTEGER NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+            field TEXT NOT NULL,
+            operator TEXT NOT NULL,
+            value TEXT NOT NULL,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            remote_id INTEGER,
+            sync_status TEXT NOT NULL DEFAULT 'unsynced',
+            sync_updated_at TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_smart_collection_rules_collection_id ON smart_collection_rules(collection_id);
+
+        CREATE TABLE IF NOT EXISTS collection_projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            collection_id INTEGER NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+            project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            remote_id INTEGER,
+            sync_status TEXT NOT NULL DEFAULT 'unsynced',
+            sync_updated_at TEXT,
+            UNIQUE(collection_id, project_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_collection_projects_collection_id ON collection_projects(collection_id);
+        CREATE INDEX IF NOT EXISTS idx_collection_projects_project_id ON collection_projects(project_id);
+
+        CREATE TABLE IF NOT EXISTS version_notes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            set_id INTEGER NOT NULL REFERENCES ableton_sets(id) ON DELETE CASCADE,
+            project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            note TEXT NOT NULL DEFAULT '',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            remote_id INTEGER,
+            sync_status TEXT NOT NULL DEFAULT 'unsynced',
+            sync_updated_at TEXT,
+            UNIQUE(set_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_version_notes_project_id ON version_notes(project_id);
+        CREATE INDEX IF NOT EXISTS idx_version_notes_set_id ON version_notes(set_id);"
+    ).map_err(|e| format!("Migration v13 tables failed: {}", e))?;
+
+    // --- ALTER TABLE additions ---
+    conn.execute("ALTER TABLE bounces ADD COLUMN notes TEXT NOT NULL DEFAULT ''", []).ok();
+    conn.execute("ALTER TABLE ableton_sets ADD COLUMN file_size INTEGER", []).ok();
+
+    // Bump version
+    conn.execute_batch("INSERT INTO schema_version (version) VALUES (13);")
+        .map_err(|e| format!("Migration v13 version bump failed: {}", e))?;
+
+    log::info!("Migrated database to schema version 13 (collections, version notes, bounce notes, file_size)");
     Ok(())
 }
 

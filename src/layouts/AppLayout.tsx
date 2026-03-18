@@ -10,6 +10,7 @@ import { SyncIndicator } from '../components/ui/SyncIndicator';
 import { TrialBanner } from '../components/license/TrialBanner';
 import { useRestoreSession } from '../hooks/useAuth';
 import { isModKey } from '../lib/platform';
+import { CollectionsList } from '../components/collections/CollectionsList';
 
 export function AppLayout() {
   const currentBounce = useAudioStore((s) => s.currentBounce);
@@ -102,6 +103,25 @@ export function AppLayout() {
             <span>&#9835;</span> Library
           </NavLink>
           <NavLink
+            to="/health"
+            className={({ isActive }) =>
+              `flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
+                isActive
+                  ? 'bg-bg-elevated text-text-primary'
+                  : 'text-text-secondary hover:bg-bg-elevated hover:text-text-primary'
+              }`
+            }
+          >
+            <span>&#9636;</span> Dashboard
+          </NavLink>
+
+          {/* Collections */}
+          <div className="mt-2 pt-2 border-t border-border-default">
+            <CollectionsList />
+          </div>
+
+          <div className="mt-auto" />
+          <NavLink
             to="/settings"
             className={({ isActive }) =>
               `flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
@@ -116,7 +136,7 @@ export function AppLayout() {
         </div>
         <div className="p-3 border-t border-border-default space-y-1">
           <SyncIndicator />
-          <p className="text-[10px] text-text-muted">v1.0.0</p>
+          <p className="text-[10px] text-text-muted">v1.1.0</p>
         </div>
       </nav>
 

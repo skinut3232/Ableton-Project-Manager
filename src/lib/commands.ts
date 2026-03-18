@@ -42,6 +42,12 @@ import type {
   LicenseInfo,
   PluginInfo,
   SampleInfo,
+  VersionTimelineEntry,
+  VersionNote,
+  Collection,
+  SmartCollectionRule,
+  SmartCollectionRuleInput,
+  LibraryHealth,
 } from '../types';
 
 // Each key is the exact command name string passed to invoke().
@@ -445,6 +451,102 @@ export type CommandMap = {
   get_checkout_url: {
     args: Record<string, never>;
     return: string;
+  };
+
+  // --- Bounce Notes (v1.1.0) ---
+  update_bounce_notes: {
+    args: { id: number; notes: string };
+    return: Bounce;
+  };
+
+  // --- Version Timeline (v1.1.0) ---
+  get_version_timeline: {
+    args: { projectId: number };
+    return: VersionTimelineEntry[];
+  };
+  upsert_version_note: {
+    args: { setId: number; projectId: number; note: string };
+    return: VersionNote;
+  };
+  delete_version_note: {
+    args: { setId: number };
+    return: void;
+  };
+
+  // --- Project Quick-Create (v1.1.0) ---
+  quick_create_project: {
+    args: { name: string; parentFolder: string };
+    return: Project;
+  };
+
+  // --- Collections (v1.1.0) ---
+  get_collections: {
+    args: Record<string, never>;
+    return: Collection[];
+  };
+  create_collection: {
+    args: { name: string; collectionType: string; icon: string };
+    return: Collection;
+  };
+  update_collection: {
+    args: { id: number; name?: string | null; icon?: string | null };
+    return: Collection;
+  };
+  delete_collection: {
+    args: { id: number };
+    return: void;
+  };
+  reorder_collections: {
+    args: { ids: number[] };
+    return: void;
+  };
+  get_smart_collection_rules: {
+    args: { collectionId: number };
+    return: SmartCollectionRule[];
+  };
+  set_smart_collection_rules: {
+    args: { collectionId: number; rules: SmartCollectionRuleInput[] };
+    return: SmartCollectionRule[];
+  };
+  add_project_to_collection: {
+    args: { collectionId: number; projectId: number };
+    return: void;
+  };
+  remove_project_from_collection: {
+    args: { collectionId: number; projectId: number };
+    return: void;
+  };
+  reorder_collection_projects: {
+    args: { collectionId: number; projectIds: number[] };
+    return: void;
+  };
+
+  // --- Bulk Operations (v1.1.0) ---
+  bulk_add_tag: {
+    args: { projectIds: number[]; tagId: number };
+    return: void;
+  };
+  bulk_remove_tag: {
+    args: { projectIds: number[]; tagId: number };
+    return: void;
+  };
+  bulk_archive: {
+    args: { projectIds: number[]; archived: boolean };
+    return: void;
+  };
+  bulk_set_genre: {
+    args: { projectIds: number[]; genreLabel: string };
+    return: void;
+  };
+  bulk_add_to_collection: {
+    args: { projectIds: number[]; collectionId: number };
+    return: void;
+  };
+
+  // --- Health Dashboard (v1.1.0) ---
+  get_library_health: {
+    args: { staleThresholdDays?: number | null };
+    return: LibraryHealth;
   };
 };
 

@@ -13,6 +13,7 @@ export function useProjects() {
   const genreFilters = useLibraryStore(s => s.genreFilters);
   const smartFilters = useLibraryStore(s => s.smartFilters);
   const tableSortDir = useLibraryStore(s => s.tableSortDir);
+  const activeCollectionId = useLibraryStore(s => s.activeCollectionId);
 
   const filters = useMemo(() => {
     const f: ProjectFilters = {
@@ -24,6 +25,7 @@ export function useProjects() {
     if (statusFilters.length > 0) f.statuses = statusFilters;
     if (tagFilters.length > 0) f.tag_ids = tagFilters;
     if (genreFilters.length > 0) f.genres = genreFilters;
+    if (activeCollectionId !== null) f.collection_id = activeCollectionId;
 
     for (const sf of smartFilters) {
       if (!sf.active) continue;
@@ -36,7 +38,7 @@ export function useProjects() {
       }
     }
     return f;
-  }, [searchQuery, sortBy, tableSortDir, showArchived, statusFilters, tagFilters, genreFilters, smartFilters]);
+  }, [searchQuery, sortBy, tableSortDir, showArchived, statusFilters, tagFilters, genreFilters, smartFilters, activeCollectionId]);
 
   return useQuery({
     queryKey: ['projects', filters],
@@ -115,6 +117,17 @@ export function useImportProjects() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (projects: DiscoveredProject[]) => tauriInvoke<ScanSummary>('import_projects', { projects }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+export function useQuickCreateProject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (args: { name: string; parentFolder: string }) =>
+      tauriInvoke<Project>('quick_create_project', args),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },

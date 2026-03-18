@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT INTO schema_version (version) VALUES (12);
+INSERT INTO schema_version (version) VALUES (13);
 
 -- Settings (key-value pairs)
 CREATE TABLE IF NOT EXISTS settings (
@@ -57,7 +57,8 @@ CREATE TABLE IF NOT EXISTS ableton_sets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     set_path TEXT NOT NULL UNIQUE,
-    modified_time TEXT NOT NULL
+    modified_time TEXT NOT NULL,
+    file_size INTEGER
 );
 
 CREATE INDEX IF NOT EXISTS idx_ableton_sets_project_id ON ableton_sets(project_id);
@@ -69,7 +70,8 @@ CREATE TABLE IF NOT EXISTS bounces (
     bounce_path TEXT NOT NULL UNIQUE,
     modified_time TEXT NOT NULL,
     duration_seconds REAL,
-    mp3_url TEXT
+    mp3_url TEXT,
+    notes TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX IF NOT EXISTS idx_bounces_project_id ON bounces(project_id);
@@ -221,6 +223,68 @@ CREATE TABLE IF NOT EXISTS project_samples (
 );
 
 CREATE INDEX IF NOT EXISTS idx_project_samples_project_id ON project_samples(project_id);
+
+-- Collections (smart and manual)
+CREATE TABLE IF NOT EXISTS collections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    collection_type TEXT NOT NULL DEFAULT 'manual',
+    icon TEXT NOT NULL DEFAULT '',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    remote_id INTEGER,
+    sync_status TEXT NOT NULL DEFAULT 'unsynced',
+    sync_updated_at TEXT
+);
+
+-- Smart collection filter rules (AND logic)
+CREATE TABLE IF NOT EXISTS smart_collection_rules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    collection_id INTEGER NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+    field TEXT NOT NULL,
+    operator TEXT NOT NULL,
+    value TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    remote_id INTEGER,
+    sync_status TEXT NOT NULL DEFAULT 'unsynced',
+    sync_updated_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_smart_collection_rules_collection_id ON smart_collection_rules(collection_id);
+
+-- Manual collection membership (ordered)
+CREATE TABLE IF NOT EXISTS collection_projects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    collection_id INTEGER NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    remote_id INTEGER,
+    sync_status TEXT NOT NULL DEFAULT 'unsynced',
+    sync_updated_at TEXT,
+    UNIQUE(collection_id, project_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_collection_projects_collection_id ON collection_projects(collection_id);
+CREATE INDEX IF NOT EXISTS idx_collection_projects_project_id ON collection_projects(project_id);
+
+-- Version notes (annotations on .als files)
+CREATE TABLE IF NOT EXISTS version_notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    set_id INTEGER NOT NULL REFERENCES ableton_sets(id) ON DELETE CASCADE,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    note TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    remote_id INTEGER,
+    sync_status TEXT NOT NULL DEFAULT 'unsynced',
+    sync_updated_at TEXT,
+    UNIQUE(set_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_version_notes_project_id ON version_notes(project_id);
+CREATE INDEX IF NOT EXISTS idx_version_notes_set_id ON version_notes(set_id);
 
 -- FTS5 Virtual Table (standalone — Rust manages inserts/deletes with HTML stripping)
 CREATE VIRTUAL TABLE IF NOT EXISTS projects_fts USING fts5(

@@ -28,44 +28,9 @@ pub fn scan_library(conn: &Connection, root_folder: &str, bounce_folder_name: &s
         errors: Vec::new(),
     };
 
-    // Collect all project directories (dirs containing .als files)
-    let mut project_dirs: Vec<(PathBuf, String)> = Vec::new(); // (path, genre_label)
-
-    match fs::read_dir(root) {
-        Ok(entries) => {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if !path.is_dir() {
-                    continue;
-                }
-
-                let dir_name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
-
-                // Skip hidden directories
-                if dir_name.starts_with('.') {
-                    continue;
-                }
-
-                // Check if this dir itself is a project (contains .als files)
-                if has_als_files(&path) {
-                    project_dirs.push((path, String::new())); // No genre label for root-level projects
-                } else {
-                    // It might be a genre folder - check one level deeper
-                    if let Ok(sub_entries) = fs::read_dir(&path) {
-                        for sub_entry in sub_entries.flatten() {
-                            let sub_path = sub_entry.path();
-                            if sub_path.is_dir() && has_als_files(&sub_path) {
-                                project_dirs.push((sub_path, dir_name.clone()));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Err(e) => {
-            return Err(format!("Failed to read root folder: {}", e));
-        }
-    }
+    // Recursively discover all project directories (dirs containing .als files)
+    let mut project_dirs: Vec<(PathBuf, String)> = Vec::new();
+    discover_project_dirs(root, root, 0, &mut project_dirs);
 
     // Track found project paths
     let mut found_paths: Vec<String> = Vec::new();
@@ -130,6 +95,62 @@ pub(crate) fn has_als_files(dir: &Path) -> bool {
         }
     }
     false
+}
+
+/// Maximum recursion depth for project discovery (prevents runaway traversal).
+const MAX_SCAN_DEPTH: usize = 10;
+
+/// Recursively walk `dir` looking for directories that contain .als files.
+/// Once a directory is identified as a project (has .als files), we do NOT
+/// recurse into it — this avoids treating Backup/ subfolders as separate projects.
+fn discover_project_dirs(root: &Path, dir: &Path, depth: usize, results: &mut Vec<(PathBuf, String)>) {
+    if depth > MAX_SCAN_DEPTH {
+        return;
+    }
+
+    let entries = match fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(_) => return,
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if !path.is_dir() {
+            continue;
+        }
+
+        // Skip hidden directories
+        let dir_name = path.file_name().unwrap_or_default().to_string_lossy();
+        if dir_name.starts_with('.') {
+            continue;
+        }
+
+        if has_als_files(&path) {
+            // This is a project — record it and don't recurse deeper
+            let genre_label = derive_genre_label(root, &path);
+            results.push((path, genre_label));
+        } else {
+            // Not a project — recurse deeper
+            discover_project_dirs(root, &path, depth + 1, results);
+        }
+    }
+}
+
+/// Derive the genre label from the first directory component after root.
+/// e.g. root/Techno/Deep/Track A → "Techno"
+///      root/Track A             → ""
+fn derive_genre_label(root: &Path, project_path: &Path) -> String {
+    if let Ok(relative) = project_path.strip_prefix(root) {
+        let mut components = relative.components();
+        if let Some(first) = components.next() {
+            // If there's a second component, then `first` is a genre folder
+            if components.next().is_some() {
+                return first.as_os_str().to_string_lossy().to_string();
+            }
+        }
+    }
+    // Project is directly in root — no genre label
+    String::new()
 }
 
 pub(crate) fn process_project(
@@ -216,12 +237,13 @@ pub(crate) fn process_project(
         |row| row.get(0),
     ).map_err(|e| e.to_string())?;
 
-    // Upsert .als files
+    // Upsert .als files (with file_size)
     for (set_path, modified_time) in &als_files {
+        let file_size: Option<i64> = fs::metadata(set_path).ok().map(|m| m.len() as i64);
         conn.execute(
-            "INSERT INTO ableton_sets (project_id, set_path, modified_time) VALUES (?1, ?2, ?3) \
-             ON CONFLICT(set_path) DO UPDATE SET modified_time = ?3",
-            params![project_id, set_path, modified_time],
+            "INSERT INTO ableton_sets (project_id, set_path, modified_time, file_size) VALUES (?1, ?2, ?3, ?4) \
+             ON CONFLICT(set_path) DO UPDATE SET modified_time = ?3, file_size = ?4",
+            params![project_id, set_path, modified_time, file_size],
         ).map_err(|e| e.to_string())?;
     }
 
@@ -507,63 +529,29 @@ pub fn refresh_library(conn: &Connection, bounce_folder_name: &str, app_data_dir
     Ok(summary)
 }
 
-/// Walk root folder 1-2 levels deep and return projects NOT already in DB.
+/// Recursively walk root folder and return projects NOT already in DB.
 pub fn discover_untracked_projects(conn: &Connection, root_folder: &str) -> Result<Vec<DiscoveredProject>, String> {
     let root = Path::new(root_folder);
     if !root.exists() || !root.is_dir() {
         return Err(format!("Root folder does not exist: {}", root_folder));
     }
 
+    let mut project_dirs: Vec<(PathBuf, String)> = Vec::new();
+    discover_project_dirs(root, root, 0, &mut project_dirs);
+
     let mut discovered: Vec<DiscoveredProject> = Vec::new();
-
-    match fs::read_dir(root) {
-        Ok(entries) => {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if !path.is_dir() {
-                    continue;
-                }
-
-                let dir_name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
-                if dir_name.starts_with('.') {
-                    continue;
-                }
-
-                if has_als_files(&path) {
-                    let path_str = path.to_string_lossy().to_string();
-                    if !project_exists_in_db(conn, &path_str)? {
-                        discovered.push(DiscoveredProject {
-                            path: path_str,
-                            name: dir_name,
-                            genre_label: String::new(),
-                        });
-                    }
-                } else {
-                    // Check one level deeper (genre subfolder)
-                    if let Ok(sub_entries) = fs::read_dir(&path) {
-                        for sub_entry in sub_entries.flatten() {
-                            let sub_path = sub_entry.path();
-                            if sub_path.is_dir() && has_als_files(&sub_path) {
-                                let sub_path_str = sub_path.to_string_lossy().to_string();
-                                if !project_exists_in_db(conn, &sub_path_str)? {
-                                    let sub_name = sub_path.file_name()
-                                        .unwrap_or_default()
-                                        .to_string_lossy()
-                                        .to_string();
-                                    discovered.push(DiscoveredProject {
-                                        path: sub_path_str,
-                                        name: sub_name,
-                                        genre_label: dir_name.clone(),
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Err(e) => {
-            return Err(format!("Failed to read root folder: {}", e));
+    for (path, genre_label) in project_dirs {
+        let path_str = path.to_string_lossy().to_string();
+        if !project_exists_in_db(conn, &path_str)? {
+            let name = path.file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string();
+            discovered.push(DiscoveredProject {
+                path: path_str,
+                name,
+                genre_label,
+            });
         }
     }
 
@@ -730,4 +718,184 @@ fn project_exists_in_db(conn: &Connection, path: &str) -> Result<bool, String> {
         |row| row.get(0),
     ).map_err(|e| e.to_string())?;
     Ok(count > 0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::TempDir;
+
+    /// Create an empty .als file inside a directory.
+    fn touch_als(dir: &Path, name: &str) {
+        fs::write(dir.join(name), b"").unwrap();
+    }
+
+    /// Helper: run discover_project_dirs and return sorted results for deterministic comparison.
+    fn discover_sorted(root: &Path) -> Vec<(PathBuf, String)> {
+        let mut results = Vec::new();
+        discover_project_dirs(root, root, 0, &mut results);
+        results.sort_by(|a, b| a.0.cmp(&b.0));
+        results
+    }
+
+    #[test]
+    fn test_project_directly_in_root() {
+        // root/TrackA/song.als → genre ""
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path().join("TrackA");
+        fs::create_dir(&project).unwrap();
+        touch_als(&project, "song.als");
+
+        let results = discover_sorted(tmp.path());
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].0, project);
+        assert_eq!(results[0].1, "");
+    }
+
+    #[test]
+    fn test_two_level_genre_structure() {
+        // root/Techno/TrackA/song.als → genre "Techno"
+        let tmp = TempDir::new().unwrap();
+        let genre = tmp.path().join("Techno");
+        let project = genre.join("TrackA");
+        fs::create_dir_all(&project).unwrap();
+        touch_als(&project, "song.als");
+
+        let results = discover_sorted(tmp.path());
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].0, project);
+        assert_eq!(results[0].1, "Techno");
+    }
+
+    #[test]
+    fn test_deeply_nested_project() {
+        // root/2026/DUMMY EP/TrackA/song.als → genre "2026"
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path().join("2026").join("DUMMY EP").join("TrackA");
+        fs::create_dir_all(&project).unwrap();
+        touch_als(&project, "song.als");
+
+        let results = discover_sorted(tmp.path());
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].0, project);
+        assert_eq!(results[0].1, "2026");
+    }
+
+    #[test]
+    fn test_does_not_recurse_into_project_dirs() {
+        // root/TrackA/song.als (project)
+        // root/TrackA/Backup/song_backup.als (should NOT be found as separate project)
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path().join("TrackA");
+        let backup = project.join("Backup");
+        fs::create_dir_all(&backup).unwrap();
+        touch_als(&project, "song.als");
+        touch_als(&backup, "song_backup.als");
+
+        let results = discover_sorted(tmp.path());
+        assert_eq!(results.len(), 1, "Backup/ should not be treated as a separate project");
+        assert_eq!(results[0].0, project);
+    }
+
+    #[test]
+    fn test_skips_hidden_directories() {
+        // root/.hidden/song.als → should be skipped
+        // root/Visible/song.als → should be found
+        let tmp = TempDir::new().unwrap();
+        let hidden = tmp.path().join(".hidden");
+        let visible = tmp.path().join("Visible");
+        fs::create_dir_all(&hidden).unwrap();
+        fs::create_dir_all(&visible).unwrap();
+        touch_als(&hidden, "song.als");
+        touch_als(&visible, "song.als");
+
+        let results = discover_sorted(tmp.path());
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].0, visible);
+    }
+
+    #[test]
+    fn test_multiple_projects_at_different_depths() {
+        // root/TrackA/song.als                    → genre ""
+        // root/Techno/TrackB/song.als             → genre "Techno"
+        // root/2026/EP/TrackC/song.als            → genre "2026"
+        let tmp = TempDir::new().unwrap();
+
+        let p1 = tmp.path().join("TrackA");
+        fs::create_dir_all(&p1).unwrap();
+        touch_als(&p1, "song.als");
+
+        let p2 = tmp.path().join("Techno").join("TrackB");
+        fs::create_dir_all(&p2).unwrap();
+        touch_als(&p2, "song.als");
+
+        let p3 = tmp.path().join("2026").join("EP").join("TrackC");
+        fs::create_dir_all(&p3).unwrap();
+        touch_als(&p3, "song.als");
+
+        let results = discover_sorted(tmp.path());
+        assert_eq!(results.len(), 3);
+
+        // Find each project by path and check genre
+        let find = |name: &str| results.iter().find(|(p, _)| p.file_name().unwrap().to_string_lossy() == name).unwrap();
+        assert_eq!(find("TrackA").1, "");
+        assert_eq!(find("TrackB").1, "Techno");
+        assert_eq!(find("TrackC").1, "2026");
+    }
+
+    #[test]
+    fn test_empty_root_returns_nothing() {
+        let tmp = TempDir::new().unwrap();
+        let results = discover_sorted(tmp.path());
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn test_als_files_in_root_not_treated_as_project() {
+        // root/song.als — root itself has .als files but root isn't scanned as a project dir
+        // (discover_project_dirs only looks at children of dir)
+        let tmp = TempDir::new().unwrap();
+        touch_als(tmp.path(), "song.als");
+
+        let results = discover_sorted(tmp.path());
+        assert!(results.is_empty(), "Root dir itself should not be returned as a project");
+    }
+
+    #[test]
+    fn test_depth_cap_respected() {
+        // Create a path 12 levels deep — should not be found (exceeds MAX_SCAN_DEPTH of 10)
+        let tmp = TempDir::new().unwrap();
+        let mut deep = tmp.path().to_path_buf();
+        for i in 0..12 {
+            deep = deep.join(format!("level{}", i));
+        }
+        deep = deep.join("Project");
+        fs::create_dir_all(&deep).unwrap();
+        touch_als(&deep, "song.als");
+
+        let results = discover_sorted(tmp.path());
+        assert!(results.is_empty(), "Projects deeper than MAX_SCAN_DEPTH should not be found");
+    }
+
+    #[test]
+    fn test_derive_genre_label_direct_child() {
+        let root = Path::new("/music");
+        let project = Path::new("/music/TrackA");
+        assert_eq!(derive_genre_label(root, project), "");
+    }
+
+    #[test]
+    fn test_derive_genre_label_two_levels() {
+        let root = Path::new("/music");
+        let project = Path::new("/music/Techno/TrackA");
+        assert_eq!(derive_genre_label(root, project), "Techno");
+    }
+
+    #[test]
+    fn test_derive_genre_label_three_levels() {
+        let root = Path::new("/music");
+        let project = Path::new("/music/2026/EP/TrackA");
+        assert_eq!(derive_genre_label(root, project), "2026");
+    }
 }

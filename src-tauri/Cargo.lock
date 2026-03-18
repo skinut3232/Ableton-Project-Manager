@@ -3903,7 +3903,7 @@ dependencies = [
 
 [[package]]
 name = "setcrate"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "base64 0.22.1",
  "chrono",
@@ -3926,6 +3926,7 @@ dependencies = [
  "tauri-plugin-log",
  "tauri-plugin-opener",
  "tauri-plugin-window-state",
+ "tempfile",
  "walkdir",
 ]
 

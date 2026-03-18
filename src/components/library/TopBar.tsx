@@ -8,10 +8,11 @@ interface TopBarProps {
   isAdding: boolean;
   onAddProject: () => void;
   onRandomProject: () => void;
+  onNewProject: () => void;
   projectCount: number;
 }
 
-export function TopBar({ isAdding, onAddProject, onRandomProject, projectCount }: TopBarProps) {
+export function TopBar({ isAdding, onAddProject, onRandomProject, onNewProject, projectCount }: TopBarProps) {
   const searchQuery = useLibraryStore((s) => s.searchQuery);
   const setSearchQuery = useLibraryStore((s) => s.setSearchQuery);
   const sortBy = useLibraryStore((s) => s.sortBy);
@@ -96,6 +97,15 @@ export function TopBar({ isAdding, onAddProject, onRandomProject, projectCount }
           <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
           <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" stroke="none" />
         </svg>
+      </Button>
+
+      {/* New Project */}
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={onNewProject}
+      >
+        New
       </Button>
 
       {/* Add Project */}

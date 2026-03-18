@@ -11,12 +11,14 @@ import { AssetsTab } from '../components/assets/AssetsTab';
 import { InsightsTab } from '../components/insights/InsightsTab';
 import { PluginsTab } from '../components/project/PluginsTab';
 import { NotesPanel } from '../components/project/NotesPanel';
+import { VersionTimeline } from '../components/project/VersionTimeline';
 import { Button } from '../components/ui/Button';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { useAudioStore } from '../stores/audioStore';
 
 const TABS = [
   { key: 'timeline', label: 'Timeline' },
+  { key: 'versions', label: 'Versions' },
   { key: 'notes', label: 'Notes' },
   { key: 'tasks', label: 'Tasks' },
   { key: 'references', label: 'References' },
@@ -123,6 +125,9 @@ export function ProjectDetailView() {
       <div className="min-h-[400px]">
         {activeTab === 'timeline' && (
           <TimelineTab project={project} bounces={bounces} />
+        )}
+        {activeTab === 'versions' && (
+          <VersionTimeline projectId={project.id} />
         )}
         {activeTab === 'notes' && (
           <NotesPanel projectId={project.id} />
