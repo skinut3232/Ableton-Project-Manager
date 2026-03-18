@@ -136,7 +136,7 @@ export function AppLayout() {
         </div>
         <div className="p-3 border-t border-border-default space-y-1">
           <SyncIndicator />
-          <p className="text-[10px] text-text-muted">v1.1.0</p>
+          <p className="text-[10px] text-text-muted">v1.2.0</p>
         </div>
       </nav>
 
