@@ -48,6 +48,7 @@ import type {
   SmartCollectionRule,
   SmartCollectionRuleInput,
   LibraryHealth,
+  UpdateInfo,
 } from '../types';
 
 // Each key is the exact command name string passed to invoke().
@@ -547,6 +548,12 @@ export type CommandMap = {
   get_library_health: {
     args: { staleThresholdDays?: number | null };
     return: LibraryHealth;
+  };
+
+  // --- Update Checker ---
+  check_for_update: {
+    args: Record<string, never>;
+    return: UpdateInfo;
   };
 };
 

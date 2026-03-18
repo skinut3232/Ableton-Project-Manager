@@ -172,6 +172,8 @@ pub fn run() {
             commands::bulk::bulk_add_to_collection,
             // v1.1.0 — Health dashboard
             commands::health::get_library_health,
+            // Update checker
+            commands::updater::check_for_update,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -24,3 +24,4 @@ pub mod versions;
 pub mod collections;
 pub mod bulk;
 pub mod health;
+pub mod updater;

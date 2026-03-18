@@ -11,6 +11,7 @@ import { TrialBanner } from '../components/license/TrialBanner';
 import { useRestoreSession } from '../hooks/useAuth';
 import { isModKey } from '../lib/platform';
 import { CollectionsList } from '../components/collections/CollectionsList';
+import { UpdateBanner } from '../components/ui/UpdateBanner';
 
 export function AppLayout() {
   const currentBounce = useAudioStore((s) => s.currentBounce);
@@ -142,6 +143,7 @@ export function AppLayout() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        <UpdateBanner />
         <TrialBanner />
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />

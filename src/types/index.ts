@@ -349,3 +349,13 @@ export interface GenreCount {
   genre: string;
   count: number;
 }
+
+// ── Update Checker types ──
+
+export interface UpdateInfo {
+  update_available: boolean;
+  current_version: string;
+  latest_version: string;
+  release_url: string;
+  release_notes: string;
+}
