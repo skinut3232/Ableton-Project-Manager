@@ -36,6 +36,9 @@ videos/
 *.mkv
 *.stackdump
 nul
+brand-kit-2/
+photos/
+supabase/.temp/
 
 # Screenshots (use site/public/screenshots/ only)
 app_screenshots/
