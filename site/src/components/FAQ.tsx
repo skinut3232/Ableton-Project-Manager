@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Container from "./ui/Container";
-import SectionHeading from "./ui/SectionHeading";
+import SplitHeader from "./SplitHeader";
 import AccordionItem from "./ui/AccordionItem";
 import { FAQ_ITEMS } from "@/lib/constants";
 import { fadeIn } from "@/lib/animations";
@@ -15,14 +15,14 @@ export default function FAQ({ onMacWaitlistClick }: FAQProps) {
   return (
     <section id="faq" className="py-20 sm:py-28">
       <Container>
-        <SectionHeading>Frequently Asked Questions</SectionHeading>
+        <SplitHeader headline="Frequently Asked Questions" />
 
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-80px" }}
           variants={fadeIn}
-          className="mx-auto max-w-2xl"
+          className="mx-auto max-w-[600px]"
         >
           {FAQ_ITEMS.map((item) => (
             <AccordionItem
@@ -33,7 +33,7 @@ export default function FAQ({ onMacWaitlistClick }: FAQProps) {
                 item.question === "Is macOS supported?" && onMacWaitlistClick ? (
                   <button
                     onClick={onMacWaitlistClick}
-                    className="text-sm font-medium text-accent hover:text-accent/80 transition-colors cursor-pointer"
+                    className="text-sm font-medium text-accent transition-colors duration-200 hover:text-accent-highlight cursor-pointer"
                   >
                     Join the Mac waitlist &rarr;
                   </button>

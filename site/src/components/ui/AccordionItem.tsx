@@ -22,10 +22,10 @@ export default function AccordionItem({ question, answer, extra }: AccordionItem
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-controls={panelId}
-        className="flex w-full items-center justify-between py-5 text-left cursor-pointer"
+        className="flex w-full items-center justify-between py-[18px] text-left cursor-pointer"
       >
-        <span className="text-lg font-medium text-heading">{question}</span>
-        <span className="ml-4 shrink-0 text-2xl text-muted transition-transform duration-200"
+        <span className="text-sm font-medium text-heading-secondary">{question}</span>
+        <span className="ml-4 shrink-0 text-lg text-tertiary transition-transform duration-200"
           style={{ transform: open ? "rotate(45deg)" : "rotate(0deg)" }}
           aria-hidden="true"
         >
@@ -44,7 +44,7 @@ export default function AccordionItem({ question, answer, extra }: AccordionItem
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <p className="pb-5 text-body leading-relaxed">{answer}</p>
+            <p className="pb-5 text-sm text-body leading-relaxed">{answer}</p>
             {extra && <div className="pb-5">{extra}</div>}
           </motion.div>
         )}

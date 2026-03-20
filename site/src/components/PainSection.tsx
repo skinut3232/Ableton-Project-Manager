@@ -2,38 +2,36 @@
 
 import { motion } from "framer-motion";
 import Container from "./ui/Container";
-import SectionHeading from "./ui/SectionHeading";
-import { PAIN_HEADLINE, PAIN_POINTS } from "@/lib/constants";
-import { fadeInUp, staggerContainer } from "@/lib/animations";
+import SplitHeader from "./SplitHeader";
+import { PAIN_HEADLINE, PAIN_DESCRIPTION, PAIN_POINTS } from "@/lib/constants";
+import { fadeInUp } from "@/lib/animations";
 
 export default function PainSection() {
   return (
     <section id="pain" className="py-20 sm:py-28">
       <Container>
-        <SectionHeading>{PAIN_HEADLINE}</SectionHeading>
+        <SplitHeader headline={PAIN_HEADLINE} description={PAIN_DESCRIPTION} />
 
         <motion.div
-          variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-80px" }}
-          className="mx-auto grid max-w-3xl gap-6 sm:grid-cols-2"
+          variants={fadeInUp}
+          className="overflow-hidden rounded-[10px] bg-border"
         >
-          {PAIN_POINTS.map((point) => (
-            <motion.div
-              key={point.title}
-              variants={fadeInUp}
-              className="rounded-xl border border-border bg-surface p-6"
-            >
-              <span className="text-3xl">{point.icon}</span>
-              <h3 className="mt-4 text-lg font-semibold text-heading">
-                {point.title}
-              </h3>
-              <p className="mt-2 text-body leading-relaxed">
-                {point.description}
-              </p>
-            </motion.div>
-          ))}
+          <div className="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-4">
+            {PAIN_POINTS.map((point) => (
+              <div key={point.title} className="bg-surface p-6">
+                <span className="text-2xl">{point.icon}</span>
+                <h3 className="mt-3 text-sm font-semibold text-heading-secondary">
+                  {point.title}
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed text-body-muted">
+                  {point.description}
+                </p>
+              </div>
+            ))}
+          </div>
         </motion.div>
       </Container>
     </section>
