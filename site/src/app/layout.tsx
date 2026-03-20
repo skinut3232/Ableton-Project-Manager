@@ -14,7 +14,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SetCrate — Ableton Project Manager for Windows",
+  title: "SetCrate — Ableton Project Manager",
   description:
     "Scan your Ableton library, extract BPM and key from .als files, detect missing samples, find projects by plugin — and access everything from your phone.",
   icons: {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "SetCrate — Ableton Project Manager for Windows",
+    title: "SetCrate — Ableton Project Manager",
     description:
       "Scan your Ableton library, extract BPM and key from .als files, detect missing samples, find projects by plugin — and access everything from your phone.",
     type: "website",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "SetCrate — Ableton Project Manager for Windows",
+    title: "SetCrate — Ableton Project Manager",
     description:
       "Scan your Ableton library, extract BPM and key from .als files, detect missing samples, find projects by plugin — and access everything from your phone.",
   },

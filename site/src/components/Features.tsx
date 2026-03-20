@@ -25,7 +25,7 @@ export default function Features() {
         return (
           <section
             key={feature.headline}
-            className="border-t border-section-border py-20 sm:py-[120px]"
+            className="py-20 sm:py-[120px]"
           >
             <Container>
               {/* Split header with label, headline, description, and numbered link */}

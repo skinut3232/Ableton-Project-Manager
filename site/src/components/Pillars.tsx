@@ -7,7 +7,7 @@ import { fadeInUp } from "@/lib/animations";
 
 export default function Pillars() {
   return (
-    <section className="border-t border-section-border py-20">
+    <section className="py-20">
       <Container>
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           {PILLARS.map((pillar, i) => (

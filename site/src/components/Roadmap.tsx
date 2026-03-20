@@ -6,11 +6,7 @@ import SplitHeader from "./SplitHeader";
 import { ROADMAP_HEADLINE, ROADMAP_ITEMS } from "@/lib/constants";
 import { fadeInUp } from "@/lib/animations";
 
-interface RoadmapProps {
-  onMacWaitlistClick?: () => void;
-}
-
-export default function Roadmap({ onMacWaitlistClick }: RoadmapProps) {
+export default function Roadmap() {
   return (
     <section id="roadmap" className="py-20 sm:py-28">
       <Container>
@@ -38,14 +34,6 @@ export default function Roadmap({ onMacWaitlistClick }: RoadmapProps) {
                   {item.phase}
                 </p>
                 <p className="mt-2 text-sm text-body">{item.description}</p>
-                {item.phase === "Next" && onMacWaitlistClick && (
-                  <button
-                    onClick={onMacWaitlistClick}
-                    className="mt-3 text-sm font-medium text-accent transition-colors duration-200 hover:text-accent-highlight cursor-pointer"
-                  >
-                    Join the Mac waitlist &rarr;
-                  </button>
-                )}
               </motion.div>
             );
           })}

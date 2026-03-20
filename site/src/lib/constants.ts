@@ -18,7 +18,7 @@ export const NAV_LINKS: NavLink[] = [
 ];
 
 // ── Announcement ───────────────────────────────────────────────
-export const ANNOUNCEMENT = "SetCrate v1.2 is here";
+export const ANNOUNCEMENT = "SetCrate now available on macOS";
 
 // ── Pillars ────────────────────────────────────────────────────
 export const PILLARS: Pillar[] = [
@@ -113,7 +113,7 @@ export const HERO = {
   subheadline:
     "SetCrate scans your Ableton library, reads your .als files to extract BPM, key, and plugins, catches missing samples before you open the DAW — and syncs everything to your phone.",
   cta: "Try Free for 14 Days",
-  subCta: "Windows \u00b7 Free for 14 days \u00b7 No credit card required",
+  subCta: "Windows & macOS \u00b7 Free for 14 days \u00b7 No credit card required",
   tagline: "Made by a producer who got tired of messy project folders.",
 };
 
@@ -213,7 +213,7 @@ export const PRICING_CARDS: PricingCard[] = [
       "Free updates",
     ],
     ctaText: "Try Free for 14 Days",
-    subText: "Windows \u00b7 No credit card required",
+    subText: "Windows & macOS \u00b7 No credit card required",
     primary: true,
   },
   {
@@ -271,12 +271,12 @@ export const ROADMAP_HEADLINE = "Where we're headed";
 export const ROADMAP_ITEMS: RoadmapItem[] = [
   {
     phase: "Now",
-    description: "Windows desktop app + Android mobile sync",
+    description: "Windows & macOS desktop + Android mobile sync",
     opacity: "opacity-100",
   },
   {
     phase: "Next",
-    description: "macOS support",
+    description: "iOS mobile sync",
     opacity: "opacity-60",
   },
   {
@@ -316,7 +316,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: "Is macOS supported?",
     answer:
-      "Not yet — Windows only at launch. macOS support is our top priority and is actively in development. Sign up for updates and we'll let you know when it ships.",
+      "Yes! SetCrate runs natively on macOS (Apple Silicon). Download it from the same trial — works exactly like the Windows version.",
   },
   {
     question: "Do I need the mobile sync subscription?",
@@ -340,12 +340,14 @@ export const FINAL_CTA = {
   headline: "Ready to take control of your sessions?",
   subheadline: "14 days free. No credit card. No commitment.",
   cta: "Try Free for 14 Days",
-  subText: "Windows \u00b7 Made by a producer, for producers.",
+  subText: "Windows & macOS \u00b7 Made by a producer, for producers.",
 };
 
 // ── Download ────────────────────────────────────────────────────
-export const DOWNLOAD_URL =
+export const DOWNLOAD_URL_WIN =
   "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_1.0.0_x64-setup.exe";
+export const DOWNLOAD_URL_MAC =
+  "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_1.0.0_aarch64.dmg";
 
 // ── Email Modal ─────────────────────────────────────────────────
 export const EMAIL_MODAL = {
@@ -357,11 +359,3 @@ export const EMAIL_MODAL = {
   successMessage: "Your download is starting!",
 };
 
-export const MAC_WAITLIST_MODAL = {
-  headline: "Join the Mac Waitlist",
-  description:
-    "macOS support is actively in development. Drop your email and we'll let you know as soon as it's ready.",
-  cta: "Join Waitlist",
-  placeholder: "you@email.com",
-  successMessage: "You're on the list! We'll email you when the Mac version is ready.",
-};

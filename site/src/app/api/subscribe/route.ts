@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
+// "mac_waitlist" kept for backward compatibility with existing signups
 const VALID_SOURCES = ["trial_download", "mac_waitlist"] as const;
 type Source = (typeof VALID_SOURCES)[number];
 

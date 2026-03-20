@@ -2,7 +2,7 @@ import Container from "./ui/Container";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-section-border py-10">
+    <footer className="py-10">
       <Container>
         <div className="flex flex-col items-center gap-4 text-xs sm:flex-row sm:justify-between">
           <p className="text-muted">
