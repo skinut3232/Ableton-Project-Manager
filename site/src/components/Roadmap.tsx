@@ -2,9 +2,9 @@
 
 import { motion } from "framer-motion";
 import Container from "./ui/Container";
-import SectionHeading from "./ui/SectionHeading";
+import SplitHeader from "./SplitHeader";
 import { ROADMAP_HEADLINE, ROADMAP_ITEMS } from "@/lib/constants";
-import { fadeInUp, staggerContainer } from "@/lib/animations";
+import { fadeInUp } from "@/lib/animations";
 
 interface RoadmapProps {
   onMacWaitlistClick?: () => void;
@@ -14,83 +14,42 @@ export default function Roadmap({ onMacWaitlistClick }: RoadmapProps) {
   return (
     <section id="roadmap" className="py-20 sm:py-28">
       <Container>
-        <SectionHeading>{ROADMAP_HEADLINE}</SectionHeading>
+        <SplitHeader headline={ROADMAP_HEADLINE} />
 
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="mx-auto max-w-3xl"
-        >
-          {/* Desktop: horizontal timeline */}
-          <div className="hidden sm:grid sm:grid-cols-3 sm:gap-6">
-            {ROADMAP_ITEMS.map((item, i) => (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {ROADMAP_ITEMS.map((item) => {
+            const opacityClass =
+              item.opacity === "opacity-100"
+                ? "opacity-100"
+                : item.opacity === "opacity-60"
+                  ? "opacity-70"
+                  : "opacity-50";
+
+            return (
               <motion.div
                 key={item.phase}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-80px" }}
                 variants={fadeInUp}
-                className={item.opacity}
+                className={`rounded-[10px] border border-border bg-surface p-6 ${opacityClass}`}
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div
-                    className={`h-3 w-3 rounded-full ${
-                      i === 0 ? "bg-accent" : "bg-border"
-                    }`}
-                  />
-                  {i < ROADMAP_ITEMS.length - 1 && (
-                    <div className="h-px flex-1 bg-border" />
-                  )}
-                </div>
-                <h3 className="text-lg font-bold text-heading">{item.phase}</h3>
-                <p className="mt-1 text-sm text-body">{item.description}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-accent">
+                  {item.phase}
+                </p>
+                <p className="mt-2 text-sm text-body">{item.description}</p>
                 {item.phase === "Next" && onMacWaitlistClick && (
                   <button
                     onClick={onMacWaitlistClick}
-                    className="mt-2 text-sm font-medium text-accent hover:text-accent/80 transition-colors cursor-pointer"
+                    className="mt-3 text-sm font-medium text-accent transition-colors duration-200 hover:text-accent-highlight cursor-pointer"
                   >
                     Join the Mac waitlist &rarr;
                   </button>
                 )}
               </motion.div>
-            ))}
-          </div>
-
-          {/* Mobile: vertical timeline */}
-          <div className="sm:hidden space-y-6">
-            {ROADMAP_ITEMS.map((item, i) => (
-              <motion.div
-                key={item.phase}
-                variants={fadeInUp}
-                className={`flex gap-4 ${item.opacity}`}
-              >
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`h-3 w-3 rounded-full ${
-                      i === 0 ? "bg-accent" : "bg-border"
-                    }`}
-                  />
-                  {i < ROADMAP_ITEMS.length - 1 && (
-                    <div className="w-px flex-1 bg-border" />
-                  )}
-                </div>
-                <div className="pb-6">
-                  <h3 className="text-lg font-bold text-heading">
-                    {item.phase}
-                  </h3>
-                  <p className="mt-1 text-sm text-body">{item.description}</p>
-                  {item.phase === "Next" && onMacWaitlistClick && (
-                    <button
-                      onClick={onMacWaitlistClick}
-                      className="mt-2 text-sm font-medium text-accent hover:text-accent/80 transition-colors cursor-pointer"
-                    >
-                      Join the Mac waitlist &rarr;
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+            );
+          })}
+        </div>
       </Container>
     </section>
   );

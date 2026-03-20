@@ -1,44 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import Button from "./ui/Button";
 import SetCrateLogo from "./SetCrateLogo";
-import { HERO } from "@/lib/constants";
+import { NAV_LINKS, HERO } from "@/lib/constants";
 
 interface NavProps {
   onCtaClick: () => void;
 }
 
 export default function Nav({ onCtaClick }: NavProps) {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className={`fixed top-0 z-50 w-full transition-colors duration-300 ${
-        scrolled
-          ? "border-b border-border bg-background/90 backdrop-blur-md"
-          : "bg-transparent"
-      }`}
+      className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[rgba(10,10,11,0.8)] backdrop-blur-[12px]"
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-14 max-w-[1080px] items-center justify-between px-6 sm:px-10">
         <a href="#hero" aria-label="SetCrate home">
-          <SetCrateLogo variant="full" height={36} />
+          <SetCrateLogo variant="full" height={32} />
         </a>
-        <Button onClick={onCtaClick} className="text-sm">
-          <span className="hidden sm:inline">{HERO.cta}</span>
-          <span className="sm:hidden">14-Day Trial</span>
-          <span className="ml-1" aria-hidden="true">&rarr;</span>
-        </Button>
+        <div className="flex items-center gap-7">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="hidden text-[13px] text-body transition-colors duration-200 hover:text-heading sm:block"
+            >
+              {link.label}
+            </a>
+          ))}
+          <button
+            onClick={onCtaClick}
+            className="rounded-md bg-heading px-3.5 py-1.5 text-[13px] font-medium text-background transition-colors duration-200 hover:bg-heading-secondary cursor-pointer"
+          >
+            <span className="hidden sm:inline">{HERO.cta}</span>
+            <span className="sm:hidden">Try Free</span>
+          </button>
+        </div>
       </div>
     </motion.nav>
   );

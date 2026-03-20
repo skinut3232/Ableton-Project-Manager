@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Container from "./ui/Container";
-import SectionHeading from "./ui/SectionHeading";
+import SplitHeader from "./SplitHeader";
 import Button from "./ui/Button";
 import { PRICING_HEADLINE, PRICING_CARDS } from "@/lib/constants";
-import { fadeInUp, staggerContainer } from "@/lib/animations";
+import { fadeInUp } from "@/lib/animations";
 
 interface PricingProps {
   onCtaClick: () => void;
@@ -18,31 +18,28 @@ export default function Pricing({ onCtaClick }: PricingProps) {
   return (
     <section id="pricing" className="py-20 sm:py-28">
       <Container>
-        <SectionHeading>{PRICING_HEADLINE}</SectionHeading>
+        <SplitHeader headline={PRICING_HEADLINE} />
 
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-2"
-        >
+        <div className="mx-auto grid max-w-[700px] gap-4 lg:grid-cols-2">
           {PRICING_CARDS.map((card) => (
             <motion.div
               key={card.title}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-80px" }}
               variants={fadeInUp}
               className={`flex flex-col rounded-xl border p-8 ${
                 card.primary
-                  ? "border-accent bg-surface shadow-[0_0_40px_var(--color-accent-glow)]"
+                  ? "border-accent-border bg-surface"
                   : "border-border bg-surface"
               }`}
             >
-              <h3 className="text-xl font-bold text-heading">{card.title}</h3>
+              <h3 className="text-xl font-bold text-heading-secondary">{card.title}</h3>
 
               <div className="mt-4 flex items-baseline gap-1">
                 {card.monthlyPrice ? (
                   <>
-                    <span className="text-4xl font-extrabold text-heading">
+                    <span className="text-[40px] font-bold leading-none tracking-[-1.5px] text-heading">
                       {annual ? card.yearlyPrice : card.monthlyPrice}
                     </span>
                     <span className="text-body">
@@ -56,7 +53,7 @@ export default function Pricing({ onCtaClick }: PricingProps) {
                   </>
                 ) : (
                   <>
-                    <span className="text-4xl font-extrabold text-heading">
+                    <span className="text-[40px] font-bold leading-none tracking-[-1.5px] text-heading">
                       {card.price}
                     </span>
                     <span className="text-body">{card.priceLabel}</span>
@@ -66,7 +63,7 @@ export default function Pricing({ onCtaClick }: PricingProps) {
 
               {card.monthlyPrice && (
                 <div className="mt-4 flex items-center gap-3 text-sm">
-                  <span className={annual ? "text-muted" : "text-heading"}>
+                  <span className={annual ? "text-tertiary" : "text-heading-secondary"}>
                     Monthly
                   </span>
                   <button
@@ -75,7 +72,7 @@ export default function Pricing({ onCtaClick }: PricingProps) {
                     aria-label="Toggle annual pricing"
                     onClick={() => setAnnual(!annual)}
                     className={`relative h-6 w-11 rounded-full transition-colors cursor-pointer ${
-                      annual ? "bg-accent" : "bg-border"
+                      annual ? "bg-accent" : "bg-border-secondary"
                     }`}
                   >
                     <span
@@ -84,7 +81,7 @@ export default function Pricing({ onCtaClick }: PricingProps) {
                       }`}
                     />
                   </button>
-                  <span className={annual ? "text-heading" : "text-muted"}>
+                  <span className={annual ? "text-heading-secondary" : "text-tertiary"}>
                     Annual
                   </span>
                 </div>
@@ -106,7 +103,7 @@ export default function Pricing({ onCtaClick }: PricingProps) {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    <span className="text-body">{f}</span>
+                    <span className="text-sm text-body">{f}</span>
                   </li>
                 ))}
               </ul>
@@ -120,13 +117,13 @@ export default function Pricing({ onCtaClick }: PricingProps) {
                   {card.ctaText}
                   {card.primary && <span className="ml-1" aria-hidden="true">&rarr;</span>}
                 </Button>
-                <p className="mt-2 text-center text-xs text-muted">
+                <p className="mt-2 text-center text-xs text-tertiary">
                   {card.subText}
                 </p>
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </Container>
     </section>
   );

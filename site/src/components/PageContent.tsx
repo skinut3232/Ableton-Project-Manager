@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Nav from "./Nav";
 import Hero from "./Hero";
+import Pillars from "./Pillars";
 import PainSection from "./PainSection";
 import Features from "./Features";
 import Pricing from "./Pricing";
@@ -25,7 +26,8 @@ export default function PageContent() {
     <>
       <Nav onCtaClick={openTrialModal} />
       <main id="main-content">
-        <Hero onCtaClick={openTrialModal} />
+        <Hero />
+        <Pillars />
         <PainSection />
         <Features />
         <Comparison />

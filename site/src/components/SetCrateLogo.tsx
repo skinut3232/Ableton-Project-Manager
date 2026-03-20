@@ -48,8 +48,8 @@ function CrateIcon({ height, className }: { height: number; className: string })
     >
       <defs>
         <linearGradient id="sc-ig" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8B5CF6" />
-          <stop offset="100%" stopColor="#6D28D9" />
+          <stop offset="0%" stopColor="#6366F1" />
+          <stop offset="100%" stopColor="#7C3AED" />
         </linearGradient>
       </defs>
       <rect x="10" y="14" width="100" height="96" rx="12" fill="url(#sc-ig)" />
@@ -89,7 +89,7 @@ function Wordmark({ height, className }: { height: number; className: string }) 
         letterSpacing="-0.5"
       >
         set
-        <tspan fill="#C4B5FD" fontWeight="700">
+        <tspan fill="#A5B4FC" fontWeight="700">
           crate
         </tspan>
       </text>
@@ -123,21 +123,21 @@ function FullLogo({
     >
       <defs>
         <linearGradient id="sc-fg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8B5CF6" />
-          <stop offset="100%" stopColor="#6D28D9" />
+          <stop offset="0%" stopColor="#6366F1" />
+          <stop offset="100%" stopColor="#7C3AED" />
         </linearGradient>
       </defs>
 
       {/* Crate icon */}
       <g transform="translate(0, 4)">
         <rect x="0" y="8" width="70" height="66" rx="8" fill="url(#sc-fg)" />
-        <rect x="20" y="0" width="30" height="14" rx="7" fill="#0A0A0F" />
-        <rect x="9"  y="18" width="4" height="48" rx="2" fill="#0A0A0F" opacity="0.6" />
-        <rect x="18" y="18" width="4" height="48" rx="2" fill="#0A0A0F" opacity="0.45" />
-        <rect x="27" y="18" width="4" height="48" rx="2" fill="#0A0A0F" opacity="0.7" />
-        <rect x="36" y="18" width="4" height="48" rx="2" fill="#0A0A0F" opacity="0.5" />
-        <rect x="45" y="18" width="4" height="48" rx="2" fill="#0A0A0F" opacity="0.35" />
-        <rect x="54" y="18" width="4" height="48" rx="2" fill="#0A0A0F" opacity="0.25" />
+        <rect x="20" y="0" width="30" height="14" rx="7" fill="#0A0A0B" />
+        <rect x="9"  y="18" width="4" height="48" rx="2" fill="#0A0A0B" opacity="0.6" />
+        <rect x="18" y="18" width="4" height="48" rx="2" fill="#0A0A0B" opacity="0.45" />
+        <rect x="27" y="18" width="4" height="48" rx="2" fill="#0A0A0B" opacity="0.7" />
+        <rect x="36" y="18" width="4" height="48" rx="2" fill="#0A0A0B" opacity="0.5" />
+        <rect x="45" y="18" width="4" height="48" rx="2" fill="#0A0A0B" opacity="0.35" />
+        <rect x="54" y="18" width="4" height="48" rx="2" fill="#0A0A0B" opacity="0.25" />
       </g>
 
       {/* Wordmark */}
@@ -151,7 +151,7 @@ function FullLogo({
         letterSpacing="-0.5"
       >
         set
-        <tspan fill="#C4B5FD" fontWeight="700">
+        <tspan fill="#A5B4FC" fontWeight="700">
           crate
         </tspan>
       </text>

@@ -40,3 +40,24 @@ export interface FAQItem {
   question: string;
   answer: string;
 }
+
+export interface Pillar {
+  title: string;
+  description: string;
+}
+
+export interface SubFeature {
+  number: string;
+  label: string;
+}
+
+export interface FeatureSection {
+  label: string;
+  link: { number: string; text: string };
+  subFeatures: SubFeature[];
+}
+
+export interface NavLink {
+  label: string;
+  href: string;
+}

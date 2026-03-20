@@ -5,7 +5,107 @@ import type {
   ComparisonRow,
   RoadmapItem,
   FAQItem,
+  Pillar,
+  FeatureSection,
+  NavLink,
 } from "./types";
+
+// ── Navigation ─────────────────────────────────────────────────
+export const NAV_LINKS: NavLink[] = [
+  { label: "Features", href: "#features" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "FAQ", href: "#faq" },
+];
+
+// ── Announcement ───────────────────────────────────────────────
+export const ANNOUNCEMENT = "SetCrate v1.2 is here";
+
+// ── Pillars ────────────────────────────────────────────────────
+export const PILLARS: Pillar[] = [
+  {
+    title: "Built for producers",
+    description:
+      "Designed around how music makers actually work — projects, sessions, bounces, and the creative chaos in between.",
+  },
+  {
+    title: "Automatic metadata",
+    description:
+      "Reads your .als files to extract BPM, key, plugins, and sample paths. No manual tagging required.",
+  },
+  {
+    title: "Fast and local",
+    description:
+      "Your library stays on your machine. SQLite-powered search that's instant, private, and works offline.",
+  },
+];
+
+// ── Feature Sections (labels, links, sub-features) ─────────────
+export const FEATURE_SECTIONS: FeatureSection[] = [
+  {
+    label: "ORGANIZE",
+    link: { number: "1.0", text: "Organize" },
+    subFeatures: [
+      { number: "1.1", label: "Tags" },
+      { number: "1.2", label: "Collections" },
+      { number: "1.3", label: "Smart Filters" },
+      { number: "1.4", label: "Search" },
+    ],
+  },
+  {
+    label: "TRACK",
+    link: { number: "2.0", text: "Track" },
+    subFeatures: [
+      { number: "2.1", label: "Sessions" },
+      { number: "2.2", label: "Bounces" },
+      { number: "2.3", label: "Version History" },
+      { number: "2.4", label: "Status" },
+    ],
+  },
+  {
+    label: "EXTRACT",
+    link: { number: "3.0", text: "Extract" },
+    subFeatures: [
+      { number: "3.1", label: "BPM & Key" },
+      { number: "3.2", label: "Plugins" },
+      { number: "3.3", label: "Missing Samples" },
+      { number: "3.4", label: "File Formats" },
+    ],
+  },
+  {
+    label: "LAUNCH",
+    link: { number: "4.0", text: "Launch" },
+    subFeatures: [
+      { number: "4.1", label: "Quick Open" },
+      { number: "4.2", label: "Recent Sessions" },
+      { number: "4.3", label: "Project Search" },
+      { number: "4.4", label: "Direct to DAW" },
+    ],
+  },
+  {
+    label: "CAPTURE",
+    link: { number: "5.0", text: "Capture" },
+    subFeatures: [
+      { number: "5.1", label: "Session Notes" },
+      { number: "5.2", label: "Mood Board" },
+      { number: "5.3", label: "References" },
+      { number: "5.4", label: "Photos" },
+    ],
+  },
+  {
+    label: "SYNC",
+    link: { number: "6.0", text: "Sync" },
+    subFeatures: [
+      { number: "6.1", label: "Android App" },
+      { number: "6.2", label: "Offline Access" },
+      { number: "6.3", label: "Bounce Playback" },
+      { number: "6.4", label: "Push Notifications" },
+    ],
+  },
+];
+
+// ── Pain Section Description ───────────────────────────────────
+export const PAIN_DESCRIPTION =
+  "Every producer knows these problems. SetCrate was built to solve them.";
 
 // ── Hero ────────────────────────────────────────────────────────
 export const HERO = {
