@@ -68,6 +68,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Skip code signing — just verifying it compiles
           TAURI_SIGNING_PRIVATE_KEY: ""
+          LEMONSQUEEZY_URL: ${{ secrets.LEMONSQUEEZY_URL }}
 
       # Upload installers so testers can download them from the Actions tab
       - name: Upload Windows installer

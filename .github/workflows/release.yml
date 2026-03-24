@@ -63,6 +63,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ""
+          LEMONSQUEEZY_URL: ${{ secrets.LEMONSQUEEZY_URL }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "SetCrate ${{ github.ref_name }}"
