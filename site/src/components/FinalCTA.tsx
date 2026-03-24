@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Button from "./ui/Button";
 import Container from "./ui/Container";
-import { FINAL_CTA } from "@/lib/constants";
+import { FINAL_CTA, CHECKOUT_URL } from "@/lib/constants";
 import { fadeInUp } from "@/lib/animations";
 
 interface FinalCTAProps {
@@ -30,11 +30,14 @@ export default function FinalCTA({ onCtaClick }: FinalCTAProps) {
           </p>
 
           <div className="mt-8 flex items-center justify-center gap-3">
-            <Button onClick={onCtaClick} className="text-lg px-8 py-4">
-              {FINAL_CTA.cta} <span aria-hidden="true">&rarr;</span>
+            <Button
+              onClick={() => window.open(CHECKOUT_URL, "_blank", "noopener,noreferrer")}
+              className="text-lg px-8 py-4"
+            >
+              {FINAL_CTA.buyCta} <span aria-hidden="true">&rarr;</span>
             </Button>
-            <Button variant="secondary" className="text-lg px-8 py-4">
-              Learn more
+            <Button variant="secondary" onClick={onCtaClick} className="text-lg px-8 py-4">
+              {FINAL_CTA.cta}
             </Button>
           </div>
 

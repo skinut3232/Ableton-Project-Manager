@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Container from "./ui/Container";
 import SplitHeader from "./SplitHeader";
 import Button from "./ui/Button";
-import { PRICING_HEADLINE, PRICING_CARDS } from "@/lib/constants";
+import { PRICING_HEADLINE, PRICING_CARDS, CHECKOUT_URL } from "@/lib/constants";
 import { fadeInUp } from "@/lib/animations";
 
 interface PricingProps {
@@ -108,17 +108,34 @@ export default function Pricing({ onCtaClick }: PricingProps) {
                 ))}
               </ul>
 
-              <div className="mt-8">
-                <Button
-                  variant={card.primary ? "primary" : "secondary"}
-                  onClick={card.primary ? onCtaClick : undefined}
-                  className="w-full"
-                >
-                  {card.ctaText}
-                  {card.primary && <span className="ml-1" aria-hidden="true">&rarr;</span>}
-                </Button>
-                <p className="mt-2 text-center text-xs text-tertiary">
-                  {card.subText}
+              <div className="mt-8 flex flex-col gap-2">
+                {card.primary ? (
+                  <>
+                    <Button
+                      variant="primary"
+                      onClick={() => window.open(CHECKOUT_URL, "_blank", "noopener,noreferrer")}
+                      className="w-full"
+                    >
+                      Buy Now — $29 <span className="ml-1" aria-hidden="true">&rarr;</span>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={onCtaClick}
+                      className="w-full"
+                    >
+                      Try Free for 14 Days
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                  >
+                    {card.ctaText}
+                  </Button>
+                )}
+                <p className="mt-1 text-center text-xs text-tertiary">
+                  {card.primary ? "No credit card required for trial" : card.subText}
                 </p>
               </div>
             </motion.div>

@@ -340,6 +340,7 @@ export const FINAL_CTA = {
   headline: "Ready to take control of your sessions?",
   subheadline: "14 days free. No credit card. No commitment.",
   cta: "Try Free for 14 Days",
+  buyCta: "Buy Now — $29",
   subText: "Windows & macOS \u00b7 Made by a producer, for producers.",
 };
 
@@ -348,6 +349,9 @@ export const DOWNLOAD_URL_WIN =
   "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_1.0.0_x64-setup.exe";
 export const DOWNLOAD_URL_MAC =
   "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_1.0.0_aarch64.dmg";
+
+// ── Checkout ────────────────────────────────────────────────────
+export const CHECKOUT_URL = "https://setcrate.lemonsqueezy.com/";
 
 // ── Email Modal ─────────────────────────────────────────────────
 export const EMAIL_MODAL = {

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import SetCrateLogo from "./SetCrateLogo";
-import { NAV_LINKS, HERO } from "@/lib/constants";
+import { NAV_LINKS, HERO, CHECKOUT_URL } from "@/lib/constants";
 
 interface NavProps {
   onCtaClick: () => void;
@@ -30,6 +30,14 @@ export default function Nav({ onCtaClick }: NavProps) {
               {link.label}
             </a>
           ))}
+          <a
+            href={CHECKOUT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden text-[13px] text-body transition-colors duration-200 hover:text-heading sm:block"
+          >
+            Buy Now
+          </a>
           <button
             onClick={onCtaClick}
             className="rounded-md bg-heading px-3.5 py-1.5 text-[13px] font-medium text-background transition-colors duration-200 hover:bg-heading-secondary cursor-pointer"

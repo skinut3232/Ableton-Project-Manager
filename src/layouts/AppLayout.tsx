@@ -12,11 +12,14 @@ import { useRestoreSession } from '../hooks/useAuth';
 import { isModKey } from '../lib/platform';
 import { CollectionsList } from '../components/collections/CollectionsList';
 import { UpdateBanner } from '../components/ui/UpdateBanner';
+import { useLicenseStatus } from '../hooks/useLicense';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 export function AppLayout() {
   const currentBounce = useAudioStore((s) => s.currentBounce);
   const navigate = useNavigate();
   const setSearchQuery = useLibraryStore((s) => s.setSearchQuery);
+  const { data: license } = useLicenseStatus();
 
   // Restore Supabase session on mount
   const restoreSession = useRestoreSession();
@@ -134,6 +137,19 @@ export function AppLayout() {
           >
             <span>&#9881;</span> Settings
           </NavLink>
+
+          {/* Upgrade CTA — visible during active trial only */}
+          {license?.status === 'TrialActive' && license.checkout_url && (
+            <button
+              onClick={() => openUrl(license.checkout_url)}
+              className="mx-1 mt-2 rounded-lg bg-brand-600 hover:bg-brand-700 p-3 text-center transition-colors cursor-pointer"
+            >
+              <div className="text-sm font-semibold text-white">Upgrade</div>
+              <div className="text-[10px] text-brand-200 mt-0.5">
+                {license.days_remaining ?? 0} day{(license.days_remaining ?? 0) !== 1 ? 's' : ''} left in trial
+              </div>
+            </button>
+          )}
         </div>
         <div className="p-3 border-t border-border-default space-y-1">
           <SyncIndicator />
