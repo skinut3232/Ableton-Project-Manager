@@ -3,6 +3,8 @@
 // Deploy with: supabase functions deploy lemonsqueezy-webhook --no-verify-jwt
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendEmail } from "../_shared/resend.ts";
+import { getTemplate } from "../_shared/email-templates.ts";
 
 // Initialize Supabase client with service role key (bypasses RLS)
 const supabase = createClient(
@@ -102,6 +104,35 @@ async function handleOrderCreated(dataId: string, attributes: any) {
   );
 
   if (error) console.error("Order upsert error:", error);
+
+  // Update email_contacts: mark as paying customer and send welcome email
+  const email = attributes.user_email;
+  if (email) {
+    const now = new Date().toISOString();
+    const { error: contactError } = await supabase
+      .from("email_contacts")
+      .upsert(
+        {
+          email,
+          name: attributes.user_name,
+          segment: "customer_desktop",
+          purchased_at: now,
+          customer_id: customerId,
+          updated_at: now,
+        },
+        { onConflict: "email" }
+      );
+
+    if (contactError) {
+      console.error("email_contacts upsert error:", contactError);
+    }
+
+    // Send purchase welcome email
+    const template = getTemplate("purchase_welcome");
+    if (template) {
+      await sendEmail(email, template.subject, template.html);
+    }
+  }
 }
 
 async function handleSubscriptionCreated(dataId: string, attributes: any) {
@@ -131,6 +162,19 @@ async function handleSubscriptionCreated(dataId: string, attributes: any) {
   );
 
   if (error) console.error("Subscription upsert error:", error);
+
+  // Update email_contacts segment to customer_sync
+  const email = attributes.user_email;
+  if (email) {
+    await supabase
+      .from("email_contacts")
+      .update({
+        segment: "customer_sync",
+        subscription_started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("email", email);
+  }
 }
 
 async function handleSubscriptionUpdated(dataId: string, attributes: any) {
@@ -160,6 +204,19 @@ async function handleSubscriptionExpired(dataId: string, attributes: any) {
     .eq("lemonsqueezy_subscription_id", String(dataId));
 
   if (error) console.error("Subscription expired update error:", error);
+
+  // Update email_contacts segment to churned_sync
+  const email = attributes.user_email;
+  if (email) {
+    await supabase
+      .from("email_contacts")
+      .update({
+        segment: "churned_sync",
+        churned_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("email", email);
+  }
 }
 
 async function handleLicenseKeyCreated(dataId: string, attributes: any) {
