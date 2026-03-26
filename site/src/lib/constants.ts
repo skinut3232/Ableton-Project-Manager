@@ -346,9 +346,9 @@ export const FINAL_CTA = {
 
 // ── Download ────────────────────────────────────────────────────
 export const DOWNLOAD_URL_WIN =
-  "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_1.0.0_x64-setup.exe";
+  "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_1.3.0_x64-setup.exe";
 export const DOWNLOAD_URL_MAC =
-  "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_1.0.0_aarch64.dmg";
+  "https://github.com/skinut3232/Ableton-Project-Manager/releases/latest/download/SetCrate_1.3.0_aarch64.dmg";
 
 // ── Checkout ────────────────────────────────────────────────────
 export const CHECKOUT_URL = "https://setcrate.lemonsqueezy.com/";
