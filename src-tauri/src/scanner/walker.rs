@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 use std::fs;
+use std::time::Duration;
 use rusqlite::{params, Connection};
 use tauri::AppHandle;
 use tauri::Emitter;
@@ -52,6 +53,9 @@ pub fn scan_library(conn: &Connection, root_folder: &str, bounce_folder_name: &s
             project_name: project_name.clone(),
             stage: "scanning".to_string(),
         }).ok();
+
+        // Brief pause so the frontend can render each note on the piano roll
+        std::thread::sleep(Duration::from_millis(15));
 
         match process_project(conn, &path_str, &project_name, genre_label, bounce_folder_name, app_data_dir) {
             Ok(is_new) => {
@@ -492,6 +496,9 @@ pub fn refresh_library(conn: &Connection, bounce_folder_name: &str, app_data_dir
             project_name: project_name.clone(),
             stage: "scanning".to_string(),
         }).ok();
+
+        // Brief pause so the frontend can render each note on the piano roll
+        std::thread::sleep(Duration::from_millis(15));
 
         let path = Path::new(project_path);
 

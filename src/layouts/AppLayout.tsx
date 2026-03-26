@@ -1,7 +1,9 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { AudioPlayer } from '../components/audio/AudioPlayer';
 import { useAudioStore } from '../stores/audioStore';
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { listen } from '@tauri-apps/api/event';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLibraryStore } from '../stores/libraryStore';
 import { useSpotifyAuthStatus } from '../hooks/useSpotify';
 import { useSpotifyPlayer } from '../hooks/useSpotifyPlayer';
@@ -14,12 +16,29 @@ import { CollectionsList } from '../components/collections/CollectionsList';
 import { UpdateBanner } from '../components/ui/UpdateBanner';
 import { useLicenseStatus } from '../hooks/useLicense';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import { ScanProgressModal } from '../components/library/ScanProgressModal';
+import type { ScanProgress } from '../types';
 
 export function AppLayout() {
   const currentBounce = useAudioStore((s) => s.currentBounce);
   const navigate = useNavigate();
   const setSearchQuery = useLibraryStore((s) => s.setSearchQuery);
   const { data: license } = useLicenseStatus();
+  const queryClient = useQueryClient();
+
+  // Global scan progress listener — works on every page (Settings, Library, etc.)
+  const [scanProgress, setScanProgress] = useState<ScanProgress | null>(null);
+  useEffect(() => {
+    const unlistenPromise = listen<ScanProgress>('scan-progress', (event) => {
+      if (event.payload.stage === 'complete') {
+        setScanProgress(null);
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+      } else {
+        setScanProgress(event.payload);
+      }
+    });
+    return () => { unlistenPromise.then((fn) => fn()); };
+  }, [queryClient]);
 
   // Restore Supabase session on mount
   const restoreSession = useRestoreSession();
@@ -86,6 +105,9 @@ export function AppLayout() {
 
   return (
     <div className="flex h-screen bg-bg-primary text-text-primary">
+      {/* Global scan progress overlay — shows on any page */}
+      {scanProgress && <ScanProgressModal progress={scanProgress} />}
+
       {/* Sidebar */}
       <nav className="w-48 shrink-0 border-r border-border-default bg-bg-secondary flex flex-col">
         <div className="p-4 border-b border-border-default">

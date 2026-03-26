@@ -78,12 +78,11 @@ export function useUpdateProject() {
 }
 
 export function useScanLibrary() {
-  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => tauriInvoke<ScanSummary>('scan_library'),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-    },
+    // scan_library now returns immediately and runs in a background thread.
+    // The "scan-progress" event with stage "complete" (handled in AppLayout)
+    // triggers the project list refresh when the scan actually finishes.
+    mutationFn: () => tauriInvoke<void>('scan_library'),
   });
 }
 

@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
-import { listen } from '@tauri-apps/api/event';
 import { TopBar } from '../components/library/TopBar';
 import { FilterBar } from '../components/library/FilterBar';
 import { ProjectGrid } from '../components/library/ProjectGrid';
 import { ProjectTable } from '../components/library/ProjectTable';
-import { ScanProgressModal } from '../components/library/ScanProgressModal';
 import { BulkActionBar } from '../components/library/BulkActionBar';
 import { QuickCreateDialog } from '../components/library/QuickCreateDialog';
 import { useProjects, useRefreshLibrary, useAddProject } from '../hooks/useProjects';
@@ -16,7 +14,6 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 import { useLibraryStore } from '../stores/libraryStore';
-import type { ScanProgress } from '../types';
 
 export function LibraryView() {
   const { data: projects, isLoading, refetch } = useProjects();
@@ -26,26 +23,12 @@ export function LibraryView() {
   const navigate = useNavigate();
   const searchQuery = useLibraryStore((s) => s.searchQuery);
   const viewMode = useLibraryStore((s) => s.viewMode);
-  const [scanProgress, setScanProgress] = useState<ScanProgress | null>(null);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const activeCollectionId = useLibraryStore((s) => s.activeCollectionId);
   const setActiveCollectionId = useLibraryStore((s) => s.setActiveCollectionId);
 
   const rootFolder = getSettingValue(settings, 'root_folder');
   const scanOnLaunch = getSettingValue(settings, 'scan_on_launch') !== 'false';
-
-  // Listen for scan progress events from Rust backend
-  useEffect(() => {
-    const unlistenPromise = listen<ScanProgress>('scan-progress', (event) => {
-      if (event.payload.stage === 'complete') {
-        setScanProgress(null);
-        refetch();
-      } else {
-        setScanProgress(event.payload);
-      }
-    });
-    return () => { unlistenPromise.then((fn) => fn()); };
-  }, [refetch]);
 
   // Refresh existing projects on launch
   useEffect(() => {
@@ -111,7 +94,6 @@ export function LibraryView() {
 
   return (
     <div className="space-y-4">
-      {scanProgress && <ScanProgressModal progress={scanProgress} />}
       <TopBar
         isAdding={addProject.isPending}
         onAddProject={handleAddProject}

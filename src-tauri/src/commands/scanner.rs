@@ -6,29 +6,71 @@ use crate::db::queries;
 use crate::scanner::walker;
 use crate::scanner::walker::ScanProgress;
 
+/// Kicks off a full library scan on a background thread so the UI stays
+/// responsive and can render progress events in real time. The command
+/// returns immediately; the "scan-progress" event with stage "complete"
+/// signals the frontend when the scan is finished.
 #[tauri::command]
-pub fn scan_library(app: AppHandle, state: State<DbState>) -> Result<ScanSummary, String> {
-    let conn = state.0.lock().map_err(|e| e.to_string())?;
-    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+pub fn scan_library(app: AppHandle) -> Result<(), String> {
+    // Spawn the heavy scan work on a background thread so the main thread
+    // remains free to deliver events and keep the WebView responsive.
+    std::thread::spawn(move || {
+        let state = app.state::<DbState>();
+        let conn = match state.0.lock() {
+            Ok(c) => c,
+            Err(e) => {
+                log::error!("Failed to lock DB for scan: {e}");
+                return;
+            }
+        };
 
-    let root_folder = queries::get_setting(&conn, "root_folder")?
-        .ok_or("Root folder not configured. Please set it in Settings.")?;
+        let app_data_dir = match app.path().app_data_dir() {
+            Ok(d) => d,
+            Err(e) => {
+                log::error!("Failed to get app data dir: {e}");
+                return;
+            }
+        };
 
-    let bounce_folder_name = queries::get_setting(&conn, "bounce_folder_name")?
-        .unwrap_or_else(|| "Bounces".to_string());
+        let root_folder = match queries::get_setting(&conn, "root_folder") {
+            Ok(Some(f)) => f,
+            Ok(None) => {
+                log::error!("Root folder not configured");
+                return;
+            }
+            Err(e) => {
+                log::error!("Failed to get root_folder setting: {e}");
+                return;
+            }
+        };
 
-    let summary = walker::scan_library(&conn, &root_folder, &bounce_folder_name, &app_data_dir, &app)?;
+        let bounce_folder_name = queries::get_setting(&conn, "bounce_folder_name")
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| "Bounces".to_string());
 
-    // Generate covers for new projects
-    walker::generate_missing_covers(&conn, &app_data_dir, &app);
+        match walker::scan_library(&conn, &root_folder, &bounce_folder_name, &app_data_dir, &app) {
+            Ok(summary) => {
+                log::info!("Scan complete: {} found, {} new, {} updated, {} missing, {} errors",
+                    summary.found, summary.new, summary.updated, summary.missing, summary.errors.len());
+            }
+            Err(e) => {
+                log::error!("Scan failed: {e}");
+            }
+        }
 
-    app.emit("scan-progress", ScanProgress {
-        current: 0, total: 0,
-        project_name: String::new(),
-        stage: "complete".to_string(),
-    }).ok();
+        // Generate covers for new projects
+        walker::generate_missing_covers(&conn, &app_data_dir, &app);
 
-    Ok(summary)
+        // Signal the frontend that scanning is done
+        app.emit("scan-progress", ScanProgress {
+            current: 0, total: 0,
+            project_name: String::new(),
+            stage: "complete".to_string(),
+        }).ok();
+    });
+
+    Ok(())
 }
 
 #[tauri::command]
