@@ -32,6 +32,8 @@ site/.next/
 site/.env.local
 
 # Development artifacts
+.superpowers/
+Media/
 videos/
 *.mkv
 *.stackdump
