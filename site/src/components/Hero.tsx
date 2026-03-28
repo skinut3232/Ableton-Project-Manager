@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Container from "./ui/Container";
-import HeroScreenshot from "./HeroScreenshot";
+import HeroVideo from "./HeroVideo";
 import { HERO, ANNOUNCEMENT } from "@/lib/constants";
 import { fadeInUp } from "@/lib/animations";
 
@@ -34,7 +34,7 @@ export default function Hero() {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="mt-16"
         >
-          <HeroScreenshot />
+          <HeroVideo />
         </motion.div>
       </Container>
     </section>
