@@ -33,9 +33,11 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            target: x86_64-pc-windows-msvc
+            rust_targets: x86_64-pc-windows-msvc
+            tauri_args: ""
           - os: macos-latest
-            target: aarch64-apple-darwin
+            rust_targets: "aarch64-apple-darwin,x86_64-apple-darwin"
+            tauri_args: "--target universal-apple-darwin"
 
     steps:
       - uses: actions/checkout@v4
@@ -47,7 +49,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: ${{ matrix.rust_targets }}
 
       # Cache Rust build artifacts to speed up subsequent runs
       - uses: Swatinem/rust-cache@v2
@@ -69,6 +71,8 @@ jobs:
           # Skip code signing — just verifying it compiles
           TAURI_SIGNING_PRIVATE_KEY: ""
           LEMONSQUEEZY_URL: ${{ secrets.LEMONSQUEEZY_URL }}
+        with:
+          args: ${{ matrix.tauri_args }}
 
       # Upload installers so testers can download them from the Actions tab
       - name: Upload Windows installer
@@ -83,4 +87,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SetCrate-macOS
-          path: src-tauri/target/release/bundle/dmg/*.dmg
+          path: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg

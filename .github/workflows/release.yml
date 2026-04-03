@@ -28,9 +28,11 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            target: x86_64-pc-windows-msvc
+            rust_targets: x86_64-pc-windows-msvc
+            tauri_args: ""
           - os: macos-latest
-            target: aarch64-apple-darwin
+            rust_targets: "aarch64-apple-darwin,x86_64-apple-darwin"
+            tauri_args: "--target universal-apple-darwin"
     permissions:
       contents: write
 
@@ -44,7 +46,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: ${{ matrix.rust_targets }}
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -70,3 +72,4 @@ jobs:
           releaseBody: "See the full changelog at https://github.com/skinut3232/Ableton-Project-Manager/commits/${{ github.ref_name }}"
           releaseDraft: true
           prerelease: false
+          args: ${{ matrix.tauri_args }}
